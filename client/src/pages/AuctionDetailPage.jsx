@@ -302,12 +302,31 @@ export default function AuctionDetailPage() {
       });
 
       // Update next minimum bid amount in input
-      const nextMin = result.listing.currentPrice + listing.minIncrement;
+      const nextMin = result.listing.currentPrice + (listing.minIncrement || 10);
       setBidAmount(String(nextMin));
-      setBidSuccess(result.message || `Bid of ₹${val} placed successfully!`);
+      setBidSuccess(result.message || `Bid of ₹${val} placed successfully! You are now leading.`);
     } catch (err) {
       console.error('Failed to place bid:', err);
-      setBidError(err.response?.data?.message || 'Failed to place bid. Please try again.');
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || '';
+
+      if (status === 401) {
+        navigate(`/login?redirect=/listings/${id}`);
+        return;
+      }
+      if (status === 403 && (msg.toLowerCase().includes('verify') || msg.toLowerCase().includes('verification'))) {
+        setBidError('Please verify your campus email before placing a bid on this auction.');
+        return;
+      }
+      if (msg.toLowerCase().includes('own listing') || msg.toLowerCase().includes('own item')) {
+        setBidError('You cannot bid on your own item.');
+        return;
+      }
+      if (msg.toLowerCase().includes('closed') || msg.toLowerCase().includes('ended')) {
+        setBidError('This auction has ended. Bids are no longer accepted.');
+        return;
+      }
+      setBidError(msg || 'Failed to place bid. Please check the minimum amount.');
     } finally {
       setSubmittingBid(false);
     }
@@ -933,11 +952,36 @@ export default function AuctionDetailPage() {
                     <input
                       type="number"
                       min={minValidBid}
-                      step={listing.minIncrement || 1}
+                      step={listing.minIncrement || 10}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
                       className="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-charcoal bg-warm-white text-charcoal text-lg font-black focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                     />
+                  </div>
+
+                  {/* Quick-Increment Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setBidAmount(String(minValidBid))}
+                      className="flex-1 py-1 px-2 text-xs font-bold rounded-lg border border-sage/60 bg-warm-white hover:bg-sage-100 text-charcoal transition-all cursor-pointer"
+                    >
+                      Min ₹{minValidBid}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBidAmount((prev) => String((Number(prev) || minValidBid) + (listing.minIncrement || 10)))}
+                      className="flex-1 py-1 px-2 text-xs font-bold rounded-lg border border-sage/60 bg-warm-white hover:bg-sage-100 text-charcoal transition-all cursor-pointer"
+                    >
+                      +₹{listing.minIncrement || 10}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBidAmount((prev) => String((Number(prev) || minValidBid) + 2 * (listing.minIncrement || 10)))}
+                      className="flex-1 py-1 px-2 text-xs font-bold rounded-lg border border-sage/60 bg-warm-white hover:bg-sage-100 text-charcoal transition-all cursor-pointer"
+                    >
+                      +₹{2 * (listing.minIncrement || 10)}
+                    </button>
                   </div>
                 </div>
 
@@ -970,7 +1014,7 @@ export default function AuctionDetailPage() {
                   Log in with your verified campus account to bid on this item.
                 </p>
                 <Link
-                  to="/login"
+                  to={`/login?redirect=/listings/${id}`}
                   className="inline-block w-full py-2.5 rounded-xl bg-forest hover:bg-forest-light text-warm-white font-black text-xs shadow-xs"
                 >
                   Log In to Bid

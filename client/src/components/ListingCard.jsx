@@ -120,9 +120,9 @@ export default function ListingCard({ listing }) {
 
           <Link
             to={`/listings/${listing._id}`}
-            className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-xs shadow-xs transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-xs shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
           >
-            <span>Inspect & Bid</span>
+            <span>Bid</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-sage" />
           </Link>
         </div>

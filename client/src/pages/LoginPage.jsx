@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, AlertCircle } from 'lucide-react';
 
@@ -11,6 +11,10 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const redirectUrl = searchParams.get('redirect') || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,12 +22,8 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      const res = await login(email, password);
-      if (res?.otpRequired) {
-        navigate(`/verify-email?email=${encodeURIComponent(res.email)}&purpose=login`);
-      } else {
-        navigate('/');
-      }
+      await login(email, password);
+      navigate(redirectUrl);
     } catch (err) {
       if (err.response?.status === 403 && (err.response?.data?.message?.includes('verify') || err.response?.data?.code === 'EMAIL_NOT_VERIFIED')) {
         const targetEmail = err.response?.data?.email || email;
