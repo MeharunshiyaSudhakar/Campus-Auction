@@ -1,7 +1,7 @@
 const SellDraft = require('../models/SellDraft');
 const Listing = require('../models/Listing');
 const AiService = require('./aiService');
-const { getQuestionsForCategory } = require('../config/questionsConfig');
+const { getQuestionsForCategory, validateCategory, VALID_CATEGORY_KEYS } = require('../config/categoryConfig');
 const { FileStorageHelper } = require('../utils/fileStorage');
 
 class SellService {
@@ -13,11 +13,17 @@ class SellService {
     let draft = await SellDraft.findOne({ seller: sellerId, status: 'draft' }).sort({ updatedAt: -1 });
 
     if (!draft) {
-      const category = initialData.category || 'cycle';
+      const category = initialData.category ? validateCategory(initialData.category) : 'vehicles';
+      const defaultItemType = initialData.itemType || (category === 'vehicles' ? 'cycle' : (category === 'stationery' ? 'calculator' : category));
       draft = await SellDraft.create({
         seller: sellerId,
         category,
-        answers: { category },
+        answers: {
+          category,
+          itemType: defaultItemType,
+          acceptedPaymentMethods: ['upi', 'cash_on_pickup'],
+          fulfilment: ['campus_pickup'],
+        },
         currentStep: 0,
         status: 'draft',
       });
@@ -74,7 +80,6 @@ class SellService {
    */
   static async saveAnswer(sellerId, draftId, { key, value }) {
     const draft = await this.getDraft(sellerId, draftId);
-    const questions = getQuestionsForCategory(draft.category);
 
     if (!key) {
       const error = new Error('Question key is required');
@@ -84,17 +89,25 @@ class SellService {
 
     // --- Strict Server-Side Validation Rules ---
     if (key === 'category') {
-      if (!['cycle', 'calculator', 'books', 'electronics'].includes(value)) {
-        const error = new Error('Invalid item category');
-        error.statusCode = 400;
-        throw error;
-      }
-      draft.category = value;
+      const validatedCategory = validateCategory(value);
+      draft.category = validatedCategory;
+      if (!draft.answers) draft.answers = {};
+      draft.answers.category = validatedCategory;
+      if (value === 'cycle' && !draft.answers.itemType) draft.answers.itemType = 'cycle';
+      if (value === 'calculator' && !draft.answers.itemType) draft.answers.itemType = 'calculator';
     }
 
     if (key === 'title') {
       if (typeof value !== 'string' || value.trim().length < 3) {
         const error = new Error('Title must be at least 3 characters long');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    if (key === 'itemType') {
+      if (typeof value !== 'string' || value.trim().length < 2) {
+        const error = new Error('Item type must be at least 2 characters long');
         error.statusCode = 400;
         throw error;
       }
@@ -156,6 +169,22 @@ class SellService {
       }
     }
 
+    if (key === 'acceptedPaymentMethods') {
+      if (!Array.isArray(value) || value.length === 0) {
+        const error = new Error('At least one accepted payment method is required');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    if (key === 'fulfilment') {
+      if (!Array.isArray(value) || value.length === 0) {
+        const error = new Error('At least one fulfilment option is required');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
     // Update answers map
     draft.answers = {
       ...draft.answers,
@@ -163,10 +192,19 @@ class SellService {
     };
     draft.markModified('answers');
 
-    // Advance step if currently at this question
+    // Dynamically recompute questions based on current draft category
+    const questions = getQuestionsForCategory(draft.category);
+
+    // Advance step: advance to at least after the answered question index
     const qIndex = questions.findIndex((q) => q.key === key);
-    if (qIndex === draft.currentStep) {
-      draft.currentStep = Math.min(questions.length, draft.currentStep + 1);
+    if (qIndex !== -1) {
+      if (qIndex >= draft.currentStep) {
+        draft.currentStep = Math.min(questions.length, qIndex + 1);
+      }
+    }
+    // When closingTime is answered and remaining questions have defaults, mark draft step completed
+    if (key === 'closingTime' && draft.answers.acceptedPaymentMethods && draft.answers.fulfilment) {
+      draft.currentStep = questions.length;
     }
 
     await draft.save();
@@ -341,40 +379,57 @@ class SellService {
       throw error;
     }
 
-    // 3. Assemble categoryDetails from answers
-    const categoryDetails = {
-      cycle: {
-        geared: answers.cycle_gears === 'Geared (Multi-speed)',
-        brakes: answers.cycle_brakes || 'N/A',
-        tyres: answers.cycle_tyres || 'N/A',
-        lastServiced: answers.cycle_lastServiced || '',
-      },
-      calculator: {
-        modelType: answers.calculator_model || 'Scientific',
-        display: answers.calculator_display || 'N/A',
-        battery: answers.calculator_battery || 'N/A',
-      },
-      books: {
-        edition: answers.books_edition || '',
-        markedPages: answers.books_markedPages || 'Clean / No marks',
-        binding: answers.books_missingPages || 'Intact / Tight',
-      },
-      electronics: {
-        batteryHealth: answers.electronics_batteryHealth || 'Standard',
-        chargerIncluded: answers.electronics_charger === 'Original charger included',
-        screenCondition: answers.conditionGrade,
-        portsFunctional: answers.workingStatus === 'Fully functional',
-      },
+    // 3. Assemble categoryDetails from all category-specific answers
+    const normalizedCategory = validateCategory(answers.category || draft.category);
+    const categoryDetails = {};
+    for (const [k, v] of Object.entries(answers)) {
+      if (k.includes('_')) {
+        categoryDetails[k] = v;
+      }
+    }
+    // Backward-compatible structured subdocuments
+    categoryDetails.cycle = {
+      geared: answers.cycle_gears === 'Geared (Multi-speed)' || (answers.vehicles_gears && answers.vehicles_gears.includes('Multi-speed')),
+      brakes: answers.cycle_brakes || answers.vehicles_brakes || 'N/A',
+      tyres: answers.cycle_tyres || answers.vehicles_tyres || 'N/A',
+      lastServiced: answers.cycle_lastServiced || answers.vehicles_lastServiced || '',
+    };
+    categoryDetails.calculator = {
+      modelType: answers.calculator_model || answers.stationery_model || 'Scientific',
+      display: answers.calculator_display || answers.stationery_displayBattery || 'N/A',
+      battery: answers.calculator_battery || answers.stationery_displayBattery || 'N/A',
+    };
+    categoryDetails.books = {
+      edition: answers.books_edition || '',
+      markedPages: answers.books_markedPages || 'Clean / No marks',
+      binding: answers.books_missingPages || 'Intact / Tight',
+    };
+    categoryDetails.electronics = {
+      batteryHealth: answers.electronics_batteryHealth || 'Standard',
+      chargerIncluded: answers.electronics_charger === 'Original charger included',
+      screenCondition: answers.conditionGrade,
+      portsFunctional: answers.workingStatus === 'Fully functional',
     };
 
     // Description precedence: seller-edited final text -> AI rephrase -> seller notes
     const finalDescription = (options.finalDescription || draft.aiReview?.rephrasedDescription || answers.sellerDescription || '').trim();
+    const itemType = (answers.itemType || answers.itemSubtype || (normalizedCategory === 'vehicles' ? 'cycle' : normalizedCategory)).trim();
+    const brand = (answers.brand || '').trim();
+    const acceptedPaymentMethods = Array.isArray(answers.acceptedPaymentMethods) && answers.acceptedPaymentMethods.length > 0
+      ? answers.acceptedPaymentMethods
+      : ['upi', 'cash_on_pickup'];
+    const fulfilment = Array.isArray(answers.fulfilment) && answers.fulfilment.length > 0
+      ? answers.fulfilment
+      : ['campus_pickup'];
 
     // 4. Create the official Listing
     const listing = await Listing.create({
       seller: sellerId,
       title: answers.title.trim(),
-      category: answers.category,
+      category: normalizedCategory,
+      itemType,
+      brand,
+      itemSubtype: itemType,
       description: finalDescription,
       photos: answers.photos,
       photoThumbnails: Array.isArray(draft.answers?.photoThumbnails) && draft.answers.photoThumbnails.length === answers.photos.length
@@ -389,6 +444,8 @@ class SellService {
         accessories: answers.accessories ? answers.accessories.split(',').map((s) => s.trim()).filter(Boolean) : [],
         categoryDetails,
       },
+      acceptedPaymentMethods,
+      fulfilment,
       honestyDeclaration: true,
       startingPrice: Number(answers.startingPrice),
       minIncrement: Number(answers.minIncrement) || 10,

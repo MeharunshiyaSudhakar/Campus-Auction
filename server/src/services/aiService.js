@@ -80,22 +80,56 @@ class AiService {
     // Category-specific details
     const cat = (answers.category || '').toLowerCase();
     if (cat === 'cycle' || cat === 'vehicles') {
-      if (answers.cycle_gears) lines.push(`• **Gears**: ${answers.cycle_gears}`);
-      if (answers.cycle_brakes) lines.push(`• **Brakes**: ${answers.cycle_brakes}`);
-      if (answers.cycle_tyres) lines.push(`• **Tyres**: ${answers.cycle_tyres}`);
-      if (answers.cycle_lastServiced) lines.push(`• **Last Serviced**: ${answers.cycle_lastServiced}`);
+      const gears = answers.vehicles_gears || answers.cycle_gears;
+      const brakes = answers.vehicles_brakes || answers.cycle_brakes;
+      const tyres = answers.vehicles_tyres || answers.cycle_tyres;
+      const serviced = answers.vehicles_lastServiced || answers.cycle_lastServiced;
+      const motorised = answers.vehicles_motorisedDetails;
+      if (answers.vehicles_type) lines.push(`• **Type**: ${answers.vehicles_type}`);
+      if (answers.vehicles_model) lines.push(`• **Model**: ${answers.vehicles_model}`);
+      if (gears) lines.push(`• **Gears**: ${gears}`);
+      if (brakes) lines.push(`• **Brakes**: ${brakes}`);
+      if (tyres) lines.push(`• **Tyres**: ${tyres}`);
+      if (serviced) lines.push(`• **Last Serviced**: ${serviced}`);
+      if (motorised && motorised !== 'N/A') lines.push(`• **Motorised Details**: ${motorised}`);
     } else if (cat === 'calculator' || cat === 'stationery') {
-      if (answers.calculator_model) lines.push(`• **Model**: ${answers.calculator_model}`);
-      if (answers.calculator_display) lines.push(`• **Display**: ${answers.calculator_display}`);
-      if (answers.calculator_battery) lines.push(`• **Battery**: ${answers.calculator_battery}`);
+      const kind = answers.stationery_kind;
+      const model = answers.stationery_model || answers.calculator_model;
+      const display = answers.stationery_displayBattery || answers.calculator_display;
+      const battery = answers.calculator_battery;
+      const qty = answers.stationery_quantity;
+      if (kind) lines.push(`• **Tool / Kind**: ${kind}`);
+      if (model) lines.push(`• **Model**: ${model}`);
+      if (display) lines.push(`• **Display / Power**: ${display}`);
+      if (battery) lines.push(`• **Battery**: ${battery}`);
+      if (qty) lines.push(`• **Quantity**: ${qty}`);
     } else if (cat === 'books') {
+      if (answers.books_author) lines.push(`• **Author**: ${answers.books_author}`);
       if (answers.books_edition) lines.push(`• **Edition**: ${answers.books_edition}`);
+      if (answers.books_subject) lines.push(`• **Subject**: ${answers.books_subject}`);
       if (answers.books_markedPages) lines.push(`• **Annotations**: ${answers.books_markedPages}`);
       if (answers.books_missingPages) lines.push(`• **Binding / Pages**: ${answers.books_missingPages}`);
     } else if (cat === 'electronics') {
-      if (answers.electronics_warranty) lines.push(`• **Warranty**: ${answers.electronics_warranty}`);
-      if (answers.electronics_charger) lines.push(`• **Charger**: ${answers.electronics_charger}`);
+      if (answers.electronics_model) lines.push(`• **Model**: ${answers.electronics_model}`);
       if (answers.electronics_batteryHealth) lines.push(`• **Battery Health**: ${answers.electronics_batteryHealth}`);
+      if (answers.electronics_charger) lines.push(`• **Charger**: ${answers.electronics_charger}`);
+      if (answers.electronics_warranty) lines.push(`• **Warranty**: ${answers.electronics_warranty}`);
+      if (answers.electronics_screen) lines.push(`• **Screen**: ${answers.electronics_screen}`);
+    } else if (cat === 'furniture') {
+      if (answers.furniture_type) lines.push(`• **Type**: ${answers.furniture_type}`);
+      if (answers.furniture_material) lines.push(`• **Material**: ${answers.furniture_material}`);
+      if (answers.furniture_dimensions) lines.push(`• **Dimensions**: ${answers.furniture_dimensions}`);
+      if (answers.furniture_wear) lines.push(`• **Sturdiness / Wear**: ${answers.furniture_wear}`);
+    } else if (cat === 'clothing') {
+      if (answers.clothing_type) lines.push(`• **Type**: ${answers.clothing_type}`);
+      if (answers.clothing_size) lines.push(`• **Size**: ${answers.clothing_size}`);
+      if (answers.clothing_brand) lines.push(`• **Brand**: ${answers.clothing_brand}`);
+      if (answers.clothing_wear) lines.push(`• **Condition**: ${answers.clothing_wear}`);
+    } else if (cat === 'sports') {
+      if (answers.sports_type) lines.push(`• **Equipment Type**: ${answers.sports_type}`);
+      if (answers.sports_size) lines.push(`• **Size / Grip**: ${answers.sports_size}`);
+      if (answers.sports_brand) lines.push(`• **Brand**: ${answers.sports_brand}`);
+      if (answers.sports_wear) lines.push(`• **Playability**: ${answers.sports_wear}`);
     }
 
     if (answers.sellerDescription && answers.sellerDescription.trim()) {
@@ -187,29 +221,24 @@ class AiService {
     const defaultSuggestions = this.getCategorySuggestions(category);
 
     // PRIVACY ENFORCEMENT: Strictly omit student name, email, phone, roll number, UPI ID, or delivery address
+    const itemType = answers.itemType || answers.itemSubtype || answers.vehicles_type || answers.stationery_kind || answers.furniture_type || answers.clothing_type || answers.sports_type || category;
+    const categoryDetails = {};
+    for (const [k, v] of Object.entries(answers)) {
+      if (k.includes('_')) {
+        categoryDetails[k] = v;
+      }
+    }
+
     const facts = {
       category,
-      itemType: answers.itemSubtype || answers.category,
+      itemType,
+      brand: answers.brand || 'Unbranded / Not specified',
       conditionGrade: answers.conditionGrade || 'Good',
       age: answers.ageOfItem || 'Campus use',
       workingStatus: answers.workingStatus || 'Fully functional',
       defects: answers.defects && answers.defects.trim().toLowerCase() !== 'none' ? answers.defects.trim() : 'None reported',
       accessories: answers.accessories && answers.accessories.trim() ? answers.accessories.trim() : 'None',
-      categoryDetails: {
-        gears: answers.cycle_gears,
-        brakes: answers.cycle_brakes,
-        tyres: answers.cycle_tyres,
-        lastServiced: answers.cycle_lastServiced,
-        calculatorModel: answers.calculator_model,
-        calculatorDisplay: answers.calculator_display,
-        calculatorBattery: answers.calculator_battery,
-        bookEdition: answers.books_edition,
-        bookAnnotations: answers.books_markedPages,
-        bookBinding: answers.books_missingPages,
-        warranty: answers.electronics_warranty,
-        charger: answers.electronics_charger,
-        batteryHealth: answers.electronics_batteryHealth,
-      },
+      categoryDetails,
       sellerDescription: answers.sellerDescription || '',
     };
 

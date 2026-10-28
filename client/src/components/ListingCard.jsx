@@ -3,22 +3,12 @@ import { Link } from 'react-router-dom';
 import { ShieldAlert, ShieldCheck, Tag, ArrowUpRight, Camera, Gavel, User } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
 import ItemImage from './ItemImage';
+import { categoryEmojiMap } from '../config/categoryConfig';
 
 export default function ListingCard({ listing }) {
   if (!listing) return null;
 
-  const categoryEmoji = {
-    vehicles: '🚗 Vehicles',
-    stationery: '✏️ Stationery',
-    books: '📚 Books',
-    electronics: '💻 Electronics',
-    furniture: '🪑 Furniture',
-    clothing: '👕 Clothing',
-    sports: '⚽ Sports',
-    other: '📦 Other',
-    cycle: '🚲 Cycle',
-    calculator: '🔢 Calculator',
-  }[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
+  const categoryEmoji = categoryEmojiMap[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
 
   // Condition Badge styling using the 4-color palette
   const conditionColorMap = {

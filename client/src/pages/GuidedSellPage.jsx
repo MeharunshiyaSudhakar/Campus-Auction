@@ -96,6 +96,8 @@ export default function GuidedSellPage() {
       const existingVal = stepData.answers[stepData.currentQuestion.key];
       if (stepData.currentQuestion.type === 'photos') {
         setPhotosList(Array.isArray(existingVal) ? existingVal : []);
+      } else if (stepData.currentQuestion.type === 'multiselect') {
+        setCurrentInput(Array.isArray(existingVal) ? existingVal : (stepData.currentQuestion.default || []));
       } else {
         setCurrentInput(existingVal !== undefined ? existingVal : (stepData.currentQuestion.default || ''));
       }
@@ -256,6 +258,13 @@ export default function GuidedSellPage() {
         setError('Auction closing time must be set in the future');
         return;
       }
+    } else if (currentQuestion.type === 'multiselect') {
+      const selected = Array.isArray(currentInput) ? currentInput : (currentQuestion.default || []);
+      if (selected.length === 0) {
+        setError('Please select at least one option to continue');
+        return;
+      }
+      valueToSave = selected;
     } else if (currentQuestion.key === 'defects') {
       const grade = answers.conditionGrade;
       if (['Fair', 'Poor'].includes(grade)) {
@@ -446,6 +455,44 @@ export default function GuidedSellPage() {
                       >
                         <span>{opt.label}</span>
                         {isSelected && <Check className="w-4 h-4 text-charcoal stroke-[2.5]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* MULTISELECT INPUT (Payment methods & Fulfilment) */}
+              {currentQuestion.type === 'multiselect' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {currentQuestion.options.map((opt) => {
+                    const currentArray = Array.isArray(currentInput) ? currentInput : (currentQuestion.default || []);
+                    const isSelected = currentArray.includes(opt.value);
+                    const toggleOption = () => {
+                      if (isSelected) {
+                        if (currentArray.length > 1) {
+                          setCurrentInput(currentArray.filter((v) => v !== opt.value));
+                        }
+                      } else {
+                        setCurrentInput([...currentArray, opt.value]);
+                      }
+                    };
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={toggleOption}
+                        className={`p-4 text-left rounded-xl border-2 transition-all flex items-center justify-between text-body cursor-pointer ${
+                          isSelected
+                            ? 'border-charcoal bg-sage-100 text-charcoal font-bold shadow-xs'
+                            : 'border-sage/50 bg-warm-white hover:border-charcoal/50 text-charcoal'
+                        }`}
+                      >
+                        <span className="font-semibold">{opt.label}</span>
+                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
+                          isSelected ? 'bg-charcoal border-charcoal text-warm-white' : 'border-sage/80 bg-warm-white'
+                        }`}>
+                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                        </div>
                       </button>
                     );
                   })}

@@ -36,6 +36,16 @@ const listingSchema = new mongoose.Schema(
       },
       index: true,
     },
+    itemType: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    brand: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     itemSubtype: {
       type: String,
       trim: true,
@@ -151,55 +161,10 @@ const listingSchema = new mongoose.Schema(
         type: [String],
         default: [],
       },
-      // Category-specific structured details
+      // Category-specific structured details (flexible mixed schema for all categories)
       categoryDetails: {
-        // Cycle details
-        cycle: {
-          brakes: {
-            type: String,
-            default: 'N/A',
-          },
-          tyres: {
-            type: String,
-            default: 'N/A',
-          },
-          frameSize: { type: String, default: '' },
-          geared: { type: Boolean, default: false },
-        },
-        // Calculator details
-        calculator: {
-          display: {
-            type: String,
-            default: 'N/A',
-          },
-          battery: {
-            type: String,
-            default: 'N/A',
-          },
-          modelType: {
-            type: String,
-            default: 'Scientific',
-          },
-        },
-        // Books details
-        books: {
-          edition: { type: String, default: '' },
-          markedPages: {
-            type: String,
-            default: 'Clean / No marks',
-          },
-          binding: {
-            type: String,
-            default: 'Intact / Tight',
-          },
-        },
-        // Electronics details
-        electronics: {
-          batteryHealth: { type: String, default: 'Standard' },
-          chargerIncluded: { type: Boolean, default: false },
-          screenCondition: { type: String, default: 'Good' },
-          portsFunctional: { type: Boolean, default: true },
-        },
+        type: mongoose.Schema.Types.Mixed,
+        default: {},
       },
     },
 

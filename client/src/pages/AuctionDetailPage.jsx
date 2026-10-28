@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import useAuctionSocket from '../hooks/useAuctionSocket';
 import ItemImage from '../components/ItemImage';
+import { categoryEmojiMap } from '../config/categoryConfig';
 
 export default function AuctionDetailPage() {
   const { id } = useParams();
@@ -241,18 +242,7 @@ export default function AuctionDetailPage() {
   const minValidBid = listing.bidCount > 0 ? listing.currentPrice + listing.minIncrement : listing.startingPrice;
   const isClosed = listing.status !== 'active' || (listing.timeLeftMs !== undefined && listing.timeLeftMs <= 0);
 
-  const categoryEmoji = {
-    vehicles: '🚗 Vehicles',
-    stationery: '✏️ Stationery',
-    books: '📚 Books',
-    electronics: '💻 Electronics',
-    furniture: '🪑 Furniture',
-    clothing: '👕 Clothing',
-    sports: '⚽ Sports',
-    other: '📦 Other',
-    cycle: '🚲 Cycle',
-    calculator: '🔢 Calculator',
-  }[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
+  const categoryEmoji = categoryEmojiMap[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
 
   const conditionColorMap = {
     'New': 'bg-sage/25 text-forest border-sage font-black',
@@ -487,78 +477,136 @@ export default function AuctionDetailPage() {
                   Category-Specific Technical Specs
                 </span>
 
-                {listing.category === 'cycle' && listing.condition.categoryDetails.cycle && (
+                {/* Vehicles / Cycle */}
+                {(listing.category === 'vehicles' || listing.category === 'cycle') && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Type / Model</span>
+                      <span className="font-extrabold text-forest">{listing.itemType || listing.condition?.categoryDetails?.vehicles_type || 'Vehicle'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Brakes</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.brakes || 'Standard'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.vehicles_brakes || listing.condition?.categoryDetails?.cycle?.brakes || 'Standard'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Tyres</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.tyres || 'Good'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.vehicles_tyres || listing.condition?.categoryDetails?.cycle?.tyres || 'Good'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Frame Size</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.frameSize || 'Standard'}</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Geared</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.geared ? 'Yes' : 'Single Speed'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Gears</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.vehicles_gears || (listing.condition?.categoryDetails?.cycle?.geared ? 'Geared' : 'Single Speed')}</span>
                     </div>
                   </div>
                 )}
 
-                {listing.category === 'calculator' && listing.condition.categoryDetails.calculator && (
+                {/* Stationery / Calculator */}
+                {(listing.category === 'stationery' || listing.category === 'calculator') && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Display</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.display || 'Clear'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Kind / Model</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.stationery_kind || listing.condition?.categoryDetails?.stationery_model || listing.condition?.categoryDetails?.calculator?.modelType || 'Stationery'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Battery</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.battery || 'Good'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Display / Power</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.stationery_displayBattery || listing.condition?.categoryDetails?.calculator?.display || 'Good'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Model Type</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.modelType || 'Scientific'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Quantity</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.stationery_quantity || '1 Unit'}</span>
                     </div>
                   </div>
                 )}
 
-                {listing.category === 'books' && listing.condition.categoryDetails.books && (
+                {/* Books */}
+                {listing.category === 'books' && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Edition</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.edition || 'Standard'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Author / Edition</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.books_author || listing.condition?.categoryDetails?.books?.edition || 'Standard'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Page Markings</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.markedPages || 'Clean'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.books_markedPages || listing.condition?.categoryDetails?.books?.markedPages || 'Clean'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Binding</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.binding || 'Intact'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.books_missingPages || listing.condition?.categoryDetails?.books?.binding || 'Intact'}</span>
                     </div>
                   </div>
                 )}
 
-                {listing.category === 'electronics' && listing.condition.categoryDetails.electronics && (
+                {/* Electronics */}
+                {listing.category === 'electronics' && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Battery Health</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.batteryHealth || 'Good'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.electronics_batteryHealth || listing.condition?.categoryDetails?.electronics?.batteryHealth || 'Good'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Charger</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.chargerIncluded ? 'Included' : 'Not included'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.electronics_charger || (listing.condition?.categoryDetails?.electronics?.chargerIncluded ? 'Included' : 'Not included')}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Warranty</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.electronics_warranty || 'Standard'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
                       <span className="text-[10px] text-charcoal-muted block font-bold">Screen</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.screenCondition || 'Good'}</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.electronics_screen || listing.condition?.categoryDetails?.electronics?.screenCondition || 'Good'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Furniture */}
+                {listing.category === 'furniture' && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Type</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.furniture_type || listing.itemType || 'Furniture'}</span>
                     </div>
                     <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
-                      <span className="text-[10px] text-charcoal-muted block font-bold">Ports</span>
-                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.portsFunctional ? 'All Functional' : 'Check defects'}</span>
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Material</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.furniture_material || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Wear</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.furniture_wear || 'Sturdy'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Clothing */}
+                {listing.category === 'clothing' && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Garment Type</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.clothing_type || listing.itemType || 'Clothing'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Size</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.clothing_size || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Wear Condition</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.clothing_wear || 'Good'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sports */}
+                {listing.category === 'sports' && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Equipment</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.sports_type || listing.itemType || 'Sports'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Size / Grip</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.sports_size || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Playability</span>
+                      <span className="font-extrabold text-forest">{listing.condition?.categoryDetails?.sports_wear || 'Playable'}</span>
                     </div>
                   </div>
                 )}
