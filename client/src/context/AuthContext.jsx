@@ -34,18 +34,29 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data && res.data.success) {
+      if (res.data.data.otpRequired) {
+        return { otpRequired: true, email: res.data.data.email };
+      }
       const { user, token } = res.data.data;
       setUser(user);
       setToken(token);
       localStorage.setItem('campus_user', JSON.stringify(user));
       localStorage.setItem('campus_token', token);
-      return user;
+      return { user };
     }
     throw new Error(res.data?.message || 'Login failed');
   };
 
   const register = async (userData) => {
     const res = await api.post('/auth/register', userData);
+    if (res.data && res.data.success) {
+      return res.data.data;
+    }
+    throw new Error(res.data?.message || 'Registration failed');
+  };
+
+  const verifyEmail = async (email, code) => {
+    const res = await api.post('/auth/verify-email', { email, code });
     if (res.data && res.data.success) {
       const { user, token } = res.data.data;
       setUser(user);
@@ -54,7 +65,20 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('campus_token', token);
       return user;
     }
-    throw new Error(res.data?.message || 'Registration failed');
+    throw new Error(res.data?.message || 'Email verification failed');
+  };
+
+  const verifyLoginOtp = async (email, code) => {
+    const res = await api.post('/auth/verify-login-otp', { email, code });
+    if (res.data && res.data.success) {
+      const { user, token } = res.data.data;
+      setUser(user);
+      setToken(token);
+      localStorage.setItem('campus_user', JSON.stringify(user));
+      localStorage.setItem('campus_token', token);
+      return user;
+    }
+    throw new Error(res.data?.message || 'Login verification failed');
   };
 
   const logout = () => {
@@ -65,7 +89,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        register,
+        verifyEmail,
+        verifyLoginOtp,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

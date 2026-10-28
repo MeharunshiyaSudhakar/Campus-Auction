@@ -36,7 +36,13 @@ async function runPhotoTests() {
       campusRollNumber: 'PH21B001',
     }),
   }).then((r) => r.json());
-  const ownerToken = ownerRes.data.token;
+  await User.updateOne({ email: 'photo_owner@campus.edu' }, { $set: { emailVerified: true } });
+  const ownerLogin = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'photo_owner@campus.edu', password: 'Password123!' }),
+  }).then((r) => r.json());
+  const ownerToken = ownerLogin.data.token;
 
   const intruderRes = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
@@ -48,7 +54,13 @@ async function runPhotoTests() {
       campusRollNumber: 'PH21B002',
     }),
   }).then((r) => r.json());
-  const intruderToken = intruderRes.data.token;
+  await User.updateOne({ email: 'photo_intruder@campus.edu' }, { $set: { emailVerified: true } });
+  const intruderLogin = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'photo_intruder@campus.edu', password: 'Password123!' }),
+  }).then((r) => r.json());
+  const intruderToken = intruderLogin.data.token;
 
   // 2. Start Draft for Owner
   const draftRes = await fetch(`${BASE_URL}/sell/drafts`, {

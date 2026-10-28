@@ -80,12 +80,12 @@ async function runUnsoldAttentionNotificationTests() {
   const notifs1 = await Notification.find({
     user: seller._id,
     listing: listing1._id,
-    type: 'unsold_no_bids',
+    type: 'unsold_alert',
   });
-  assert.strictEqual(notifs1.length, 1, 'Exactly 1 unsold_no_bids notification should be created');
+  assert.strictEqual(notifs1.length, 1, 'Exactly 1 unsold_alert notification should be created');
   assert(notifs1[0].message.includes('closed without bids'), `Message should mention closed without bids: ${notifs1[0].message}`);
   assert.strictEqual(notifs1[0].link, '/needs-attention', 'Notification must link to /needs-attention');
-  assert.strictEqual(notifs1[0].eventKey, `${listing1._id}_unsold_no_bids`, 'eventKey must be set');
+  assert.strictEqual(notifs1[0].eventKey, `${listing1._id}_unsold_alert`, 'eventKey must be set');
   console.log('✓ TEST 1 PASSED: Unsold auction immediately dispatched 1 notification to seller linking to /needs-attention');
 
   // --- TEST 2: Idempotent Rerun creates 0 duplicates ---
@@ -96,7 +96,7 @@ async function runUnsoldAttentionNotificationTests() {
   const notifsAfterRerun = await Notification.find({
     user: seller._id,
     listing: listing1._id,
-    type: 'unsold_no_bids',
+    type: 'unsold_alert',
   });
   assert.strictEqual(notifsAfterRerun.length, 1, 'Must still have strictly 1 notification (0 duplicates created)');
   console.log('✓ TEST 2 PASSED: Rerun created 0 duplicates. EventKey deduplication verified.');

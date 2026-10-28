@@ -31,8 +31,14 @@ async function runTests() {
       campusRollNumber: 'ME21B191',
     }),
   }).then((r) => r.json());
-  const sellerToken = sellerRes.data.token;
   const sellerId = sellerRes.data.user._id;
+  await User.updateOne({ _id: sellerId }, { $set: { emailVerified: true } });
+  const sellerLogin = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'seller19@campus.edu', password: 'Password123!' }),
+  }).then((r) => r.json());
+  const sellerToken = sellerLogin.data.token;
 
   const buyerRes = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
@@ -44,8 +50,14 @@ async function runTests() {
       campusRollNumber: 'CS21B192',
     }),
   }).then((r) => r.json());
-  const buyerToken = buyerRes.data.token;
   const buyerId = buyerRes.data.user._id;
+  await User.updateOne({ _id: buyerId }, { $set: { emailVerified: true } });
+  const buyerLogin = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'buyer19@campus.edu', password: 'Password123!' }),
+  }).then((r) => r.json());
+  const buyerToken = buyerLogin.data.token;
 
   // 2. Create Listing for Deepak
   const listing = await Listing.create({

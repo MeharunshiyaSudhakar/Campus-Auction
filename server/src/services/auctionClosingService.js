@@ -131,12 +131,12 @@ class AuctionClosingService {
       // Notify Seller: item unsold, available in Needs Attention
       await NotificationService.sendNotification({
         user: updatedListing.seller._id,
-        type: 'unsold_no_bids',
+        type: 'unsold_alert',
         title: 'Auction Closed Without Bids',
         message: `Your "${updatedListing.title}" closed without bids.`,
         listing: updatedListing._id,
         link: '/needs-attention',
-        eventKey: `${updatedListing._id}_unsold_no_bids`,
+        eventKey: `${updatedListing._id}_unsold_alert`,
       });
 
       // Real-Time Socket Broadcasts

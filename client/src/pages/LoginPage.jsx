@@ -18,19 +18,38 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      await login(email, password);
-      navigate('/');
+      const res = await login(email, password);
+      if (res?.otpRequired) {
+        navigate(`/verify-email?email=${encodeURIComponent(res.email)}&purpose=login`);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      const cleanMessage =
-        err.response?.data?.message ||
-        (err.response?.status === 401
-          ? 'Invalid college email/roll number or password'
-          : err.response?.status >= 500
-          ? 'Server encountered an issue. Please verify your credentials or try again.'
-          : !err.response || err.message === 'Network Error'
-          ? 'Cannot connect to server. Please verify backend is running on port 5000.'
-          : 'Failed to sign in. Please check your credentials.');
-      setError(cleanMessage);
+      if (err.response?.status === 403 && (err.response?.data?.message?.includes('verify') || err.response?.data?.code === 'EMAIL_NOT_VERIFIED')) {
+        const targetEmail = err.response?.data?.email || email;
+        setError(
+          <span>
+            {err.response.data.message}{' '}
+            <Link
+              to={`/verify-email?email=${encodeURIComponent(targetEmail)}`}
+              className="font-bold underline text-amber-hover hover:text-charcoal ml-1"
+            >
+              Verify Email Now &rarr;
+            </Link>
+          </span>
+        );
+      } else {
+        const cleanMessage =
+          err.response?.data?.message ||
+          (err.response?.status === 401
+            ? 'Invalid college email/roll number or password'
+            : err.response?.status >= 500
+            ? 'Server encountered an issue. Please verify your credentials or try again.'
+            : !err.response || err.message === 'Network Error'
+            ? 'Cannot connect to server. Please verify backend is running on port 5000.'
+            : 'Failed to sign in. Please check your credentials.');
+        setError(cleanMessage);
+      }
     } finally {
       setSubmitting(false);
     }

@@ -49,6 +49,11 @@ const userSchema = new mongoose.Schema(
       default: null,
       select: false, // Hidden for privacy
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -77,6 +82,7 @@ userSchema.methods.toPublicProfile = function () {
   return {
     _id: this._id,
     name: this.name,
+    emailVerified: this.emailVerified,
     createdAt: this.createdAt,
   };
 };

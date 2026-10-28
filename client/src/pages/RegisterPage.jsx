@@ -28,7 +28,7 @@ export default function RegisterPage() {
 
     try {
       await register(formData);
-      navigate('/');
+      navigate(`/verify-email?email=${encodeURIComponent(formData.email.trim().toLowerCase())}`);
     } catch (err) {
       const cleanMessage =
         err.response?.data?.message ||

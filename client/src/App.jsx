@@ -13,6 +13,7 @@ import BrowsePage from './pages/BrowsePage';
 import AuctionDetailPage from './pages/AuctionDetailPage';
 import DealTrackerPage from './pages/DealTrackerPage';
 import NotificationsPage from './pages/NotificationsPage';
+import OtpVerificationPage from './pages/OtpVerificationPage';
 import AiChatbotWidget from './components/AiChatbotWidget';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/deals/:id" element={<DealTrackerPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/verify-email" element={<OtpVerificationPage />} />
               <Route path="/sell" element={<GuidedSellPage />} />
               <Route path="/create-listing" element={<GuidedSellPage />} />
               <Route path="/my-listings" element={<MyListingsPage />} />
