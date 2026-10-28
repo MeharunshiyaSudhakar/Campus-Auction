@@ -22,6 +22,8 @@ const notificationSchema = new mongoose.Schema(
         'unsold_alert',
         'no_bids_stale',
         'wanted_match',
+        'qa_question',
+        'qa_answered',
       ],
       index: true,
     },

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 import CountdownTimer from '../components/CountdownTimer';
+import ListingQaSection from '../components/ListingQaSection';
 import {
   Gavel,
   ShieldCheck,
@@ -575,6 +576,9 @@ export default function AuctionDetailPage() {
               <span>Campus Honor Code: Seller certified that all details are accurate upon listing.</span>
             </div>
           </div>
+
+          {/* Module 10: Pre-Bid Public Q&A */}
+          <ListingQaSection listingId={listing._id} isSeller={isSeller} />
         </div>
 
         {/* Right Column: Live Auction Box, Bidding Form & Public Bid History (5 Cols) */}

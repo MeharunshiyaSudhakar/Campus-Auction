@@ -12,6 +12,7 @@ import NeedsAttentionPage from './pages/NeedsAttentionPage';
 import BrowsePage from './pages/BrowsePage';
 import AuctionDetailPage from './pages/AuctionDetailPage';
 import DealTrackerPage from './pages/DealTrackerPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="/my-listings" element={<MyListingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/needs-attention" element={<NeedsAttentionPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
             </Routes>
           </main>
           <footer className="border-t border-sage/40 bg-warm-white-muted/60 py-6 px-4 text-center text-xs text-charcoal/70">

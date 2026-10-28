@@ -28,4 +28,26 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const optionalAuth = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'campus_auction_super_secret_jwt_key_2026');
+    const user = await User.findById(decoded.id);
+    if (user) {
+      req.user = user;
+    }
+  } catch (error) {
+    // Ignore invalid optional tokens
+  }
+  next();
+};
+
+module.exports = { protect, optionalAuth };
