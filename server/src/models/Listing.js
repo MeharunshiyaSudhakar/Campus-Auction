@@ -1,0 +1,252 @@
+const mongoose = require('mongoose');
+
+const listingSchema = new mongoose.Schema(
+  {
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Seller reference is required'],
+      index: true,
+    },
+    title: {
+      type: String,
+      required: [true, 'Title is required'],
+      trim: true,
+      maxlength: [100, 'Title cannot exceed 100 characters'],
+    },
+    category: {
+      type: String,
+      required: [true, 'Category is required'],
+      enum: {
+        values: ['cycle', 'calculator', 'books', 'electronics'],
+        message: '{VALUE} is not a supported category',
+      },
+      index: true,
+    },
+    description: {
+      type: String,
+      required: [true, 'Description is required'],
+      trim: true,
+      maxlength: [2000, 'Description cannot exceed 2000 characters'],
+    },
+    photos: {
+      type: [String],
+      validate: {
+        validator: function (val) {
+          return Array.isArray(val) && val.length >= 2;
+        },
+        message: 'At least 2 photos are required for buyers to inspect the item',
+      },
+      required: true,
+    },
+    defectPhotoIncluded: {
+      type: Boolean,
+      default: false,
+    },
+
+    // --- Core Principle: Mandatory Structured Condition ---
+    condition: {
+      grade: {
+        type: String,
+        required: [true, 'Condition grade is mandatory'],
+        enum: ['New', 'Like new', 'Good', 'Fair', 'Poor'],
+      },
+      age: {
+        type: String, // e.g. "6 months", "1 year", "2+ years"
+        required: [true, 'Item age disclosure is mandatory'],
+      },
+      workingStatus: {
+        type: String,
+        required: [true, 'Working status is mandatory'],
+        enum: ['Fully functional', 'Partially functional', 'Needs repair / For parts'],
+      },
+      defects: {
+        type: String,
+        trim: true,
+        validate: {
+          validator: function (val) {
+            // Strictly mandatory if Fair or Poor
+            if (this.condition && ['Fair', 'Poor'].includes(this.condition.grade)) {
+              return typeof val === 'string' && val.trim().length >= 8;
+            }
+            return true;
+          },
+          message: 'Detailed description of known defects is mandatory when condition is Fair or Poor',
+        },
+        default: 'None reported',
+      },
+      accessories: {
+        type: [String],
+        default: [],
+      },
+      // Category-specific structured details
+      categoryDetails: {
+        // Cycle details
+        cycle: {
+          brakes: {
+            type: String,
+            enum: ['Good', 'Needs adjustment', 'Needs pad replacement', 'N/A'],
+            default: 'N/A',
+          },
+          tyres: {
+            type: String,
+            enum: ['Like new', 'Good tread', 'Worn', 'Punctured / Needs replacement', 'N/A'],
+            default: 'N/A',
+          },
+          frameSize: { type: String, default: '' },
+          geared: { type: Boolean, default: false },
+        },
+        // Calculator details
+        calculator: {
+          display: {
+            type: String,
+            enum: ['Flawless', 'Faint / Low contrast', 'Lines missing', 'N/A'],
+            default: 'N/A',
+          },
+          battery: {
+            type: String,
+            enum: ['Working', 'Needs replacement', 'Solar only', 'N/A'],
+            default: 'N/A',
+          },
+          modelType: {
+            type: String,
+            enum: ['Scientific', 'Graphing', 'Basic', 'N/A'],
+            default: 'Scientific',
+          },
+        },
+        // Books details
+        books: {
+          edition: { type: String, default: '' },
+          markedPages: {
+            type: String,
+            enum: ['Clean / No marks', 'Light pencil notes', 'Heavy pen / Highlighting', 'N/A'],
+            default: 'Clean / No marks',
+          },
+          binding: {
+            type: String,
+            enum: ['Intact / Tight', 'Loose pages', 'Cover torn / taped', 'N/A'],
+            default: 'Intact / Tight',
+          },
+        },
+        // Electronics details
+        electronics: {
+          batteryHealth: { type: String, default: 'Standard' },
+          chargerIncluded: { type: Boolean, default: false },
+          screenCondition: { type: String, default: 'Good' },
+          portsFunctional: { type: Boolean, default: true },
+        },
+      },
+    },
+
+    honestyDeclaration: {
+      type: Boolean,
+      required: [true, 'Seller honesty declaration is required'],
+      validate: {
+        validator: (v) => v === true,
+        message: 'You must check the honesty declaration confirming item accuracy',
+      },
+    },
+
+    // --- Pricing & Auction Mechanics ---
+    startingPrice: {
+      type: Number,
+      required: [true, 'Starting price is required'],
+      min: [1, 'Starting price must be at least ₹1'],
+    },
+    minIncrement: {
+      type: Number,
+      required: [true, 'Minimum bid increment is required'],
+      default: 10,
+      min: [1, 'Minimum increment must be at least ₹1'],
+    },
+    currentPrice: {
+      type: Number,
+      default: function () {
+        return this.startingPrice;
+      },
+    },
+    closingTime: {
+      type: Date,
+      required: [true, 'Auction closing time is required'],
+      validate: {
+        validator: function (v) {
+          return v > new Date();
+        },
+        message: 'Auction closing time must be set in the future',
+      },
+      index: true,
+    },
+
+    // --- Live Bid State (Denormalized for O(1) reads) ---
+    bidCount: {
+      type: Number,
+      default: 0,
+    },
+    leadingBid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Bid',
+      default: null,
+    },
+    leadingBidder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+
+    // --- Auction & Sale Lifecycle ---
+    status: {
+      type: String,
+      enum: [
+        'active',
+        'closed',
+        'pending_approval',
+        'approved',
+        'pickup_scheduled',
+        'completed',
+        'unsold',
+        'rejected',
+        'cancelled',
+        'pickup_failed',
+      ],
+      default: 'active',
+      index: true,
+    },
+
+    // Post-Auction Handover & Tracker
+    winningBid: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Bid',
+      default: null,
+    },
+    winner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    finalPrice: {
+      type: Number,
+      default: null,
+    },
+    handoverCode: {
+      type: String,
+      default: null, // Generated when seller approves the winning price
+    },
+    sellerDecisionAt: {
+      type: Date,
+      default: null,
+    },
+    handoverCompletedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Search and filtering compound indexes
+listingSchema.index({ status: 1, category: 1, closingTime: 1 });
+listingSchema.index({ title: 'text', description: 'text' });
+
+module.exports = mongoose.model('Listing', listingSchema);
