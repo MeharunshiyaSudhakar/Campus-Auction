@@ -30,7 +30,16 @@ export default function RegisterPage() {
       await register(formData);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Registration failed');
+      const cleanMessage =
+        err.response?.data?.message ||
+        (err.response?.status === 409
+          ? err.response?.data?.message || 'A student with this email or roll number is already registered.'
+          : err.response?.status >= 500
+          ? 'Server encountered an issue. Please try again shortly.'
+          : !err.response || err.message === 'Network Error'
+          ? 'Cannot connect to server. Please verify backend is running on port 5000.'
+          : 'Registration failed. Please check your information.');
+      setError(cleanMessage);
     } finally {
       setSubmitting(false);
     }
@@ -127,11 +136,12 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Roll Number (Private)
+                Roll Number (Unique) *
               </label>
               <input
                 type="text"
                 name="campusRollNumber"
+                required
                 value={formData.campusRollNumber}
                 onChange={handleChange}
                 placeholder="e.g. CS21B042"

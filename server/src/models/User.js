@@ -32,8 +32,12 @@ const userSchema = new mongoose.Schema(
     },
     campusRollNumber: {
       type: String,
+      required: [true, 'Campus roll number is required'],
+      unique: true,
+      uppercase: true,
       trim: true,
       select: false, // Private
+      index: true,
     },
   },
   {

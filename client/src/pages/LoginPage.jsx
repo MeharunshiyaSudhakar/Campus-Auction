@@ -21,7 +21,16 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to sign in');
+      const cleanMessage =
+        err.response?.data?.message ||
+        (err.response?.status === 401
+          ? 'Invalid college email/roll number or password'
+          : err.response?.status >= 500
+          ? 'Server encountered an issue. Please verify your credentials or try again.'
+          : !err.response || err.message === 'Network Error'
+          ? 'Cannot connect to server. Please verify backend is running on port 5000.'
+          : 'Failed to sign in. Please check your credentials.');
+      setError(cleanMessage);
     } finally {
       setSubmitting(false);
     }
@@ -50,14 +59,14 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              College Email
+              College Email or Roll Number
             </label>
             <input
-              type="email"
+              type="text"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. yourname@campus.edu"
+              placeholder="e.g. rohit@campus.edu or CS21B042"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
             />
           </div>

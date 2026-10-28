@@ -9,10 +9,11 @@ const errorHandler = (err, req, res, next) => {
     return ApiResponse.error(res, 'Validation Error', 400, errors);
   }
 
-  // Mongoose duplicate key error (e.g. unique email)
+  // Mongoose duplicate key error (e.g. unique email or unique roll number)
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    return ApiResponse.error(res, `A user with that ${field} already exists.`, 409);
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const friendlyName = field === 'campusRollNumber' ? 'campus roll number' : field;
+    return ApiResponse.error(res, `A student with this ${friendlyName} is already registered.`, 409);
   }
 
   // JWT errors

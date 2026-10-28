@@ -16,22 +16,42 @@ class AuthService {
   /**
    * Register a new student user
    */
+  /**
+   * Register a new student user
+   */
   static async registerUser({ name, email, password, phone, campusRollNumber }) {
+    if (!campusRollNumber || !campusRollNumber.trim()) {
+      const error = new Error('Campus roll number is required and must be unique');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanRoll = campusRollNumber.trim().toUpperCase();
+
     // Check if email already registered
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      const error = new Error('A user with this email already exists');
+    const existingEmail = await User.findOne({ email: cleanEmail });
+    if (existingEmail) {
+      const error = new Error('A student with this college email already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    // Check if roll number already registered
+    const existingRoll = await User.findOne({ campusRollNumber: cleanRoll });
+    if (existingRoll) {
+      const error = new Error('A student with this campus roll number is already registered');
       error.statusCode = 409;
       throw error;
     }
 
     // Create user
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: (name || '').trim(),
+      email: cleanEmail,
       password,
-      phone,
-      campusRollNumber,
+      phone: phone ? phone.trim() : '',
+      campusRollNumber: cleanRoll,
     });
 
     const token = this.generateToken(user._id);
@@ -43,20 +63,27 @@ class AuthService {
   }
 
   /**
-   * Log in an existing user
+   * Log in an existing user (Supports either college email OR roll number)
    */
   static async loginUser({ email, password }) {
-    if (!email || !password) {
-      const error = new Error('Please provide email and password');
+    const identifier = (email || '').trim();
+
+    if (!identifier || !password) {
+      const error = new Error('Please provide your college email (or roll number) and password');
       error.statusCode = 400;
       throw error;
     }
 
-    // Need to explicitly select password because it is hidden by default
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    // Support either email or roll number for convenient campus login
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { campusRollNumber: identifier.toUpperCase() },
+      ],
+    }).select('+password');
 
     if (!user || !(await user.matchPassword(password))) {
-      const error = new Error('Invalid email or password');
+      const error = new Error('Invalid email/roll number or password');
       error.statusCode = 401;
       throw error;
     }
