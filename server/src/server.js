@@ -13,6 +13,7 @@ const authRoutes = require('./routes/authRoutes');
 const listingRoutes = require('./routes/listingRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const sellRoutes = require('./routes/sellRoutes');
+const bidRoutes = require('./routes/bidRoutes');
 
 // Schedulers
 const { startUnsoldAlertScheduler } = require('./services/unsoldAlertScheduler');
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/sell', sellRoutes);
+app.use('/api/bids', bidRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

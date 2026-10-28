@@ -10,8 +10,19 @@ const sellDraftSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['cycle', 'calculator', 'books', 'electronics'],
-      default: 'cycle',
+      enum: [
+        'vehicles',
+        'stationery',
+        'books',
+        'electronics',
+        'furniture',
+        'clothing',
+        'sports',
+        'other',
+        'cycle',
+        'calculator',
+      ],
+      default: 'vehicles',
       index: true,
     },
     answers: {

@@ -74,6 +74,32 @@ Each student has a private profile area showing their own activity.
 - Relisting is a convenience that prefills a new listing from the old one; it creates a new auction
 - Build order: after Modules 8 and 9
 
+## Module 16: Payments (Razorpay)
+- Seller selects accepted payment methods when listing (>= 1): online via Razorpay
+  (UPI/cards/netbanking), direct UPI to seller, cash on pickup
+- After approval, the buyer chooses one of the seller's methods
+- Razorpay: server creates the order (amount from the DB, never the client), checkout on
+  the client, server verifies the payment signature; optional webhook
+- Cash / direct UPI: recorded as pending and confirmed by the seller at handover
+- Payment status shown in the pickup tracker; sale completes after handover
+- Failed pickup after an online payment is flagged "refund needed"
+- Key Secret only in server .env; test mode for the hackathon
+
+## Module 17: Home Page & Navigation
+- Home (landing + feature explanations), Live Auctions via a header icon, Sell Item in the header
+
+## Module 18: Categories
+- Broad categories (Vehicles, Stationery, Books, Electronics, Furniture, Clothing, Sports, Other);
+  seller then fills in what the item is. Question sets exist per category, with generic condition
+  questions for Other.
+
+## Module 19: Instagram-style Profile
+- Public view: name, Posts (listings), Reels (short demo clips, optional), Reposts
+- Owner-only: Investments (spent/received), charts, history, engagement
+  (views, bids received, watchlist saves, questions answered)
+- Filters as dropdowns (period, type, status)
+- Build order: reels and reposts last
+
 ## Standout Features (pick 2-3 to polish)
 - AI condition interview for honest listings
 - Condition badges and listing quality score
@@ -89,9 +115,7 @@ Each student has a private profile area showing their own activity.
 - Log every AI-proposed and approved action.
 
 ## Build Order
-Phase 1 (core, end to end): setup + auth -> listings -> browse/search -> bidding -> closing -> approval + pickup
-Phase 2 (live + fair): Socket.io + countdown -> 30s extension -> notifications
-Phase 3 (differentiators): AI description helper -> auto-bidding -> Q&A -> AI assistant + NL search -> wanted alerts
+Auth → sell flow (with categories and payment-method step) → browse → bidding → live updates and extension → closing → approval → payments → pickup tracker → notifications → Home and header → profile and investments → Q&A, auto-bidding, AI assistant, wanted alerts → reposts → reels (if time).
 
 ## Rationale
 Basics are mandatory, so they come first and must work end to end. Live updates and the

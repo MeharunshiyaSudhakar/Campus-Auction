@@ -41,13 +41,13 @@
 - [x] Pagination or lazy loading
 
 ## Module 5: Bidding
-- [ ] Bid model (bidder, amount, time)
-- [ ] First bid ≥ starting price; later bids ≥ current price + increment
-- [ ] Reject bids after closing, using the server clock
-- [ ] Seller cannot bid on their own item
-- [ ] Update current price and leading bidder atomically
-- [ ] Public bid history on the detail page
-- [ ] Bid form with clear error messages
+- [x] Bid model (bidder, amount, time)
+- [x] First bid ≥ starting price; later bids ≥ current price + increment
+- [x] Reject bids after closing, using the server clock
+- [x] Seller cannot bid on their own item
+- [x] Update current price and leading bidder atomically
+- [x] Public bid history on the detail page
+- [x] Bid form with clear error messages
 
 ## Module 6: Live Updates, Countdown and Extension
 - [ ] Socket.io server and client setup, with a room per auction
@@ -132,7 +132,35 @@
 - [x] Notification created once per listing per threshold (store a flag)
 - [x] Needs Attention endpoint and page
 - [x] Quick actions: edit, cancel, relist (prefilled new listing)
-- [x] Check: no duplicate notifications after a server restart
+## Module 16: Payments
+- [ ] Razorpay test keys in server .env (Key Secret never committed)
+- [ ] Listing field: acceptedPaymentMethods (at least one) + step in the sell flow
+- [ ] Payment model (listing, buyer, method, amount, status)
+- [ ] Buyer selects from the seller's methods after approval
+- [ ] Create-order endpoint (amount read from DB, in paise)
+- [ ] Verify-payment endpoint (signature check) + idempotency
+- [ ] Cash / direct UPI: pending status, seller confirms at handover
+- [ ] Show payment status in the pickup tracker
+- [ ] "Refund needed" status on failed pickup after an online payment
+- [ ] Check: client cannot change the amount; invalid signature is rejected
+
+## Module 17: Home & Navigation
+- [ ] Header with Home, Live Auctions icon, Sell Item button, Assistant, bell, Profile
+- [ ] Home page: hero, how it works, feature cards, closing-soon strip, category grid
+
+## Module 18: Categories
+- [ ] Broad category list + "what is it" field
+- [ ] Question config per category, generic questions for Other
+- [ ] Category filter on browse uses the same list
+
+## Module 19: Instagram-style Profile
+- [ ] Public profile view (name, posts, reels, reposts)
+- [ ] Owner-only Investments tab with charts and summary
+- [ ] Engagement stats (views, bids received, saves, Q&A answered)
+- [ ] Period / type / status filters as dropdowns
+- [ ] Repost (reshare) action on auctions
+- [ ] Reels: short clip upload with size and length limit (last priority)
+- [ ] Check: other users cannot see money totals
 
 ## Polish and Submission
 - [ ] Mobile-responsive UI

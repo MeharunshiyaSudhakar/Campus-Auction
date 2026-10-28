@@ -202,10 +202,14 @@ export default function HomePage() {
         <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
           {[
             { id: 'all', label: 'All Items', icon: '🏷️' },
-            { id: 'cycle', label: 'Cycles', icon: '🚲' },
-            { id: 'calculator', label: 'Calculators', icon: '🔢' },
+            { id: 'vehicles', label: 'Vehicles', icon: '🚗' },
+            { id: 'stationery', label: 'Stationery', icon: '✏️' },
             { id: 'books', label: 'Books', icon: '📚' },
             { id: 'electronics', label: 'Electronics', icon: '💻' },
+            { id: 'furniture', label: 'Furniture', icon: '🪑' },
+            { id: 'clothing', label: 'Clothing', icon: '👕' },
+            { id: 'sports', label: 'Sports', icon: '⚽' },
+            { id: 'other', label: 'Other', icon: '📦' },
           ].map((cat) => (
             <button
               key={cat.id}

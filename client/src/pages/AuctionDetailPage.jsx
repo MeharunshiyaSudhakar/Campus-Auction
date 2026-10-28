@@ -110,11 +110,17 @@ export default function AuctionDetailPage() {
   const isClosed = listing.status !== 'active' || (listing.timeLeftMs !== undefined && listing.timeLeftMs <= 0);
 
   const categoryEmoji = {
-    cycle: '🚲 Cycle',
-    calculator: '🔢 Calculator',
+    vehicles: '🚗 Vehicles',
+    stationery: '✏️ Stationery',
     books: '📚 Books',
     electronics: '💻 Electronics',
-  }[listing.category] || listing.category;
+    furniture: '🪑 Furniture',
+    clothing: '👕 Clothing',
+    sports: '⚽ Sports',
+    other: '📦 Other',
+    cycle: '🚲 Cycle',
+    calculator: '🔢 Calculator',
+  }[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
 
   const conditionColorMap = {
     'New': 'bg-sage/25 text-forest border-sage font-black',
@@ -126,15 +132,21 @@ export default function AuctionDetailPage() {
   const conditionBadgeStyle = conditionColorMap[listing.condition?.grade] || 'bg-sage/20 text-forest border-sage';
 
   const placeholderImages = {
+    vehicles: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
+    stationery: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=800&q=80',
     cycle: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
     calculator: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80',
     books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
     electronics: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80',
+    furniture: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80',
+    clothing: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80',
+    sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
+    other: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80',
   };
 
-  const photosList = Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos : [placeholderImages[listing.category]];
+  const photosList = Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos : [placeholderImages[listing.category] || placeholderImages.other];
 
-  const handlePlaceBidMock = (e) => {
+  const handlePlaceBid = async (e) => {
     e.preventDefault();
     setBidError(null);
     setBidSuccess(null);
@@ -150,12 +162,33 @@ export default function AuctionDetailPage() {
     }
 
     setSubmittingBid(true);
-    // Prepared for Module 5 bidding endpoint:
-    // In Module 5, this will call `api.post('/bids', { listingId: listing._id, amount: val })`
-    setTimeout(() => {
+    try {
+      const res = await api.post('/bids', { listingId: listing._id, amount: val });
+      const result = res.data?.data;
+      
+      // Update local listing state with atomically returned values
+      setListing((prev) => {
+        const updatedBids = [result.bid, ...(prev.bids || [])];
+        return {
+          ...prev,
+          currentPrice: result.listing.currentPrice,
+          bidCount: result.listing.bidCount,
+          closingTime: result.listing.closingTime,
+          leadingBidder: result.listing.leadingBidder,
+          bids: updatedBids,
+        };
+      });
+
+      // Update next minimum bid amount in input
+      const nextMin = result.listing.currentPrice + listing.minIncrement;
+      setBidAmount(String(nextMin));
+      setBidSuccess(result.message || `Bid of ₹${val} placed successfully!`);
+    } catch (err) {
+      console.error('Failed to place bid:', err);
+      setBidError(err.response?.data?.message || 'Failed to place bid. Please try again.');
+    } finally {
       setSubmittingBid(false);
-      setBidSuccess(`Bid placed: ₹${val}. (Full live WebSocket broadcasting active in Module 5 & 6)`);
-    }, 400);
+    }
   };
 
   return (
@@ -509,7 +542,7 @@ export default function AuctionDetailPage() {
                 </div>
               </div>
             ) : user ? (
-              <form onSubmit={handlePlaceBidMock} className="space-y-3">
+              <form onSubmit={handlePlaceBid} className="space-y-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center justify-between">
                     <span>Enter Your Bid (₹)</span>

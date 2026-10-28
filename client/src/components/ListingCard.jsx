@@ -7,11 +7,17 @@ export default function ListingCard({ listing }) {
   if (!listing) return null;
 
   const categoryEmoji = {
-    cycle: '🚲 Cycle',
-    calculator: '🔢 Calculator',
+    vehicles: '🚗 Vehicles',
+    stationery: '✏️ Stationery',
     books: '📚 Books',
     electronics: '💻 Electronics',
-  }[listing.category] || listing.category;
+    furniture: '🪑 Furniture',
+    clothing: '👕 Clothing',
+    sports: '⚽ Sports',
+    other: '📦 Other',
+    cycle: '🚲 Cycle',
+    calculator: '🔢 Calculator',
+  }[listing.category?.toLowerCase()] || `🏷️ ${listing.category}`;
 
   // Condition Badge styling using the 4-color palette
   const conditionColorMap = {
@@ -25,16 +31,22 @@ export default function ListingCard({ listing }) {
 
   // Fallback image placeholder
   const placeholderImages = {
+    vehicles: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80',
+    stationery: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=600&q=80',
     cycle: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80',
     calculator: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=600&q=80',
     books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
     electronics: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80',
+    furniture: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80',
+    clothing: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=600&q=80',
+    sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80',
+    other: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80',
   };
 
   const displayPhoto =
     Array.isArray(listing.photos) && listing.photos.length > 0 && listing.photos[0].startsWith('http')
       ? listing.photos[0]
-      : placeholderImages[listing.category] || placeholderImages.electronics;
+      : placeholderImages[listing.category?.toLowerCase()] || placeholderImages.other;
 
   return (
     <div className="group bg-warm-white-paper rounded-2xl border-2 border-sage/60 hover:border-forest shadow-xs hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden">

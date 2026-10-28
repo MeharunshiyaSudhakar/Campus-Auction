@@ -17,11 +17,40 @@ const listingSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category is required'],
+      lowercase: true,
+      trim: true,
       enum: {
-        values: ['cycle', 'calculator', 'books', 'electronics'],
+        values: [
+          'vehicles',
+          'stationery',
+          'books',
+          'electronics',
+          'furniture',
+          'clothing',
+          'sports',
+          'other',
+          'cycle',
+          'calculator',
+        ],
         message: '{VALUE} is not a supported category',
       },
       index: true,
+    },
+    itemSubtype: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    acceptedPaymentMethods: {
+      type: [String],
+      enum: ['razorpay', 'direct_upi', 'cash_on_pickup'],
+      default: ['cash_on_pickup', 'direct_upi'],
+      validate: {
+        validator: function (val) {
+          return Array.isArray(val) && val.length >= 1;
+        },
+        message: 'At least one accepted payment method must be selected',
+      },
     },
     description: {
       type: String,
