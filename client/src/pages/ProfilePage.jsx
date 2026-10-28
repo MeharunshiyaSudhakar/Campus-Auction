@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -24,7 +25,9 @@ import {
   TrendingUp,
   Tag,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  CreditCard,
+  Zap,
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -44,6 +47,12 @@ export default function ProfilePage() {
   const [sellingHistory, setSellingHistory] = useState([]);
   const [buyingHistory, setBuyingHistory] = useState([]);
 
+  // Payout states (Module 16)
+  const [payoutStatus, setPayoutStatus] = useState('not_started');
+  const [activatingPayout, setActivatingPayout] = useState(false);
+  const [payoutSuccess, setPayoutSuccess] = useState('');
+  const [payoutError, setPayoutError] = useState('');
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -60,21 +69,40 @@ export default function ProfilePage() {
 
       const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
 
-      const [summaryRes, chartRes, sellingRes, buyingRes] = await Promise.all([
+      const [summaryRes, chartRes, sellingRes, buyingRes, payoutRes] = await Promise.all([
         api.get(`/profile/summary${qs}`),
         api.get(`/profile/chart${qs}`),
         api.get(`/profile/selling${qs}`),
         api.get(`/profile/buying${qs}`),
+        api.get('/payouts/status').catch(() => ({ data: { data: { payoutStatus: 'not_started' } } })),
       ]);
 
       if (summaryRes.data?.success) setSummary(summaryRes.data.data);
       if (chartRes.data?.success) setChartData(chartRes.data.data);
       if (sellingRes.data?.success) setSellingHistory(sellingRes.data.data.items);
       if (buyingRes.data?.success) setBuyingHistory(buyingRes.data.data.items);
+      if (payoutRes.data?.data) setPayoutStatus(payoutRes.data.data.payoutStatus || 'not_started');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load profile dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDevActivatePayout = async () => {
+    setActivatingPayout(true);
+    setPayoutError('');
+    setPayoutSuccess('');
+    try {
+      const res = await api.post('/payouts/dev-activate');
+      if (res.data?.success) {
+        setPayoutStatus('active');
+        setPayoutSuccess('Test seller linked account activated successfully!');
+      }
+    } catch (err) {
+      setPayoutError(err.response?.data?.message || 'Failed to activate payout');
+    } finally {
+      setActivatingPayout(false);
     }
   };
 
@@ -159,6 +187,7 @@ export default function ProfilePage() {
           { id: 'overview', label: 'Overview & Charts' },
           { id: 'selling', label: `Selling History (${sellingHistory.length})` },
           { id: 'buying', label: `Buying History (${buyingHistory.length})` },
+          { id: 'payouts', label: 'Payout Settings (Route)' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -326,7 +355,16 @@ export default function ProfilePage() {
           {/* TAB 2: SELLING HISTORY */}
           {activeTab === 'selling' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-forest">Selling History</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="text-lg font-bold text-forest">Selling History</h3>
+                <Link
+                  to="/my-listings"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-forest text-warm-white text-xs font-bold hover:bg-forest-light transition-all w-fit cursor-pointer"
+                >
+                  <Tag className="w-3.5 h-3.5 text-amber" />
+                  <span>Go to My Listings Manager &rarr;</span>
+                </Link>
+              </div>
               {sellingHistory.length === 0 ? (
                 <div className="p-10 rounded-2xl border border-dashed border-sage/50 text-center text-charcoal-muted text-sm bg-warm-white-paper">
                   No items listed during this period.
@@ -434,6 +472,96 @@ export default function ProfilePage() {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 4: PAYOUT SETTINGS (Module 16) */}
+          {activeTab === 'payouts' && (
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-warm-white-paper border-2 border-forest/30 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-sage/40">
+                  <div>
+                    <h3 className="text-lg font-black text-forest flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-amber" />
+                      Razorpay Route Seller Payout Account
+                    </h3>
+                    <p className="text-xs text-charcoal/75 mt-0.5">
+                      Receive split payments directly to your linked account with automatic escrow hold until physical campus handover.
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                    {payoutStatus === 'active' ? (
+                      <span className="bg-forest-50 text-forest border border-forest/30 px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+                        Payout Status: Active
+                      </span>
+                    ) : (
+                      <span className="bg-amber-50 text-amber-hover border border-amber/40 px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-amber" />
+                        Payout Status: {payoutStatus.replace('_', ' ').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {payoutSuccess && (
+                  <div className="p-3.5 rounded-xl bg-sage-50 border border-sage text-forest text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-forest shrink-0" />
+                    <span>{payoutSuccess}</span>
+                  </div>
+                )}
+
+                {payoutError && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{payoutError}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 rounded-xl bg-warm-white border border-sage/60 space-y-2">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-amber" />
+                      How Route Escrow Works
+                    </h4>
+                    <ul className="text-xs text-charcoal/80 space-y-1.5 list-disc pl-4">
+                      <li>Buyer pays online when you approve their winning bid.</li>
+                      <li>Payment is placed on hold in campus escrow.</li>
+                      <li>You meet on campus for in-person item inspection.</li>
+                      <li>When you enter the buyer's secret 6-digit code, the transfer is automatically released to your bank!</li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-warm-white border border-sage/60 space-y-3">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+                      <Zap className="w-4 h-4 text-amber" />
+                      Test Mode Activation
+                    </h4>
+                    <p className="text-xs text-charcoal/70">
+                      In development / test mode, you can activate your test seller linked account with 1-click without providing real bank details.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDevActivatePayout}
+                      disabled={activatingPayout || payoutStatus === 'active'}
+                      className={`w-full py-2.5 px-4 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        payoutStatus === 'active'
+                          ? 'bg-sage-50 text-forest border border-sage/60 cursor-default'
+                          : 'bg-amber hover:bg-amber-hover text-forest shadow-xs active:scale-95'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>
+                        {activatingPayout
+                          ? 'Activating...'
+                          : payoutStatus === 'active'
+                          ? 'Linked Account Active'
+                          : '1-Click Dev Activate Payout'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </>

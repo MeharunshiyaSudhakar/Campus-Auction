@@ -27,8 +27,17 @@ const dealSchema = new mongoose.Schema(
     },
     chosenMethod: {
       type: String,
-      enum: ['upi', 'direct_upi', 'cash_on_pickup', 'other', 'pending_selection'],
+      enum: ['online', 'upi', 'direct_upi', 'cash_on_pickup', 'other', 'pending_selection'],
       default: 'pending_selection',
+    },
+    payment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Payment',
+      default: null,
+    },
+    paymentWindowExpiresAt: {
+      type: Date,
+      default: null,
     },
     fulfilment: {
       type: String,

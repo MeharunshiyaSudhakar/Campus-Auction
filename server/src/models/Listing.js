@@ -43,7 +43,7 @@ const listingSchema = new mongoose.Schema(
     },
     acceptedPaymentMethods: {
       type: [String],
-      enum: ['upi', 'direct_upi', 'cash_on_pickup', 'other'],
+      enum: ['online', 'upi', 'direct_upi', 'cash_on_pickup', 'other'],
       default: ['upi', 'cash_on_pickup'],
       validate: {
         validator: function (val) {

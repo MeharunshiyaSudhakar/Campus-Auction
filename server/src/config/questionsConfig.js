@@ -11,10 +11,16 @@ const COMMON_PRE_QUESTIONS = [
     type: 'select',
     required: true,
     options: [
+      { value: 'vehicles', label: 'Vehicles (Cycle, Scooter, etc.)' },
+      { value: 'stationery', label: 'Stationery (Calculators, Drafting tools, etc.)' },
+      { value: 'books', label: 'Books & Course Notes' },
+      { value: 'electronics', label: 'Electronics & Lab Gear' },
+      { value: 'furniture', label: 'Furniture (Study table, Chair, etc.)' },
+      { value: 'clothing', label: 'Clothing & Uniforms' },
+      { value: 'sports', label: 'Sports & Fitness Equipment' },
+      { value: 'other', label: 'Other Campus Items' },
       { value: 'cycle', label: 'Cycle' },
       { value: 'calculator', label: 'Calculator' },
-      { value: 'books', label: 'Books & Notes' },
-      { value: 'electronics', label: 'Electronics & Lab Gear' },
     ],
   },
   {
@@ -259,11 +265,23 @@ const COMMON_POST_QUESTIONS = [
   },
 ];
 
+CATEGORY_SPECIFIC_QUESTIONS.vehicles = CATEGORY_SPECIFIC_QUESTIONS.cycle;
+CATEGORY_SPECIFIC_QUESTIONS.stationery = CATEGORY_SPECIFIC_QUESTIONS.calculator;
+
 /**
  * Returns complete list of questions for a chosen category
  */
-const getQuestionsForCategory = (category = 'cycle') => {
-  const specific = CATEGORY_SPECIFIC_QUESTIONS[category] || CATEGORY_SPECIFIC_QUESTIONS.cycle;
+const getQuestionsForCategory = (category = 'vehicles') => {
+  let specific = CATEGORY_SPECIFIC_QUESTIONS[category];
+  if (!specific) {
+    if (category === 'cycle' || category === 'vehicles') {
+      specific = CATEGORY_SPECIFIC_QUESTIONS.cycle;
+    } else if (category === 'calculator' || category === 'stationery') {
+      specific = CATEGORY_SPECIFIC_QUESTIONS.calculator;
+    } else {
+      specific = [];
+    }
+  }
   return [...COMMON_PRE_QUESTIONS, ...specific, ...COMMON_POST_QUESTIONS];
 };
 

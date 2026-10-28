@@ -25,6 +25,8 @@ const bidRoutes = require('./routes/bidRoutes');
 const dealRoutes = require('./routes/dealRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const qaRoutes = require('./routes/qaRoutes');
+const assistantRoutes = require('./routes/assistantRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 // Schedulers
 const { startUnsoldAlertScheduler } = require('./services/unsoldAlertScheduler');
@@ -81,6 +83,8 @@ app.use('/api/bids', bidRoutes);
 app.use('/api/deals', dealRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/qa', qaRoutes);
+app.use('/api/assistant', assistantRoutes);
+app.use('/api', paymentRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

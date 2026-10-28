@@ -39,6 +39,16 @@ const userSchema = new mongoose.Schema(
       select: false, // Private
       index: true,
     },
+    payoutStatus: {
+      type: String,
+      enum: ['not_started', 'pending', 'active', 'rejected'],
+      default: 'not_started',
+    },
+    linkedAccountId: {
+      type: String,
+      default: null,
+      select: false, // Hidden for privacy
+    },
   },
   {
     timestamps: true,

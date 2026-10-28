@@ -373,6 +373,10 @@ class DealService {
    * - For courier: Buyer confirms "received"
    * Updates Listing to 'completed' and feeds profile totals
    */
+  static async confirmHandover(dealId, userId, handoverCode) {
+    return this.confirmCompleted(dealId, userId, { handoverCode });
+  }
+
   static async confirmCompleted(dealId, userId, { handoverCode } = {}) {
     const deal = await Deal.findById(dealId);
     if (!deal) {
@@ -426,6 +430,14 @@ class DealService {
       finalPrice: deal.amount,
     });
 
+    // If online split payment was held in escrow, release transfer to seller's account
+    try {
+      const PaymentService = require('./paymentService');
+      await PaymentService.releaseTransfer(deal._id);
+    } catch (e) {
+      console.warn('[DealService] Release transfer notice:', e.message);
+    }
+
     return deal;
   }
 
@@ -475,6 +487,12 @@ class DealService {
     await Listing.findByIdAndUpdate(deal.listing, {
       status: outcome === 'rejected' ? 'rejected' : 'cancelled',
     });
+
+    // If online payment exists, initiate refund
+    try {
+      const PaymentService = require('./paymentService');
+      await PaymentService.refundPayment(deal._id, reason || outcome);
+    } catch (e) {}
 
     return deal;
   }

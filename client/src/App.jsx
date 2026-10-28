@@ -13,6 +13,7 @@ import BrowsePage from './pages/BrowsePage';
 import AuctionDetailPage from './pages/AuctionDetailPage';
 import DealTrackerPage from './pages/DealTrackerPage';
 import NotificationsPage from './pages/NotificationsPage';
+import AiChatbotWidget from './components/AiChatbotWidget';
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
               <span className="text-forest font-semibold">MERN Stack &bull; Socket.io Anti-Sniping &bull; 100% Honest Disclosure</span>
             </div>
           </footer>
+          <AiChatbotWidget />
         </div>
       </Router>
     </AuthProvider>

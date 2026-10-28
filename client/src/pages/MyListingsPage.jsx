@@ -195,8 +195,11 @@ export default function MyListingsPage() {
               {/* Photo & Status Overlay */}
               <div className="relative aspect-video bg-warm-white-muted">
                 <img
-                  src={item.photos[0]}
+                  src={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://placehold.co/600x400/1F4D3A/FAF7F0?text=Campus+Auction'}
                   alt={item.title}
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://placehold.co/600x400/1F4D3A/FAF7F0?text=Campus+Auction';
+                  }}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 left-3">

@@ -8,22 +8,9 @@ import {
   Sparkles,
   Clock,
   ArrowUpDown,
-  Tag,
   ShieldCheck,
   IndianRupee,
 } from 'lucide-react';
-
-const CATEGORIES = [
-  { id: 'all', label: 'All Items', icon: '🏷️' },
-  { id: 'vehicles', label: 'Vehicles', icon: '🚗' },
-  { id: 'stationery', label: 'Stationery', icon: '✏️' },
-  { id: 'books', label: 'Books', icon: '📚' },
-  { id: 'electronics', label: 'Electronics', icon: '💻' },
-  { id: 'furniture', label: 'Furniture', icon: '🪑' },
-  { id: 'clothing', label: 'Clothing', icon: '👕' },
-  { id: 'sports', label: 'Sports', icon: '⚽' },
-  { id: 'other', label: 'Other', icon: '📦' },
-];
 
 const CONDITIONS = [
   { id: 'all', label: 'All Grades' },
@@ -127,38 +114,7 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* 2. Category Selector */}
-      <div className="space-y-2.5">
-        <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5 text-amber" />
-          <span>Category</span>
-        </label>
-        <div className="flex flex-col gap-1.5">
-          {CATEGORIES.map((cat) => {
-            const isSelected = (!filters.category && cat.id === 'all') || filters.category === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => onFilterChange('category', cat.id)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
-                  isSelected
-                    ? 'bg-forest text-warm-white shadow-xs font-black'
-                    : 'bg-warm-white text-charcoal hover:bg-sage/20 border border-sage/40'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span>{cat.icon}</span>
-                  <span>{cat.label}</span>
-                </span>
-                {isSelected && <span className="w-2 h-2 rounded-full bg-amber"></span>}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. Mandatory Condition Grade Filter */}
+      {/* 2. Mandatory Condition Grade Filter */}
       <div className="space-y-2.5">
         <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-amber" />

@@ -114,11 +114,16 @@ class ListingService {
       filter.status = 'active';
     }
 
-    // Category filter: support single or comma-separated list
+    // Category filter: support single or comma-separated list with bidirectional synonym expansion
     if (query.category && query.category !== 'all') {
-      const categories = query.category.split(',').map((c) => c.trim()).filter(Boolean);
-      if (categories.length > 0) {
-        filter.category = { $in: categories };
+      const rawCategories = query.category.split(',').map((c) => c.trim().toLowerCase()).filter(Boolean);
+      const expanded = new Set(rawCategories);
+      if (expanded.has('vehicles')) expanded.add('cycle');
+      if (expanded.has('cycle')) expanded.add('vehicles');
+      if (expanded.has('stationery')) expanded.add('calculator');
+      if (expanded.has('calculator')) expanded.add('stationery');
+      if (expanded.size > 0) {
+        filter.category = { $in: Array.from(expanded) };
       }
     }
 
@@ -261,7 +266,9 @@ class ListingService {
    * Get all listings created by a specific seller
    */
   static async getMyListings(sellerId) {
-    const listings = await Listing.find({ seller: sellerId })
+    const mongoose = require('mongoose');
+    const sId = mongoose.Types.ObjectId.isValid(sellerId) ? new mongoose.Types.ObjectId(sellerId) : sellerId;
+    const listings = await Listing.find({ seller: sId })
       .populate('leadingBidder', 'name')
       .sort({ createdAt: -1 });
 

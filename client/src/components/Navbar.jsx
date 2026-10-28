@@ -86,6 +86,20 @@ export default function Navbar() {
             <span>Live Auctions</span>
           </Link>
 
+          {user && (
+            <Link
+              to="/my-listings"
+              className={`transition-colors py-1 flex items-center gap-1.5 ${
+                isActive('/my-listings')
+                  ? 'text-amber font-extrabold border-b-2 border-amber'
+                  : 'text-warm-white/90 hover:text-amber'
+              }`}
+            >
+              <Tag className="w-4 h-4 text-amber" />
+              <span>My Listings</span>
+            </Link>
+          )}
+
           <Link
             to="/sell"
             className={`transition-colors py-1 flex items-center gap-1.5 ${

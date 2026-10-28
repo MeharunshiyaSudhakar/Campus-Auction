@@ -21,6 +21,7 @@ import {
   Lock,
   ChevronRight,
   User,
+  CreditCard,
 } from 'lucide-react';
 
 export default function DealTrackerPage() {
@@ -159,6 +160,71 @@ export default function DealTrackerPage() {
       fetchDeal();
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to submit selection');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // 1b. Buyer pays via Razorpay Route
+  const handleRazorpayPay = async () => {
+    setActionLoading(true);
+    setActionError(null);
+
+    try {
+      const orderRes = await api.post('/payments/order', { dealId: deal._id });
+      const orderData = orderRes.data?.data;
+
+      if (!orderData) throw new Error('Failed to create payment order');
+
+      if (window.Razorpay) {
+        const options = {
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency || 'INR',
+          name: 'Campus Auction',
+          description: `Payment for ${deal.listing?.title}`,
+          order_id: orderData.orderId,
+          handler: async (response) => {
+            try {
+              await api.post('/payments/verify', {
+                dealId: deal._id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              setActionSuccess('Payment completed and held safely in escrow! Ready for pickup.');
+              fetchDeal();
+            } catch (vErr) {
+              setActionError(vErr.response?.data?.message || 'Payment signature verification failed');
+            }
+          },
+          prefill: {
+            name: user?.name,
+            email: user?.email,
+          },
+          theme: {
+            color: '#1F4D3A',
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (resp) {
+          setActionError(`Payment failed: ${resp.error?.description || 'Payment rejected'}`);
+        });
+        rzp.open();
+      } else {
+        // Test mode fallback simulation
+        await api.post('/payments/verify', {
+          dealId: deal._id,
+          razorpayOrderId: orderData.orderId,
+          razorpayPaymentId: `pay_test_${Date.now()}`,
+          razorpaySignature: 'mock_signature',
+        });
+        setActionSuccess('Payment verified (Test Mode) and held safely in escrow until handover!');
+        fetchDeal();
+      }
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Failed to initiate online payment');
     } finally {
       setActionLoading(false);
     }
@@ -327,6 +393,7 @@ export default function DealTrackerPage() {
                     onChange={(e) => setChosenMethod(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-forest text-xs font-bold focus:outline-none focus:border-forest"
                   >
+                    <option value="online">Online via Razorpay Route (Held in Escrow)</option>
                     <option value="upi">Direct UPI (GPay / PhonePe / Paytm)</option>
                     <option value="cash_on_pickup">Cash on Campus Pickup</option>
                     <option value="other">Other Instructions</option>
@@ -450,6 +517,43 @@ export default function DealTrackerPage() {
                 className="w-full py-3 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-xs shadow-md shadow-amber/25 transition-all"
               >
                 {actionLoading ? 'Updating...' : 'I Have Paid via UPI (Notify Seller)'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Step B2: Razorpay Online Payment Card */}
+        {deal.chosenMethod === 'online' && ['details_shared', 'payment_pending', 'approved'].includes(deal.status) && (
+          <div className="p-5 rounded-2xl bg-forest-50/70 border-2 border-forest/40 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4 text-amber" />
+                Online Payment via Razorpay Route (Test Mode)
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-forest bg-amber px-2.5 py-0.5 rounded-full">
+                Escrow Held
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-warm-white border border-sage/60 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-charcoal/80 font-medium">Approved Final Price</span>
+                <span className="text-xl font-black text-forest">₹{deal.amount}</span>
+              </div>
+              <p className="text-xs text-charcoal/70 leading-relaxed">
+                Protected by campus escrow. Your payment is held on hold and transferred to the seller only when you share and verify your 6-digit handover code during physical pickup.
+              </p>
+            </div>
+
+            {isBuyer && (
+              <button
+                type="button"
+                onClick={handleRazorpayPay}
+                disabled={actionLoading}
+                className="w-full py-3.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-xs sm:text-sm shadow-md shadow-amber/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4 text-forest" />
+                <span>{actionLoading ? 'Connecting to Gateway...' : `Pay ₹${deal.amount} via Razorpay`}</span>
               </button>
             )}
           </div>
