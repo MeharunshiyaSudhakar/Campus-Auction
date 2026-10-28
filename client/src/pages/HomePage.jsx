@@ -151,7 +151,7 @@ export default function HomePage() {
             </div>
             <h3 className="text-lg font-bold text-charcoal">Anti-Sniping Clock</h3>
             <p className="text-sm text-charcoal/80 leading-relaxed">
-              Bids in the last 30 seconds automatically extend the auction clock by 60 seconds. Everyone gets a fair chance to place their best bid.
+              A valid bid placed in the final 30 seconds moves the closing time to 60 seconds after that bid. Everyone gets a fair chance to place their best bid.
             </p>
           </div>
 

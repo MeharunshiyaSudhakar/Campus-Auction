@@ -46,7 +46,7 @@ export default function AiChatbotWidget() {
     {
       role: 'assistant',
       content:
-        "👋 **Hi! I'm your Campus Auction AI Assistant.**\n\nI'm powered by Groq to help you with:\n- 🎯 **Bidding strategies** & ceiling prices\n- ⏱️ **Anti-sniping 30s timer extensions**\n- 📧 **Instant email & in-app notifications**\n- 🤝 **6-digit handover verification codes**\n\nHow can I help you today?",
+        "👋 **Hi! I'm your Campus Auction AI Assistant.**\n\nI'm powered by Groq to help you with:\n- 🎯 **Bidding strategies** & ceiling prices\n- ⏱️ **Anti-sniping protection** (bid in final 30s sets closing to +60s)\n- 📧 **Instant email & in-app notifications**\n- 🤝 **6-digit handover verification codes**\n\nHow can I help you today?",
       source: 'groq',
     },
   ]);
@@ -107,7 +107,7 @@ export default function AiChatbotWidget() {
         {
           role: 'assistant',
           content:
-            "⚠️ I had trouble connecting to the AI service. Don't worry! Here are quick key facts:\n- **Anti-sniping**: Bids in final 30s add 30s more.\n- **Email alerts**: Outbid notices and deal approvals are sent immediately to your email.\n- **Handover code**: Secret 6-digit code protects your campus item pickup.",
+            "⚠️ I had trouble connecting to the AI service. Don't worry! Here are quick key facts:\n- **Anti-sniping**: A valid bid in the final 30s moves closing time to 60s after that bid.\n- **Email alerts**: Outbid notices and deal approvals are sent immediately to your email.\n- **Handover code**: Secret 6-digit code protects your campus item pickup.",
           source: 'fallback',
         },
       ]);

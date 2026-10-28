@@ -28,8 +28,8 @@ Your job is to assist students with:
    - Understanding minimum bid increments (usually ₹10 to ₹50).
    - Carefully checking the seller's condition grade (New, Like new, Good, Fair, Poor) and reading the defect disclosures before placing bids.
 2. Anti-Sniping Protection:
-   - Explain that if a student places a bid within the final 30 seconds of an auction, the server automatically extends the timer by 30 seconds.
-   - This ensures all genuine student bidders have time to respond and prevents unfair last-second sniping.
+   - Explain that a valid bid placed in the final 30 seconds moves the closing time to 60 seconds after that bid.
+   - This ensures all genuine student bidders have a full minute to respond and prevents unfair last-second bot sniping.
 3. Email & In-App Notifications:
    - When outbid: Students receive instant in-app alerts and notifications to their campus email address so they never lose an item by surprise.
    - Closing soon: Reminders sent as auctions enter their final hours.
@@ -127,11 +127,11 @@ Your job is to assist students with:
     const lower = message.toLowerCase();
 
     if (lower.includes('anti-snip') || lower.includes('timer') || lower.includes('extend')) {
-      return `⏱️ **Anti-Sniping Protection on Campus Auction**\n\n- If any student places a bid within the **final 30 seconds** of an auction, the countdown timer **automatically extends by 30 seconds**.\n- This gives all interested bidders a fair chance to place a counter-bid and completely stops last-second bot sniping.\n- The auction closes only when 30 seconds pass without any new bids placed!`;
+      return `⏱️ **Anti-Sniping Protection on Campus Auction**\n\n- A valid bid placed in the **final 30 seconds** moves the closing time to **60 seconds after that bid**.\n- This gives all interested bidders a full minute to consider and place a counter-bid, completely stopping last-second bot sniping.\n- If another bid comes in during those 60 seconds (once under 30s remaining), the timer resets again to 60 seconds after that new bid!`;
     }
 
     if (lower.includes('strategy') || lower.includes('bidding') || lower.includes('bid') || lower.includes('win')) {
-      return `🎯 **Smart Bidding Strategies for Campus Auctions**\n\n1. **Inspect Before Bidding**: Read the senior's 100% honesty disclosure, condition grade, and check the defect photos.\n2. **Set a Ceiling Budget**: Decide your maximum willingness to pay early so you don't overbid emotionally.\n3. **Watch the Increments**: Each bid increases by at least the minimum increment (e.g. ₹10 or ₹20).\n4. **Stay Alert for Anti-Sniping**: Bids in the last 30s add 30s more, so keep your tab open until the hammer drops!\n5. **Check Your Email**: You'll receive instant email notifications if another junior outbids you.`;
+      return `🎯 **Smart Bidding Strategies for Campus Auctions**\n\n1. **Inspect Before Bidding**: Read the senior's 100% honesty disclosure, condition grade, and check the defect photos.\n2. **Set a Ceiling Budget**: Decide your maximum willingness to pay early so you don't overbid emotionally.\n3. **Watch the Increments**: Each bid increases by at least the minimum increment (e.g. ₹10 or ₹20).\n4. **Stay Alert for Anti-Sniping**: A valid bid placed in the final 30 seconds moves the closing time to 60 seconds after that bid, giving everyone a fair chance to react!\n5. **Check Your Email**: You'll receive instant email notifications if another junior outbids you.`;
     }
 
     if (lower.includes('notification') || lower.includes('mail') || lower.includes('email') || lower.includes('alert')) {
