@@ -339,119 +339,188 @@ class SellService {
    */
   static async publishDraft(sellerId, draftId, options = {}) {
     const draft = await this.getDraft(sellerId, draftId);
-    const answers = draft.answers || {};
+    const draftAnswers = draft.answers || {};
 
     // 1. Honesty declaration validation
-    if (options.honestyDeclaration !== true) {
+    if (options.honestyDeclaration !== true && draftAnswers.honestyDeclaration !== true) {
       const error = new Error('You must check the seller honesty declaration before publishing');
       error.statusCode = 400;
       throw error;
     }
 
-    // 2. Validate all mandatory fields
-    const requiredKeys = ['title', 'category', 'conditionGrade', 'ageOfItem', 'workingStatus', 'photos', 'startingPrice', 'closingTime'];
-    for (const key of requiredKeys) {
-      if (!answers[key]) {
-        const error = new Error(`Missing mandatory field: ${key}`);
-        error.statusCode = 400;
-        throw error;
-      }
-    }
+    // Merge: client-supplied reviewed values override draft answers; client-supplied seller or status are strictly ignored
+    const title = (options.title !== undefined ? options.title : draftAnswers.title || '').trim();
+    const rawCategory = options.category || draftAnswers.category || draft.category;
+    const category = validateCategory(rawCategory);
+    const itemType = (options.itemType || draftAnswers.itemType || draftAnswers.itemSubtype || (category === 'vehicles' ? 'cycle' : category)).trim();
+    const brand = (options.brand !== undefined ? options.brand : draftAnswers.brand || '').trim();
 
-    if (['Fair', 'Poor'].includes(answers.conditionGrade)) {
-      if (!answers.defects || answers.defects.trim().length < 8) {
+    // Condition fields
+    const conditionGrade = options.conditionGrade || options.condition?.grade || draftAnswers.conditionGrade;
+    const ageOfItem = options.ageOfItem || options.condition?.age || draftAnswers.ageOfItem;
+    const workingStatus = options.workingStatus || options.condition?.workingStatus || draftAnswers.workingStatus;
+    const defects = options.defects !== undefined
+      ? options.defects
+      : (options.condition?.defects !== undefined ? options.condition.defects : draftAnswers.defects);
+    const accessories = options.accessories !== undefined
+      ? options.accessories
+      : (options.condition?.accessories !== undefined ? options.condition.accessories : draftAnswers.accessories);
+
+    // Photos
+    const photos = Array.isArray(options.photos) && options.photos.length > 0
+      ? options.photos
+      : (Array.isArray(options.photoUrls) && options.photoUrls.length > 0 ? options.photoUrls : draftAnswers.photos);
+
+    // Pricing & Timing
+    const startingPrice = options.startingPrice !== undefined ? Number(options.startingPrice) : Number(draftAnswers.startingPrice);
+    const minIncrement = options.minIncrement !== undefined ? Number(options.minIncrement) : (Number(draftAnswers.minIncrement) || 10);
+    const closingTime = options.closingTime || draftAnswers.closingTime;
+
+    // Payment methods & Fulfilment
+    const acceptedPaymentMethods = Array.isArray(options.acceptedPaymentMethods) && options.acceptedPaymentMethods.length > 0
+      ? options.acceptedPaymentMethods
+      : (Array.isArray(options.paymentMethods) && options.paymentMethods.length > 0
+          ? options.paymentMethods
+          : (Array.isArray(draftAnswers.acceptedPaymentMethods) && draftAnswers.acceptedPaymentMethods.length > 0
+              ? draftAnswers.acceptedPaymentMethods
+              : ['upi', 'cash_on_pickup']));
+
+    const fulfilment = Array.isArray(options.fulfilment) && options.fulfilment.length > 0
+      ? options.fulfilment
+      : (Array.isArray(options.fulfilmentOptions) && options.fulfilmentOptions.length > 0
+          ? options.fulfilmentOptions
+          : (Array.isArray(draftAnswers.fulfilment) && draftAnswers.fulfilment.length > 0
+              ? draftAnswers.fulfilment
+              : ['campus_pickup']));
+
+    // Description precedence: seller-edited final text -> AI rephrase -> seller notes
+    const finalDescription = (
+      options.finalDescription ||
+      options.description ||
+      draft.aiReview?.rephrasedDescription ||
+      draftAnswers.sellerDescription ||
+      ''
+    ).trim();
+
+    // 2. Validate all mandatory fields
+    if (!title || title.length < 3) {
+      const error = new Error('Missing mandatory field: title (must be at least 3 characters)');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!category) {
+      const error = new Error('Missing mandatory field: category');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!conditionGrade) {
+      const error = new Error('Missing mandatory field: conditionGrade');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!ageOfItem) {
+      const error = new Error('Missing mandatory field: ageOfItem');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!workingStatus) {
+      const error = new Error('Missing mandatory field: workingStatus');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (['Fair', 'Poor'].includes(conditionGrade)) {
+      if (!defects || String(defects).trim().length < 8) {
         const error = new Error('Known defects description (min 8 chars) is mandatory for Fair or Poor items');
         error.statusCode = 400;
         throw error;
       }
     }
-
-    if (!Array.isArray(answers.photos) || answers.photos.length < 2) {
+    if (!Array.isArray(photos) || photos.length < 2) {
       const error = new Error('A minimum of 2 photos is required to publish');
       error.statusCode = 400;
       throw error;
     }
-
-    const closeDate = new Date(answers.closingTime);
+    if (isNaN(startingPrice) || startingPrice < 1) {
+      const error = new Error('Starting price must be a positive number (minimum ₹1)');
+      error.statusCode = 400;
+      throw error;
+    }
+    const closeDate = new Date(closingTime);
     if (isNaN(closeDate.getTime()) || closeDate <= new Date()) {
       const error = new Error('Closing time must be set in the future');
       error.statusCode = 400;
       throw error;
     }
+    if (!finalDescription) {
+      const error = new Error('Description is required');
+      error.statusCode = 400;
+      throw error;
+    }
 
     // 3. Assemble categoryDetails from all category-specific answers
-    const normalizedCategory = validateCategory(answers.category || draft.category);
+    const mergedAnswers = { ...draftAnswers, ...options };
     const categoryDetails = {};
-    for (const [k, v] of Object.entries(answers)) {
+    for (const [k, v] of Object.entries(mergedAnswers)) {
       if (k.includes('_')) {
         categoryDetails[k] = v;
       }
     }
     // Backward-compatible structured subdocuments
     categoryDetails.cycle = {
-      geared: answers.cycle_gears === 'Geared (Multi-speed)' || (answers.vehicles_gears && answers.vehicles_gears.includes('Multi-speed')),
-      brakes: answers.cycle_brakes || answers.vehicles_brakes || 'N/A',
-      tyres: answers.cycle_tyres || answers.vehicles_tyres || 'N/A',
-      lastServiced: answers.cycle_lastServiced || answers.vehicles_lastServiced || '',
+      geared: mergedAnswers.cycle_gears === 'Geared (Multi-speed)' || (mergedAnswers.vehicles_gears && mergedAnswers.vehicles_gears.includes('Multi-speed')),
+      brakes: mergedAnswers.cycle_brakes || mergedAnswers.vehicles_brakes || 'N/A',
+      tyres: mergedAnswers.cycle_tyres || mergedAnswers.vehicles_tyres || 'N/A',
+      lastServiced: mergedAnswers.cycle_lastServiced || mergedAnswers.vehicles_lastServiced || '',
     };
     categoryDetails.calculator = {
-      modelType: answers.calculator_model || answers.stationery_model || 'Scientific',
-      display: answers.calculator_display || answers.stationery_displayBattery || 'N/A',
-      battery: answers.calculator_battery || answers.stationery_displayBattery || 'N/A',
+      modelType: mergedAnswers.calculator_model || mergedAnswers.stationery_model || 'Scientific',
+      display: mergedAnswers.calculator_display || mergedAnswers.stationery_displayBattery || 'N/A',
+      battery: mergedAnswers.calculator_battery || mergedAnswers.stationery_displayBattery || 'N/A',
     };
     categoryDetails.books = {
-      edition: answers.books_edition || '',
-      markedPages: answers.books_markedPages || 'Clean / No marks',
-      binding: answers.books_missingPages || 'Intact / Tight',
+      edition: mergedAnswers.books_edition || '',
+      markedPages: mergedAnswers.books_markedPages || 'Clean / No marks',
+      binding: mergedAnswers.books_missingPages || 'Intact / Tight',
     };
     categoryDetails.electronics = {
-      batteryHealth: answers.electronics_batteryHealth || 'Standard',
-      chargerIncluded: answers.electronics_charger === 'Original charger included',
-      screenCondition: answers.conditionGrade,
-      portsFunctional: answers.workingStatus === 'Fully functional',
+      batteryHealth: mergedAnswers.electronics_batteryHealth || 'Standard',
+      chargerIncluded: mergedAnswers.electronics_charger === 'Original charger included',
+      screenCondition: conditionGrade,
+      portsFunctional: workingStatus === 'Fully functional',
     };
 
-    // Description precedence: seller-edited final text -> AI rephrase -> seller notes
-    const finalDescription = (options.finalDescription || draft.aiReview?.rephrasedDescription || answers.sellerDescription || '').trim();
-    const itemType = (answers.itemType || answers.itemSubtype || (normalizedCategory === 'vehicles' ? 'cycle' : normalizedCategory)).trim();
-    const brand = (answers.brand || '').trim();
-    const acceptedPaymentMethods = Array.isArray(answers.acceptedPaymentMethods) && answers.acceptedPaymentMethods.length > 0
-      ? answers.acceptedPaymentMethods
-      : ['upi', 'cash_on_pickup'];
-    const fulfilment = Array.isArray(answers.fulfilment) && answers.fulfilment.length > 0
-      ? answers.fulfilment
-      : ['campus_pickup'];
-
-    // 4. Create the official Listing
+    // 4. Create official Listing ignoring client-supplied seller or status
     const listing = await Listing.create({
-      seller: sellerId,
-      title: answers.title.trim(),
-      category: normalizedCategory,
+      seller: sellerId, // Strictly enforced from verified JWT token
+      title,
+      category,
       itemType,
       brand,
       itemSubtype: itemType,
       description: finalDescription,
-      photos: answers.photos,
-      photoThumbnails: Array.isArray(draft.answers?.photoThumbnails) && draft.answers.photoThumbnails.length === answers.photos.length
+      photos,
+      photoThumbnails: Array.isArray(draft.answers?.photoThumbnails) && draft.answers.photoThumbnails.length === photos.length
         ? draft.answers.photoThumbnails
-        : answers.photos.map((p) => (p.includes('-thumb.') ? p : p.replace(/\.webp$/, '-thumb.webp'))),
-      defectPhotoIncluded: !!answers.defectPhotoIncluded,
+        : photos.map((p) => (p.includes('-thumb.') ? p : p.replace(/\.webp$/, '-thumb.webp'))),
+      defectPhotoIncluded: !!mergedAnswers.defectPhotoIncluded,
       condition: {
-        grade: answers.conditionGrade,
-        age: answers.ageOfItem,
-        workingStatus: answers.workingStatus,
-        defects: answers.defects ? answers.defects.trim() : 'None reported',
-        accessories: answers.accessories ? answers.accessories.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        grade: conditionGrade,
+        age: ageOfItem,
+        workingStatus,
+        defects: defects ? String(defects).trim() : 'None reported',
+        accessories: typeof accessories === 'string'
+          ? accessories.split(',').map((s) => s.trim()).filter(Boolean)
+          : (Array.isArray(accessories) ? accessories : []),
         categoryDetails,
       },
       acceptedPaymentMethods,
       fulfilment,
       honestyDeclaration: true,
-      startingPrice: Number(answers.startingPrice),
-      minIncrement: Number(answers.minIncrement) || 10,
-      currentPrice: Number(answers.startingPrice),
+      startingPrice,
+      minIncrement: minIncrement || 10,
+      currentPrice: startingPrice, // Strictly enforced initial state
       closingTime: closeDate,
-      status: 'active',
+      status: 'active', // Strictly enforced initial state
       bidCount: 0,
       leadingBid: null,
       leadingBidder: null,

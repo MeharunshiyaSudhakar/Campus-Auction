@@ -134,6 +134,10 @@ class SellController {
    */
   static async publishDraft(req, res, next) {
     try {
+      if (process.env.NODE_ENV !== 'production') {
+        const fieldNames = req.body && typeof req.body === 'object' ? Object.keys(req.body) : [];
+        console.log(`[Debug - Sell Publish] Received field names: [${fieldNames.join(', ')}]`);
+      }
       const listing = await SellService.publishDraft(req.user._id, req.params.id, req.body);
       return ApiResponse.success(res, listing, 'Auction published successfully!', 201);
     } catch (error) {

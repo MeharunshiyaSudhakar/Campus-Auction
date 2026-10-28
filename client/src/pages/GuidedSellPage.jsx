@@ -348,15 +348,39 @@ export default function GuidedSellPage() {
     setPublishing(true);
     setError('');
 
+    const payload = {
+      title: answers.title,
+      category: answers.category,
+      itemType: answers.itemType || answers.itemSubtype || answers.category,
+      brand: answers.brand || '',
+      conditionGrade: answers.conditionGrade,
+      ageOfItem: answers.ageOfItem,
+      workingStatus: answers.workingStatus,
+      defects: answers.defects || '',
+      accessories: answers.accessories || '',
+      finalDescription: finalDescription || reviewData?.rephrasedDescription || answers.sellerDescription || '',
+      acceptedSuggestions: acceptedSuggestions || [],
+      acceptedPaymentMethods: answers.acceptedPaymentMethods || ['upi_direct', 'cash_on_pickup'],
+      fulfilment: answers.fulfilment || ['campus_pickup'],
+      startingPrice: Number(answers.startingPrice),
+      minIncrement: Number(answers.minIncrement) || 10,
+      closingTime: answers.closingTime,
+      photos: photosList && photosList.length > 0 ? photosList : (answers.photos || []),
+      honestyDeclaration: true,
+      ...answers,
+    };
+
     try {
-      const res = await api.post(`/sell/drafts/${draftId}/publish`, {
-        honestyDeclaration: true,
-        finalDescription,
-      });
+      const res = await api.post(`/sell/drafts/${draftId}/publish`, payload);
 
       if (res.data?.success) {
         const listing = res.data.data;
-        navigate(`/listings/${listing._id}`);
+        navigate('/my-listings', {
+          state: {
+            newListingId: listing._id,
+            successMessage: 'Auction listing successfully published and live!'
+          }
+        });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to publish auction listing');
@@ -875,6 +899,14 @@ export default function GuidedSellPage() {
                 </div>
               </label>
             </div>
+
+            {/* Review Error Display */}
+            {error && (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-body flex items-start gap-2.5 animate-fadeIn">
+                <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <span className="font-semibold">{error}</span>
+              </div>
+            )}
 
             {/* Review Screen Actions */}
             <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/40">
