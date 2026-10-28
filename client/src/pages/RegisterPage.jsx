@@ -47,20 +47,20 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 sm:py-12 bg-warm-white">
-      <div className="max-w-md w-full bg-warm-white-paper rounded-2xl border border-sage/50 p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="max-w-md w-full bg-warm-white-paper rounded-2xl border-2 border-sage/60 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-forest-50 text-forest border border-forest/20 flex items-center justify-center mx-auto">
-            <UserPlus className="w-6 h-6 text-forest" />
+          <div className="w-12 h-12 rounded-xl bg-charcoal text-warm-white border border-charcoal flex items-center justify-center mx-auto shadow-xs">
+            <UserPlus className="w-6 h-6 text-amber" />
           </div>
-          <h1 className="text-2xl font-extrabold text-forest">Create Student Account</h1>
+          <h1 className="text-2xl font-extrabold text-charcoal">Create Student Account</h1>
           <p className="text-sm text-charcoal/70">
             Join the trusted peer-to-peer campus marketplace
           </p>
         </div>
 
         {/* Privacy by Design Banner */}
-        <div className="p-3.5 rounded-xl bg-forest-50 border border-forest/20 flex items-start gap-2.5 text-forest text-xs">
-          <Shield className="w-4 h-4 flex-shrink-0 text-forest mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-sage-50 border border-sage/60 flex items-start gap-2.5 text-charcoal text-xs">
+          <Shield className="w-4 h-4 flex-shrink-0 text-sage-dark mt-0.5" />
           <span>
             <strong>Privacy Guarantee:</strong> Only your name will be visible to buyers and sellers. Your email, phone, and roll number are strictly private.
           </span>
@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
               Full Name (Public Display) *
             </label>
             <input
@@ -85,12 +85,12 @@ export default function RegisterPage() {
               value={formData.name}
               onChange={handleChange}
               placeholder="e.g. Aarav Sharma"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
               College Email (Private) *
             </label>
             <input
@@ -100,12 +100,12 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={handleChange}
               placeholder="e.g. student@college.edu"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
               Password *
             </label>
             <input
@@ -116,13 +116,13 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Minimum 6 characters"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
                 Phone (Private)
               </label>
               <input
@@ -131,11 +131,11 @@ export default function RegisterPage() {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+91 98765 43210"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
                 Roll Number (Unique) *
               </label>
               <input
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                 value={formData.campusRollNumber}
                 onChange={handleChange}
                 placeholder="e.g. CS21B042"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal uppercase"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal uppercase"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-4 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-forest/50 text-white font-semibold text-sm transition-all shadow-sm active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-xl bg-charcoal hover:bg-charcoal-hover disabled:bg-charcoal/50 text-warm-white font-bold text-sm transition-all shadow-md active:scale-[0.99] border border-charcoal cursor-pointer"
           >
             {submitting ? 'Creating Account...' : 'Complete Registration'}
           </button>
@@ -161,7 +161,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-xs text-charcoal/70">
           Already registered?{' '}
-          <Link to="/login" className="font-bold text-forest hover:text-forest-light underline">
+          <Link to="/login" className="font-bold text-charcoal hover:underline">
             Sign in
           </Link>
         </p>

@@ -81,7 +81,7 @@ export default function HomePage() {
           <div className="flex flex-col xs:flex-row items-center justify-center gap-3 sm:gap-4 pt-2">
             <Link
               to="/browse"
-              className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-forest hover:bg-forest-light text-warm-white font-black shadow-md shadow-forest/20 transition-all text-sm active:scale-95 cursor-pointer"
+              className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black shadow-md shadow-charcoal/20 transition-all text-sm active:scale-95 cursor-pointer border border-charcoal"
             >
               <Search className="w-4 h-4 text-amber" />
               <span>Search & Browse Auctions</span>
@@ -90,31 +90,31 @@ export default function HomePage() {
             {user ? (
               <Link
                 to="/sell"
-                className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-sm shadow-md shadow-amber/25 transition-all active:scale-95 cursor-pointer"
+                className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-sage hover:bg-sage-dark text-charcoal font-black text-sm shadow-md shadow-sage/30 border border-sage-dark/30 transition-all active:scale-95 cursor-pointer"
               >
-                <PlusCircle className="w-4 h-4 text-forest" />
+                <PlusCircle className="w-4 h-4 text-charcoal" />
                 <span>Sell an Item</span>
               </Link>
             ) : (
               <Link
                 to="/register"
-                className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black shadow-md shadow-amber/25 transition-all text-sm active:scale-95 cursor-pointer"
+                className="w-full xs:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-sage hover:bg-sage-dark text-charcoal font-black shadow-md shadow-sage/30 border border-sage-dark/30 transition-all text-sm active:scale-95 cursor-pointer"
               >
                 <span>Join Campus Auction</span>
-                <ArrowRight className="w-4 h-4 text-forest" />
+                <ArrowRight className="w-4 h-4 text-charcoal" />
               </Link>
             )}
           </div>
         </div>
       </section>
 
-      {/* Core Principles Cards (Prominently displaying Forest, Sage, Warm-White, Amber) */}
+      {/* Core Principles Cards (Prominently displaying Charcoal, Sage Green, Half White, Amber) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="text-center max-w-xl mx-auto space-y-2">
-          <div className="inline-block px-3 py-1 rounded-full bg-sage-50 text-forest text-xs font-bold uppercase tracking-wider border border-sage">
+          <div className="inline-block px-3.5 py-1 rounded-full bg-sage-100 text-charcoal text-xs font-bold uppercase tracking-wider border border-sage">
             Fair & Transparent Marketplace
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-forest">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-charcoal">
             Why Campus Auction is Built Different
           </h2>
           <p className="text-sm text-charcoal-muted">
@@ -124,48 +124,48 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1: SAGE THEME (Structured Condition) */}
-          <div className="p-6 bg-warm-white-paper rounded-2xl border-2 border-sage shadow-sm hover:border-forest transition-all space-y-3">
+          <div className="p-6 bg-warm-white-paper rounded-2xl border-2 border-sage shadow-xs hover:border-charcoal transition-all space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-forest text-warm-white flex items-center justify-center font-bold shadow-xs">
-                <ShieldCheck className="w-6 h-6 text-amber" />
+              <div className="w-12 h-12 rounded-xl bg-charcoal text-warm-white flex items-center justify-center font-bold shadow-xs">
+                <ShieldCheck className="w-6 h-6 text-sage" />
               </div>
-              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-sage-50 text-forest border border-sage">
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-sage-100 text-charcoal border border-sage">
                 Condition Specs
               </span>
             </div>
-            <h3 className="text-lg font-bold text-forest">Mandatory Condition Form</h3>
+            <h3 className="text-lg font-bold text-charcoal">Mandatory Condition Form</h3>
             <p className="text-sm text-charcoal/80 leading-relaxed">
               No generic "like new" blurbs. Seniors disclose tyre tread, calculator display status, marked pages, battery life, and known defects.
             </p>
           </div>
 
           {/* Card 2: AMBER THEME (Anti-Sniping Clock) */}
-          <div className="p-6 bg-amber-50/60 rounded-2xl border-2 border-amber/50 shadow-sm hover:border-amber transition-all space-y-3">
+          <div className="p-6 bg-amber-50/70 rounded-2xl border-2 border-amber/60 shadow-xs hover:border-amber transition-all space-y-3">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-amber text-forest flex items-center justify-center font-black shadow-xs">
-                <Clock className="w-6 h-6 text-forest" />
+              <div className="w-12 h-12 rounded-xl bg-charcoal text-amber flex items-center justify-center font-black shadow-xs">
+                <Clock className="w-6 h-6 text-amber" />
               </div>
-              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber text-forest shadow-2xs">
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber text-charcoal shadow-2xs">
                 Anti-Sniping
               </span>
             </div>
-            <h3 className="text-lg font-bold text-forest">Anti-Sniping Clock</h3>
+            <h3 className="text-lg font-bold text-charcoal">Anti-Sniping Clock</h3>
             <p className="text-sm text-charcoal/80 leading-relaxed">
               Bids in the last 30 seconds automatically extend the auction clock by 60 seconds. Everyone gets a fair chance to place their best bid.
             </p>
           </div>
 
-          {/* Card 3: FOREST THEME (Safe Handover) */}
-          <div className="p-6 bg-forest-50/40 rounded-2xl border-2 border-forest/30 shadow-sm hover:border-forest transition-all space-y-3 sm:col-span-2 lg:col-span-1">
+          {/* Card 3: CHARCOAL & SAGE THEME (Safe Handover) */}
+          <div className="p-6 bg-sage-50 rounded-2xl border-2 border-sage shadow-xs hover:border-charcoal transition-all space-y-3 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-forest text-warm-white flex items-center justify-center font-bold shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-charcoal text-warm-white flex items-center justify-center font-bold shadow-xs">
                 <Gavel className="w-6 h-6 text-amber" />
               </div>
-              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-forest text-warm-white">
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-charcoal text-warm-white border border-charcoal">
                 Handover Code
               </span>
             </div>
-            <h3 className="text-lg font-bold text-forest">Safe Handover Code</h3>
+            <h3 className="text-lg font-bold text-charcoal">Safe Handover Code</h3>
             <p className="text-sm text-charcoal/80 leading-relaxed">
               Winning bids must be approved by the seller. A unique 6-digit campus handover code completes the sale in person upon item inspection.
             </p>
@@ -216,8 +216,8 @@ export default function HomePage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
                 selectedCategory === cat.id
-                  ? 'bg-forest text-warm-white border-forest shadow-xs font-black'
-                  : 'bg-warm-white text-forest hover:bg-sage/20 border-sage/50'
+                  ? 'bg-charcoal text-warm-white border-charcoal shadow-xs font-black'
+                  : 'bg-warm-white-paper text-charcoal hover:bg-sage-100 border-sage/60 font-semibold'
               }`}
             >
               <span>{cat.icon}</span>
@@ -243,13 +243,13 @@ export default function HomePage() {
           </div>
         ) : featuredListings.length === 0 ? (
           <div className="p-8 text-center rounded-2xl bg-warm-white-paper border-2 border-dashed border-sage/80 space-y-3">
-            <Package className="w-8 h-8 text-forest mx-auto opacity-60" />
-            <p className="text-sm font-bold text-forest">No active listings in this category yet.</p>
+            <Package className="w-8 h-8 text-charcoal mx-auto opacity-60" />
+            <p className="text-sm font-bold text-charcoal">No active listings in this category yet.</p>
             <Link
               to="/sell"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber text-forest font-black text-xs shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sage hover:bg-sage-dark text-charcoal font-black text-xs shadow-xs border border-sage-dark/30"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-forest" />
+              <PlusCircle className="w-3.5 h-3.5 text-charcoal" />
               <span>Be the first senior to list an item</span>
             </Link>
           </div>
@@ -264,7 +264,7 @@ export default function HomePage() {
 
       {/* Backend & Database Status Bar */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="p-4 rounded-2xl bg-forest text-warm-white border-2 border-amber/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-md">
+        <div className="p-4 rounded-2xl bg-charcoal text-warm-white border-2 border-sage flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-md">
           <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
             <span
               className={`w-3 h-3 rounded-full ${
@@ -279,7 +279,7 @@ export default function HomePage() {
               Backend Status: {serverStatus.toUpperCase()}
             </span>
             <span className="text-sage hidden xs:inline">|</span>
-            <span className="text-sage font-mono text-[11px]">
+            <span className="text-sage-light font-mono text-[11px]">
               MongoDB Compass: 127.0.0.1:27017/campus_auction
             </span>
           </div>

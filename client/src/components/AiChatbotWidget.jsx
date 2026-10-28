@@ -212,7 +212,7 @@ export default function AiChatbotWidget() {
           <button
             onClick={() => setIsOpen(true)}
             aria-label="Open Campus AI Assistant Chat"
-            className="group relative flex items-center gap-2.5 px-4 py-3 sm:px-5 sm:py-3.5 rounded-full bg-forest hover:bg-forest-light text-warm-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-amber/70 cursor-pointer"
+            className="group relative flex items-center gap-2.5 px-4 py-3 sm:px-5 sm:py-3.5 rounded-full bg-charcoal hover:bg-charcoal-hover text-warm-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-sage cursor-pointer"
           >
             {/* Glowing / Pulse Badge */}
             <span className="relative flex h-3 w-3">
@@ -237,28 +237,28 @@ export default function AiChatbotWidget() {
         <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 z-50 flex flex-col justify-end sm:justify-start pointer-events-none">
           {/* Backdrop on mobile */}
           <div
-            className="fixed inset-0 bg-forest/40 backdrop-blur-xs sm:hidden pointer-events-auto"
+            className="fixed inset-0 bg-charcoal/40 backdrop-blur-xs sm:hidden pointer-events-auto"
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="pointer-events-auto w-full sm:w-[410px] h-[85vh] sm:h-[580px] bg-warm-white rounded-t-3xl sm:rounded-2xl shadow-2xl border-2 border-forest/30 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+          <div className="pointer-events-auto w-full sm:w-[410px] h-[85vh] sm:h-[580px] bg-warm-white rounded-t-3xl sm:rounded-2xl shadow-2xl border-2 border-charcoal/30 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
             {/* Header */}
-            <div className="px-4 py-3.5 bg-forest text-warm-white flex items-center justify-between border-b border-amber/40 shrink-0">
+            <div className="px-4 py-3.5 bg-charcoal text-warm-white flex items-center justify-between border-b-2 border-sage shrink-0">
               <div className="flex items-center gap-3">
-                <div className="relative w-9 h-9 rounded-xl bg-forest-light border border-amber/50 flex items-center justify-center text-amber shadow-xs">
+                <div className="relative w-9 h-9 rounded-xl bg-charcoal-700 border border-sage/50 flex items-center justify-center text-amber shadow-xs">
                   <Bot className="w-5 h-5" />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-forest"></span>
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-charcoal"></span>
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-heading font-black text-sm text-warm-white">
                       Campus AI Assistant
                     </h3>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber text-forest font-black uppercase">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber text-charcoal font-black uppercase">
                       Groq
                     </span>
                   </div>
-                  <p className="text-[11px] text-sage-light font-body">
+                  <p className="text-[11px] text-sage-100 font-body">
                     Bidding strategies &bull; Notifications &bull; Rules
                   </p>
                 </div>
@@ -268,14 +268,14 @@ export default function AiChatbotWidget() {
                 <button
                   onClick={handleClearChat}
                   title="Clear conversation"
-                  className="p-1.5 text-sage-light hover:text-amber hover:bg-forest-light rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-sage-100 hover:text-amber hover:bg-charcoal-700 rounded-lg transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
                   title="Close chat"
-                  className="p-1.5 text-sage-light hover:text-warm-white hover:bg-forest-light rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-sage-100 hover:text-warm-white hover:bg-charcoal-700 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -295,8 +295,8 @@ export default function AiChatbotWidget() {
                     <div
                       className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs shrink-0 shadow-2xs font-bold ${
                         isUser
-                          ? 'bg-amber text-forest border border-amber-hover'
-                          : 'bg-forest text-amber border border-forest-light'
+                          ? 'bg-amber text-charcoal border border-amber-hover'
+                          : 'bg-charcoal text-amber border border-charcoal-700'
                       }`}
                     >
                       {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
@@ -306,7 +306,7 @@ export default function AiChatbotWidget() {
                     <div
                       className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-xs text-xs sm:text-sm font-body ${
                         isUser
-                          ? 'bg-forest text-warm-white rounded-tr-xs'
+                          ? 'bg-charcoal text-warm-white rounded-tr-xs'
                           : 'bg-white text-charcoal border border-sage/60 rounded-tl-xs'
                       }`}
                     >
@@ -318,10 +318,10 @@ export default function AiChatbotWidget() {
 
               {/* Typing indicator */}
               {loading && (
-                <div className="flex items-center gap-2 text-forest text-xs font-semibold bg-white border border-sage/60 rounded-xl px-3 py-2 w-fit shadow-2xs">
+                <div className="flex items-center gap-2 text-charcoal text-xs font-semibold bg-white border border-sage/60 rounded-xl px-3 py-2 w-fit shadow-2xs">
                   <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber animate-bounce [animation-delay:-0.3s]"></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-forest animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-charcoal animate-bounce [animation-delay:-0.15s]"></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-amber animate-bounce"></span>
                   </div>
                   <span className="text-[11px] text-charcoal/70">Campus AI is thinking...</span>
@@ -338,7 +338,7 @@ export default function AiChatbotWidget() {
                   key={i}
                   onClick={() => handleSendMessage(prompt.text)}
                   disabled={loading}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-sage/20 border border-sage/60 text-forest text-[11px] font-semibold whitespace-nowrap shadow-2xs hover:border-amber transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white hover:bg-sage-100 border border-sage/60 text-charcoal text-[11px] font-semibold whitespace-nowrap shadow-2xs hover:border-charcoal transition-all cursor-pointer disabled:opacity-50"
                 >
                   {prompt.icon}
                   <span>{prompt.text}</span>
@@ -363,12 +363,12 @@ export default function AiChatbotWidget() {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about bidding, alerts, handovers..."
                   disabled={loading}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-sage/70 bg-white text-charcoal text-xs sm:text-sm placeholder:text-charcoal/50 focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/20 transition-all font-body font-medium"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-sage/70 bg-white text-charcoal text-xs sm:text-sm placeholder:text-charcoal/50 focus:outline-none focus:border-charcoal focus:ring-2 focus:ring-charcoal/20 transition-all font-body font-medium"
                 />
                 <button
                   type="submit"
                   disabled={!inputMessage.trim() || loading}
-                  className="w-10 h-10 rounded-xl bg-forest hover:bg-forest-light disabled:opacity-40 text-amber font-black flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer shrink-0"
+                  className="w-10 h-10 rounded-xl bg-charcoal hover:bg-charcoal-hover disabled:opacity-40 text-amber font-black flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 border border-charcoal"
                 >
                   <Send className="w-4 h-4" />
                 </button>

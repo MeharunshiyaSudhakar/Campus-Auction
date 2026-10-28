@@ -38,12 +38,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 sm:py-12 bg-warm-white">
-      <div className="max-w-md w-full bg-warm-white-paper rounded-2xl border border-sage/50 p-6 sm:p-8 shadow-sm space-y-6">
+      <div className="max-w-md w-full bg-warm-white-paper rounded-2xl border-2 border-sage/60 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-forest-50 text-forest border border-forest/20 flex items-center justify-center mx-auto">
-            <LogIn className="w-6 h-6 text-forest" />
+          <div className="w-12 h-12 rounded-xl bg-charcoal text-warm-white border border-charcoal flex items-center justify-center mx-auto shadow-xs">
+            <LogIn className="w-6 h-6 text-amber" />
           </div>
-          <h1 className="text-2xl font-extrabold text-forest">Sign In to Campus Auction</h1>
+          <h1 className="text-2xl font-extrabold text-charcoal">Sign In to Campus Auction</h1>
           <p className="text-sm text-charcoal/70">
             Bid on campus gear or list your own items for juniors
           </p>
@@ -58,7 +58,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
               College Email or Roll Number
             </label>
             <input
@@ -67,12 +67,12 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. rohit@campus.edu or CS21B042"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-charcoal uppercase tracking-wider mb-1">
               Password
             </label>
             <input
@@ -81,14 +81,14 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest focus:border-forest text-sm bg-warm-white text-charcoal"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal text-sm bg-warm-white text-charcoal"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-4 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-forest/50 text-white font-semibold text-sm transition-all shadow-sm active:scale-[0.99]"
+            className="w-full py-3 px-4 rounded-xl bg-charcoal hover:bg-charcoal-hover disabled:bg-charcoal/50 text-warm-white font-bold text-sm transition-all shadow-md active:scale-[0.99] border border-charcoal cursor-pointer"
           >
             {submitting ? 'Signing in...' : 'Sign In'}
           </button>
@@ -96,7 +96,7 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-charcoal/70">
           Don't have an account yet?{' '}
-          <Link to="/register" className="font-bold text-forest hover:text-forest-light underline">
+          <Link to="/register" className="font-bold text-charcoal hover:underline">
             Register here
           </Link>
         </p>

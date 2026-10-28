@@ -120,11 +120,11 @@ export default function MyListingsPage() {
 
   const getStatusBadge = (status) => {
     const styles = {
-      active: 'bg-forest-50 text-forest border-forest/20',
+      active: 'bg-sage-100 text-charcoal border-sage',
       closed: 'bg-warm-white-muted text-charcoal-muted border-sage/40',
       pending_approval: 'bg-amber-50 text-amber-hover border-amber/30',
-      approved: 'bg-forest-50 text-forest border-forest/30',
-      completed: 'bg-sage-50 text-forest border-sage/60',
+      approved: 'bg-charcoal text-warm-white border-charcoal',
+      completed: 'bg-sage-50 text-charcoal border-sage/60',
       cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
       unsold: 'bg-warm-white-muted text-charcoal-muted border-sage/40',
     };
@@ -140,7 +140,7 @@ export default function MyListingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-sage/40 pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-charcoal tracking-tight">
             My Auction Listings
           </h1>
           <p className="text-sm text-charcoal/75 mt-1">
@@ -149,9 +149,9 @@ export default function MyListingsPage() {
         </div>
         <Link
           to="/sell"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-forest hover:bg-forest-hover text-white rounded-xl text-sm font-bold shadow-xs transition-all active:scale-95"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-sage hover:bg-sage-dark text-charcoal rounded-xl text-sm font-black shadow-md shadow-sage/30 border border-sage-dark/30 transition-all active:scale-95 cursor-pointer"
         >
-          <PlusCircle className="w-4 h-4 text-amber" />
+          <PlusCircle className="w-4 h-4 text-charcoal" />
           <span>Sell Another Item</span>
         </Link>
       </div>
@@ -165,21 +165,21 @@ export default function MyListingsPage() {
 
       {loading ? (
         <div className="py-20 text-center text-charcoal-muted flex flex-col items-center justify-center gap-2">
-          <div className="w-6 h-6 border-2 border-forest border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-6 h-6 border-2 border-charcoal border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm">Loading your listings...</span>
         </div>
       ) : listings.length === 0 ? (
-        <div className="bg-warm-white-paper rounded-2xl border border-sage/50 p-8 sm:p-14 text-center space-y-4 shadow-xs">
-          <div className="w-16 h-16 rounded-2xl bg-forest-50 text-forest border border-forest/20 flex items-center justify-center mx-auto">
+        <div className="bg-warm-white-paper rounded-2xl border-2 border-sage/60 p-8 sm:p-14 text-center space-y-4 shadow-xs">
+          <div className="w-16 h-16 rounded-2xl bg-charcoal text-warm-white border border-charcoal flex items-center justify-center mx-auto shadow-xs">
             <Gavel className="w-8 h-8 text-amber" />
           </div>
-          <h3 className="text-lg font-bold text-forest">No Listings Created Yet</h3>
+          <h3 className="text-lg font-bold text-charcoal">No Listings Created Yet</h3>
           <p className="text-sm text-charcoal/70 max-w-sm mx-auto">
             Have a cycle, scientific calculator, or textbooks you no longer need? List them now for juniors!
           </p>
           <Link
             to="/sell"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-forest hover:bg-forest-hover text-white rounded-xl text-sm font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal hover:bg-charcoal-hover text-warm-white rounded-xl text-sm font-bold shadow-md transition-all border border-charcoal"
           >
             <PlusCircle className="w-4 h-4 text-amber" />
             <span>Create First Listing</span>
@@ -190,22 +190,22 @@ export default function MyListingsPage() {
           {listings.map((item) => (
             <div
               key={item._id}
-              className="bg-warm-white-paper rounded-2xl border border-sage/50 overflow-hidden shadow-xs hover:border-forest/40 hover:shadow-sm transition-all flex flex-col"
+              className="bg-warm-white-paper rounded-2xl border-2 border-sage/60 overflow-hidden shadow-xs hover:border-charcoal hover:shadow-sm transition-all flex flex-col"
             >
               {/* Photo & Status Overlay */}
               <div className="relative aspect-video bg-warm-white-muted">
                 <img
-                  src={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://placehold.co/600x400/1F4D3A/FAF7F0?text=Campus+Auction'}
+                  src={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://placehold.co/600x400/242628/FAF8F4?text=Campus+Auction'}
                   alt={item.title}
                   onError={(e) => {
-                    e.currentTarget.src = 'https://placehold.co/600x400/1F4D3A/FAF7F0?text=Campus+Auction';
+                    e.currentTarget.src = 'https://placehold.co/600x400/242628/FAF8F4?text=Campus+Auction';
                   }}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 left-3">
                   {getStatusBadge(item.status)}
                 </div>
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-forest/90 backdrop-blur-xs text-warm-white text-xs font-bold uppercase tracking-wider">
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-charcoal/90 backdrop-blur-xs text-warm-white text-xs font-bold uppercase tracking-wider">
                   {item.category}
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function MyListingsPage() {
               <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sage-50 text-forest border border-sage/50">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sage-100 text-charcoal border border-sage">
                       Condition: {item.condition?.grade}
                     </span>
                     <span className="text-xs text-charcoal-muted">
@@ -222,7 +222,7 @@ export default function MyListingsPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-base font-bold text-forest line-clamp-1" title={item.title}>
+                  <h3 className="text-base font-bold text-charcoal line-clamp-1" title={item.title}>
                     {item.title}
                   </h3>
                   <p className="text-xs text-charcoal/70 line-clamp-2">
@@ -231,10 +231,10 @@ export default function MyListingsPage() {
                 </div>
 
                 {/* Price and Bids Stats */}
-                <div className="p-3.5 rounded-xl bg-warm-white border border-sage/40 space-y-2">
+                <div className="p-3.5 rounded-xl bg-sage-50 border border-sage/40 space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-charcoal-muted">Current / Starting:</span>
-                    <span className="font-mono font-extrabold text-forest text-sm">₹{item.currentPrice}</span>
+                    <span className="font-mono font-extrabold text-charcoal text-sm">₹{item.currentPrice}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-charcoal-muted">Total Bids:</span>
@@ -244,7 +244,7 @@ export default function MyListingsPage() {
                   </div>
                   <div className="flex justify-between items-center text-xs text-charcoal-muted pt-1 border-t border-sage/30">
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-forest" /> Closes:
+                      <Clock className="w-3.5 h-3.5 text-charcoal" /> Closes:
                     </span>
                     <span className="font-mono">{new Date(item.closingTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>

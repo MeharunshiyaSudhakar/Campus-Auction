@@ -3,16 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --forest: #1F4D3A;      /* primary: header, main buttons, headings */
-  --sage: #A9BFA8;        /* secondary: cards, tags, borders */
-  --warm-white: #FAF7F0;  /* page background */
+  --charcoal: #242628;    /* primary: headings, navbar, dark accents */
+  --half-white: #FAF8F4;  /* page background, card canvas */
+  --warm-white: #FAF8F4;  /* alias for backward compatibility */
+  --sage: #8EA78D;        /* secondary: cards, tags, active pills, borders */
+  --sage-dark: #678266;
+  --sage-light: #E4EDE3;
+  --forest: #242628;      /* mapped to charcoal for consistent elegance */
   --amber: #E0A030;       /* accent: bids, countdown, highlights */
-  --charcoal: #2B2B2B;    /* text */
 }
 
 @layer base {
   body {
-    background-color: var(--warm-white);
+    background-color: var(--half-white);
     color: var(--charcoal);
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 400;
@@ -21,10 +24,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Headings: Manrope 600-700 */
+  /* Headings: Manrope 600-700 in Charcoal */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--forest);
+    color: var(--charcoal);
     font-weight: 700;
     letter-spacing: -0.02em;
   }

@@ -131,8 +131,8 @@ export default function ProfilePage() {
       {/* Period Filter Bar (Responsive for mobile, tab, and desktop) */}
       <div className="p-3.5 sm:p-4 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-forest uppercase tracking-wider flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5 text-forest" />
+          <span className="text-xs font-bold text-charcoal uppercase tracking-wider flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-charcoal" />
             Period:
           </span>
           {['day', 'month', 'year', 'all', 'custom'].map((p) => (
@@ -141,8 +141,8 @@ export default function ProfilePage() {
               onClick={() => setPeriod(p)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all ${
                 period === p
-                  ? 'bg-forest text-warm-white shadow-xs'
-                  : 'bg-sage-50 text-charcoal hover:bg-sage-100 hover:text-forest'
+                  ? 'bg-charcoal text-warm-white shadow-xs font-black'
+                  : 'bg-sage-100 text-charcoal hover:bg-sage-200 border border-sage/40'
               }`}
             >
               {p}
@@ -158,7 +158,7 @@ export default function ProfilePage() {
                 type="date"
                 value={customFrom}
                 onChange={(e) => setCustomFrom(e.target.value)}
-                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-forest"
+                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-charcoal"
               />
             </label>
             <label className="text-xs font-semibold text-charcoal flex items-center gap-1">
@@ -167,7 +167,7 @@ export default function ProfilePage() {
                 type="date"
                 value={customTo}
                 onChange={(e) => setCustomTo(e.target.value)}
-                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-forest"
+                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-charcoal"
               />
             </label>
           </div>
@@ -192,10 +192,10 @@ export default function ProfilePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2.5 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${
+            className={`px-4 py-2.5 text-sm font-bold whitespace-nowrap transition-colors border-b-2 cursor-pointer ${
               activeTab === tab.id
-                ? 'border-forest text-forest'
-                : 'border-transparent text-charcoal/70 hover:text-forest'
+                ? 'border-charcoal text-charcoal font-black'
+                : 'border-transparent text-charcoal/70 hover:text-charcoal'
             }`}
           >
             {tab.label}
@@ -205,7 +205,7 @@ export default function ProfilePage() {
 
       {loading ? (
         <div className="py-20 text-center text-charcoal-muted flex flex-col items-center justify-center gap-2">
-          <div className="w-6 h-6 border-2 border-forest border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-6 h-6 border-2 border-charcoal border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm">Loading profile metrics...</span>
         </div>
       ) : (
@@ -215,16 +215,16 @@ export default function ProfilePage() {
             <div className="space-y-6 sm:space-y-8">
               {/* Money Summary Cards (Grid: 1 col mobile, 2 col tab, 3 col desktop) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Card 1: FOREST (Received) */}
-                <div className="p-5 rounded-2xl bg-forest-50 border-2 border-forest/30 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs font-black text-forest uppercase tracking-wider">
+                {/* Card 1: SAGE THEME (Received) */}
+                <div className="p-5 rounded-2xl bg-sage-50 border-2 border-sage shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-black text-charcoal uppercase tracking-wider">
                     <span>Total Received (Sales)</span>
-                    <ArrowDownLeft className="w-4 h-4 text-forest stroke-[2.5]" />
+                    <ArrowDownLeft className="w-4 h-4 text-charcoal stroke-[2.5]" />
                   </div>
-                  <div className="text-2xl sm:text-3xl font-black text-forest">
+                  <div className="text-2xl sm:text-3xl font-black text-charcoal">
                     ₹{summary?.totalReceived || 0}
                   </div>
-                  <div className="text-xs text-forest/80 font-medium">
+                  <div className="text-xs text-charcoal/70 font-medium">
                     Pending / Handover in Progress: ₹{summary?.pendingReceived || 0}
                   </div>
                 </div>
@@ -243,14 +243,14 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Card 3: SAGE (Sold vs Unsold) */}
-                <div className="p-5 rounded-2xl bg-sage/20 border-2 border-sage shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
-                  <div className="flex items-center justify-between text-xs font-black text-forest uppercase tracking-wider">
+                {/* Card 3: CHARCOAL ACCENT (Sold vs Unsold) */}
+                <div className="p-5 rounded-2xl bg-warm-white-paper border-2 border-charcoal/30 shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
+                  <div className="flex items-center justify-between text-xs font-black text-charcoal uppercase tracking-wider">
                     <span>Items Sold vs Unsold</span>
-                    <Package className="w-4 h-4 text-forest stroke-[2.5]" />
+                    <Package className="w-4 h-4 text-charcoal stroke-[2.5]" />
                   </div>
                   <div className="text-lg sm:text-xl font-extrabold text-charcoal pt-1">
-                    Sold: <span className="text-forest font-black">{summary?.stats?.soldCount || 0}</span>
+                    Sold: <span className="text-charcoal font-black">{summary?.stats?.soldCount || 0}</span>
                     <span className="text-sage mx-2 font-bold">|</span>
                     Unsold: <span className="text-amber-hover font-black">{summary?.stats?.unsoldCount || 0}</span>
                   </div>

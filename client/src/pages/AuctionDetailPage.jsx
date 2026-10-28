@@ -603,31 +603,31 @@ export default function AuctionDetailPage() {
           )}
 
           {/* Main Auction Box */}
-          <div className="bg-warm-white-paper rounded-3xl border-2 border-forest p-6 sm:p-7 space-y-6 shadow-md">
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-charcoal p-6 sm:p-7 space-y-6 shadow-md">
             {/* Title & Category Header */}
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-forest text-warm-white text-xs font-bold">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-charcoal text-warm-white text-xs font-bold">
                   {categoryEmoji}
                 </span>
                 <span className="text-xs text-charcoal-muted font-bold">
                   Listed {new Date(listing.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-forest leading-snug">
+              <h1 className="text-xl sm:text-2xl font-black text-charcoal leading-snug">
                 {listing.title}
               </h1>
 
               {/* Public Seller Profile (Name ONLY, zero sensitive leaks) */}
               <div className="flex items-center gap-2 pt-1 text-xs text-charcoal/80">
-                <div className="w-6 h-6 rounded-full bg-sage/30 text-forest font-black flex items-center justify-center text-[10px]">
+                <div className="w-6 h-6 rounded-full bg-sage-100 text-charcoal font-black flex items-center justify-center text-[10px] border border-sage">
                   {listing.seller?.name ? listing.seller.name.charAt(0) : 'S'}
                 </div>
                 <span>
-                  Listed by <strong className="font-bold text-forest">{listing.seller?.name || 'Graduating Senior'}</strong>
+                  Listed by <strong className="font-bold text-charcoal">{listing.seller?.name || 'Graduating Senior'}</strong>
                 </span>
                 <span className="text-sage">&bull;</span>
-                <span className="text-forest font-semibold">Campus Verified</span>
+                <span className="text-charcoal font-semibold">Campus Verified</span>
               </div>
             </div>
 
@@ -641,13 +641,13 @@ export default function AuctionDetailPage() {
             </div>
 
             {/* Price & Bid Stats */}
-            <div className="p-4 rounded-2xl bg-forest-50/40 border border-forest/20 space-y-3">
+            <div className="p-4 rounded-2xl bg-sage-50 border border-sage/50 space-y-3">
               <div className="flex items-baseline justify-between">
                 <div>
                   <span className="text-xs uppercase font-black tracking-wider text-charcoal-muted block">
                     {listing.bidCount > 0 ? 'Current Leading Bid' : 'Starting Price'}
                   </span>
-                  <div className="text-3xl sm:text-4xl font-black text-forest">
+                  <div className="text-3xl sm:text-4xl font-black text-charcoal">
                     ₹{listing.currentPrice || listing.startingPrice}
                   </div>
                 </div>
@@ -660,7 +660,7 @@ export default function AuctionDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-charcoal/80 pt-2 border-t border-forest/10 font-semibold">
+              <div className="flex items-center justify-between text-xs text-charcoal/80 pt-2 border-t border-sage/40 font-semibold">
                 <span>Min Increment: <strong>₹{listing.minIncrement}</strong></span>
                 <span>Next Minimum: <strong>₹{minValidBid}</strong></span>
               </div>
@@ -869,19 +869,19 @@ export default function AuctionDetailPage() {
             ) : user ? (
               <form onSubmit={handlePlaceBid} className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center justify-between">
                     <span>Enter Your Bid (₹)</span>
                     <span className="text-[11px] text-amber-hover font-bold">Min: ₹{minValidBid}</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3 text-forest font-bold text-base">₹</span>
+                    <span className="absolute left-3.5 top-3 text-charcoal font-bold text-base">₹</span>
                     <input
                       type="number"
                       min={minValidBid}
                       step={listing.minIncrement || 1}
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-forest bg-warm-white text-forest text-lg font-black focus:outline-none focus:ring-2 focus:ring-forest/30"
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-charcoal bg-warm-white text-charcoal text-lg font-black focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                     />
                   </div>
                 </div>
@@ -894,8 +894,8 @@ export default function AuctionDetailPage() {
                 )}
 
                 {bidSuccess && (
-                  <p className="text-xs text-forest font-bold flex items-center gap-1 bg-sage-50 p-2 rounded-lg border border-sage">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+                  <p className="text-xs text-charcoal font-bold flex items-center gap-1 bg-sage-100 p-2 rounded-lg border border-sage">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-sage-dark" />
                     {bidSuccess}
                   </p>
                 )}
@@ -903,9 +903,9 @@ export default function AuctionDetailPage() {
                 <button
                   type="submit"
                   disabled={submittingBid}
-                  className="w-full py-3.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-sm shadow-md shadow-amber/25 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-sm shadow-md border border-charcoal transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
                 >
-                  <Gavel className="w-4 h-4 text-forest" />
+                  <Gavel className="w-4 h-4 text-amber" />
                   <span>{submittingBid ? 'Submitting Bid...' : `Place Bid for ₹${bidAmount || minValidBid}`}</span>
                 </button>
               </form>

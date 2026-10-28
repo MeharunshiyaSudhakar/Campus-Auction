@@ -178,12 +178,12 @@ export default function BrowsePage() {
             {/* Mobile Filter Button */}
             <button
               onClick={() => setMobileFilterOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-forest text-warm-white font-bold text-xs shadow-sm hover:bg-forest-light cursor-pointer"
+              className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-charcoal text-warm-white font-bold text-xs shadow-sm hover:bg-charcoal-hover border border-charcoal cursor-pointer"
             >
               <SlidersHorizontal className="w-4 h-4 text-amber" />
               <span>Filters</span>
               {activeFilterCount > 0 && (
-                <span className="w-5 h-5 rounded-full bg-amber text-forest font-black flex items-center justify-center text-[10px]">
+                <span className="w-5 h-5 rounded-full bg-amber text-charcoal font-black flex items-center justify-center text-[10px]">
                   {activeFilterCount}
                 </span>
               )}
@@ -191,9 +191,9 @@ export default function BrowsePage() {
 
             <Link
               to="/sell"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-xs shadow-sm shadow-amber/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sage hover:bg-sage-dark text-charcoal font-black text-xs shadow-sm shadow-sage/30 border border-sage-dark/30 transition-all cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4 text-forest" />
+              <PlusCircle className="w-4 h-4 text-charcoal" />
               <span>Sell Item</span>
             </Link>
           </div>
@@ -219,8 +219,8 @@ export default function BrowsePage() {
                 onClick={() => handleFilterChange('category', cat.id)}
                 className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 border ${
                   isSelected
-                    ? 'bg-forest text-warm-white border-forest shadow-xs font-black'
-                    : 'bg-warm-white text-forest hover:bg-sage/20 border-sage/50'
+                    ? 'bg-charcoal text-warm-white border-charcoal shadow-xs font-black'
+                    : 'bg-warm-white-paper text-charcoal hover:bg-sage-100 border-sage/60 font-semibold'
                 }`}
               >
                 <span>{cat.icon}</span>

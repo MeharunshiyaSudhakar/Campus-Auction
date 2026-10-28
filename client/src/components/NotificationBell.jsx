@@ -146,12 +146,12 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={handleToggle}
-        className="relative p-2 rounded-xl text-forest hover:bg-sage/20 transition-colors cursor-pointer"
+        className="relative p-2 rounded-xl text-warm-white hover:text-amber hover:bg-charcoal-700 transition-colors cursor-pointer border border-sage/30"
         aria-label="Open notifications"
       >
-        <Bell className="w-5 h-5 text-forest" />
+        <Bell className="w-5 h-5 text-warm-white" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-amber text-forest text-[10px] font-black flex items-center justify-center border-2 border-warm-white shadow-xs animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-amber text-charcoal text-[10px] font-black flex items-center justify-center border-2 border-charcoal shadow-xs animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -159,15 +159,15 @@ export default function NotificationBell() {
 
       {/* Notifications Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-warm-white-paper border border-sage/60 shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-warm-white-paper border-2 border-sage shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header */}
-          <div className="p-3.5 border-b border-sage/40 flex items-center justify-between bg-warm-white">
+          <div className="p-3.5 border-b-2 border-sage flex items-center justify-between bg-charcoal text-warm-white">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-forest">
+              <span className="text-xs font-black uppercase tracking-wider text-warm-white">
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-amber/20 text-forest text-[10px] font-black">
+                <span className="px-2 py-0.5 rounded-full bg-amber text-charcoal text-[10px] font-black">
                   {unreadCount} new
                 </span>
               )}
@@ -176,9 +176,9 @@ export default function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-[11px] font-bold text-forest hover:text-forest-light flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-bold text-sage-light hover:text-amber flex items-center gap-1 cursor-pointer"
               >
-                <CheckCheck className="w-3.5 h-3.5 text-forest" />
+                <CheckCheck className="w-3.5 h-3.5 text-sage-light" />
                 <span>Mark all read</span>
               </button>
             )}

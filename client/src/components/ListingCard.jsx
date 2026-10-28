@@ -65,7 +65,7 @@ export default function ListingCard({ listing }) {
 
         {/* Category Pill (Top Left) */}
         <div className="absolute top-2.5 left-2.5">
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-forest text-warm-white text-xs font-bold shadow-xs">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-charcoal text-warm-white text-xs font-bold shadow-xs">
             {categoryEmoji}
           </span>
         </div>
@@ -73,7 +73,7 @@ export default function ListingCard({ listing }) {
         {/* Condition Grade Pill (Top Right) */}
         <div className="absolute top-2.5 right-2.5">
           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border shadow-2xs ${conditionBadgeStyle}`}>
-            <ShieldCheck className="w-3 h-3" />
+            <ShieldCheck className="w-3 h-3 text-charcoal" />
             {listing.condition?.grade || 'Inspected'}
           </span>
         </div>
@@ -81,8 +81,8 @@ export default function ListingCard({ listing }) {
         {/* Defect Photo Indicator (Bottom Left) */}
         {listing.defectPhotoIncluded && (
           <div className="absolute bottom-2.5 left-2.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber text-forest text-[11px] font-black shadow-xs">
-              <Camera className="w-3 h-3 text-forest" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber text-charcoal text-[11px] font-black shadow-xs">
+              <Camera className="w-3 h-3 text-charcoal" />
               Defect Photo
             </span>
           </div>
@@ -99,33 +99,33 @@ export default function ListingCard({ listing }) {
         <div className="space-y-2">
           {/* Title */}
           <Link to={`/listings/${listing._id}`}>
-            <h3 className="font-extrabold text-forest text-base sm:text-lg line-clamp-2 group-hover:text-amber-hover transition-colors leading-snug">
+            <h3 className="font-extrabold text-charcoal text-base sm:text-lg line-clamp-2 group-hover:text-sage-dark transition-colors leading-snug">
               {listing.title}
             </h3>
           </Link>
 
           {/* Structured Condition Specs Quick Row */}
           <div className="flex items-center flex-wrap gap-1.5 text-xs text-charcoal/80 font-medium">
-            <span className="bg-sage/15 px-2 py-0.5 rounded text-forest font-semibold">
+            <span className="bg-sage-50 px-2 py-0.5 rounded text-charcoal font-semibold border border-sage/40">
               Age: {listing.condition?.age || 'Campus used'}
             </span>
             <span>&bull;</span>
-            <span className="bg-sage/15 px-2 py-0.5 rounded text-forest font-semibold">
+            <span className="bg-sage-50 px-2 py-0.5 rounded text-charcoal font-semibold border border-sage/40">
               {listing.condition?.workingStatus || 'Functional'}
             </span>
           </div>
 
           {/* Honest Defect Disclosure Highlight (Core Principle) */}
           {listing.condition?.defects && listing.condition.defects !== 'None' && listing.condition.defects !== 'None reported' ? (
-            <div className="p-2 rounded-xl bg-amber-50/70 border border-amber/30 text-xs text-amber-hover font-medium flex items-start gap-1.5 line-clamp-2">
+            <div className="p-2 rounded-xl bg-amber-50/70 border border-amber/40 text-xs text-amber-hover font-medium flex items-start gap-1.5 line-clamp-2">
               <ShieldAlert className="w-3.5 h-3.5 text-amber shrink-0 mt-0.5" />
               <span className="line-clamp-2">
-                <strong className="font-bold">Honest Defect:</strong> {listing.condition.defects}
+                <strong className="font-bold text-charcoal">Honest Defect:</strong> {listing.condition.defects}
               </span>
             </div>
           ) : (
-            <div className="p-2 rounded-xl bg-sage/15 border border-sage/40 text-xs text-forest font-medium flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-forest shrink-0" />
+            <div className="p-2 rounded-xl bg-sage-50 border border-sage/50 text-xs text-charcoal font-medium flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-sage-dark shrink-0" />
               <span>Clean condition &bull; Zero major defects</span>
             </div>
           )}
@@ -137,7 +137,7 @@ export default function ListingCard({ listing }) {
             <div className="text-[11px] font-bold uppercase tracking-wider text-charcoal-muted">
               {listing.bidCount > 0 ? 'Current Leading Bid' : 'Starting Bid'}
             </div>
-            <div className="text-xl sm:text-2xl font-black text-forest flex items-baseline gap-1">
+            <div className="text-xl sm:text-2xl font-black text-charcoal flex items-baseline gap-1">
               <span>₹{listing.currentPrice || listing.startingPrice}</span>
               <span className="text-[11px] font-bold text-charcoal/70">
                 ({listing.bidCount || 0} {listing.bidCount === 1 ? 'bid' : 'bids'})
@@ -147,10 +147,10 @@ export default function ListingCard({ listing }) {
 
           <Link
             to={`/listings/${listing._id}`}
-            className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-xs shadow-xs transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-xs shadow-xs transition-all active:scale-95 shrink-0"
           >
             <span>Inspect & Bid</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-sage" />
           </Link>
         </div>
       </div>

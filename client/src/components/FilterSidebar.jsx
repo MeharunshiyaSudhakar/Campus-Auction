@@ -54,11 +54,11 @@ export default function FilterSidebar({
       {/* Top Header */}
       <div className="flex items-center justify-between pb-4 border-b border-sage/40">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-forest text-amber flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-charcoal text-amber flex items-center justify-center">
             <SlidersHorizontal className="w-4 h-4 text-amber" />
           </div>
           <div>
-            <h3 className="font-black text-forest text-base">Search & Filters</h3>
+            <h3 className="font-black text-charcoal text-base">Search & Filters</h3>
             <p className="text-xs text-charcoal-muted">
               {totalCount !== undefined ? `${totalCount} active items` : 'Campus filters'}
             </p>
@@ -80,9 +80,9 @@ export default function FilterSidebar({
           {isMobileDrawer && (
             <button
               onClick={onCloseMobile}
-              className="p-1 rounded-lg text-charcoal hover:bg-sage/20 cursor-pointer"
+              className="p-1 rounded-lg text-charcoal hover:bg-sage-100 cursor-pointer"
             >
-              <X className="w-5 h-5 text-forest" />
+              <X className="w-5 h-5 text-charcoal" />
             </button>
           )}
         </div>
@@ -90,7 +90,7 @@ export default function FilterSidebar({
 
       {/* 1. Keyword Search */}
       <div className="space-y-2">
-        <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+        <label className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center gap-1.5">
           <Search className="w-3.5 h-3.5 text-amber" />
           <span>Keyword Search</span>
         </label>
@@ -100,9 +100,9 @@ export default function FilterSidebar({
             placeholder="Search cycle, Casio, CLRS, charger..."
             value={filters.search || ''}
             onChange={(e) => onFilterChange('search', e.target.value)}
-            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-sage/60 bg-warm-white text-charcoal text-sm placeholder:text-charcoal-muted/60 focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/20 transition-all font-medium"
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-sage/60 bg-warm-white text-charcoal text-sm placeholder:text-charcoal-muted/60 focus:outline-none focus:border-charcoal focus:ring-2 focus:ring-charcoal/20 transition-all font-medium"
           />
-          <Search className="w-4 h-4 text-forest absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-charcoal absolute left-3 top-3 pointer-events-none" />
           {filters.search && (
             <button
               onClick={() => onFilterChange('search', '')}
@@ -116,8 +116,8 @@ export default function FilterSidebar({
 
       {/* 2. Mandatory Condition Grade Filter */}
       <div className="space-y-2.5">
-        <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-amber" />
+        <label className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-sage-dark" />
           <span>Condition Grade</span>
         </label>
         <div className="grid grid-cols-2 gap-1.5">
@@ -130,8 +130,8 @@ export default function FilterSidebar({
                 onClick={() => onFilterChange('condition', cond.id)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition-all text-center cursor-pointer border ${
                   isSelected
-                    ? 'bg-amber text-forest border-amber/80 shadow-xs font-black'
-                    : 'bg-warm-white text-charcoal hover:bg-sage/20 border-sage/50'
+                    ? 'bg-charcoal text-warm-white border-charcoal shadow-xs font-black'
+                    : 'bg-warm-white-paper text-charcoal hover:bg-sage-100 border-sage/50 font-semibold'
                 }`}
               >
                 {cond.label}
@@ -143,7 +143,7 @@ export default function FilterSidebar({
 
       {/* 4. Price Range Filter */}
       <div className="space-y-2.5">
-        <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+        <label className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center gap-1.5">
           <IndianRupee className="w-3.5 h-3.5 text-amber" />
           <span>Price Range (₹)</span>
         </label>
@@ -156,7 +156,7 @@ export default function FilterSidebar({
               placeholder="0"
               value={filters.minPrice || ''}
               onChange={(e) => onFilterChange('minPrice', e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-lg border border-sage/60 bg-warm-white text-charcoal text-xs focus:outline-none focus:border-forest font-semibold"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-sage/60 bg-warm-white text-charcoal text-xs focus:outline-none focus:border-charcoal font-semibold"
             />
           </div>
           <div>
@@ -167,7 +167,7 @@ export default function FilterSidebar({
               placeholder="5000"
               value={filters.maxPrice || ''}
               onChange={(e) => onFilterChange('maxPrice', e.target.value)}
-              className="w-full px-2.5 py-1.5 rounded-lg border border-sage/60 bg-warm-white text-charcoal text-xs focus:outline-none focus:border-forest font-semibold"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-sage/60 bg-warm-white text-charcoal text-xs focus:outline-none focus:border-charcoal font-semibold"
             />
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function FilterSidebar({
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber" />
             <div>
-              <span className="text-xs font-black text-forest block">Closing Soon</span>
+              <span className="text-xs font-black text-charcoal block">Closing Soon</span>
               <span className="text-[10px] text-charcoal-muted block">Next 24 hours only</span>
             </div>
           </div>
@@ -187,21 +187,21 @@ export default function FilterSidebar({
             type="checkbox"
             checked={Boolean(filters.closingSoon)}
             onChange={(e) => onFilterChange('closingSoon', e.target.checked)}
-            className="w-4 h-4 rounded text-forest focus:ring-forest accent-forest cursor-pointer"
+            className="w-4 h-4 rounded text-charcoal focus:ring-charcoal accent-charcoal cursor-pointer"
           />
         </label>
       </div>
 
       {/* 6. Sort Option */}
       <div className="space-y-2 pt-2 border-t border-sage/40">
-        <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+        <label className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center gap-1.5">
           <ArrowUpDown className="w-3.5 h-3.5 text-amber" />
           <span>Sort By</span>
         </label>
         <select
           value={filters.sort || 'closing_soon'}
           onChange={(e) => onFilterChange('sort', e.target.value)}
-          className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-forest text-xs font-bold focus:outline-none focus:border-forest cursor-pointer"
+          className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-charcoal text-xs font-bold focus:outline-none focus:border-charcoal cursor-pointer"
         >
           {SORT_OPTIONS.map((opt) => (
             <option key={opt.id} value={opt.id}>
@@ -216,7 +216,7 @@ export default function FilterSidebar({
         <div className="pt-4">
           <button
             onClick={onCloseMobile}
-            className="w-full py-3 rounded-xl bg-forest text-warm-white font-black text-sm shadow-md hover:bg-forest-light active:scale-95 transition-all"
+            className="w-full py-3 rounded-xl bg-charcoal text-warm-white font-black text-sm shadow-md hover:bg-charcoal-hover active:scale-95 transition-all cursor-pointer border border-charcoal"
           >
             Show {totalCount !== undefined ? `${totalCount} Results` : 'Filtered Auctions'}
           </button>

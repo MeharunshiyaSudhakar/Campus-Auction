@@ -131,15 +131,15 @@ export default function ListingQaSection({ listingId, isSeller }) {
   };
 
   return (
-    <div className="bg-warm-white-paper rounded-3xl border border-sage/60 p-6 sm:p-7 space-y-6 shadow-xs">
+    <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-6 sm:p-7 space-y-6 shadow-xs">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-sage/40 pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-forest text-warm-white flex items-center justify-center shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-charcoal text-warm-white flex items-center justify-center shadow-xs border border-charcoal">
             <MessageSquare className="w-5 h-5 text-amber" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-forest">Public Q&A Before Bidding</h2>
+            <h2 className="text-lg font-black text-charcoal">Public Q&A Before Bidding</h2>
             <p className="text-xs text-charcoal-muted">
               Transparent questions answered by the seller. Visible to all students.
             </p>
@@ -147,7 +147,7 @@ export default function ListingQaSection({ listingId, isSeller }) {
         </div>
 
         {user && !isSeller && (
-          <span className="text-xs font-black px-3 py-1 rounded-full bg-sage/20 text-forest border border-sage">
+          <span className="text-xs font-black px-3 py-1 rounded-full bg-sage-100 text-charcoal border border-sage">
             {remainingCount} of 3 questions remaining
           </span>
         )}
@@ -157,7 +157,7 @@ export default function ListingQaSection({ listingId, isSeller }) {
       {!isSeller && user && (
         <form onSubmit={handleAskQuestion} className="space-y-3 bg-warm-white p-4 rounded-2xl border border-sage/60">
           <div className="flex items-center justify-between text-xs text-charcoal-muted">
-            <label className="font-black text-forest uppercase tracking-wider flex items-center gap-1.5">
+            <label className="font-black text-charcoal uppercase tracking-wider flex items-center gap-1.5">
               <HelpCircle className="w-4 h-4 text-amber" />
               <span>Ask the Senior Seller</span>
             </label>
@@ -174,7 +174,7 @@ export default function ListingQaSection({ listingId, isSeller }) {
                 ? "e.g., 'Are the cycle brakes recently adjusted?', 'Does the calculator come with cover?'"
                 : 'You have reached the limit of 3 questions on this listing.'
             }
-            className="w-full p-3 rounded-xl border border-sage/70 bg-warm-white-paper text-sm text-forest placeholder:text-charcoal-muted/60 focus:outline-none focus:ring-2 focus:ring-forest/20 resize-none font-medium"
+            className="w-full p-3 rounded-xl border border-sage/70 bg-warm-white-paper text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal resize-none font-medium"
           />
 
           {askError && (
@@ -185,8 +185,8 @@ export default function ListingQaSection({ listingId, isSeller }) {
           )}
 
           {askSuccess && (
-            <p className="text-xs text-forest font-bold flex items-center gap-1 bg-sage/30 p-2 rounded-xl">
-              <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+            <p className="text-xs text-charcoal font-bold flex items-center gap-1 bg-sage-100 p-2 rounded-xl border border-sage">
+              <CheckCircle2 className="w-3.5 h-3.5 text-sage-dark" />
               {askSuccess}
             </p>
           )}
@@ -200,7 +200,7 @@ export default function ListingQaSection({ listingId, isSeller }) {
             <button
               type="submit"
               disabled={remainingCount <= 0 || asking || !questionText.trim()}
-              className="px-4 py-2 rounded-xl bg-forest hover:bg-forest-light disabled:opacity-50 text-warm-white text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer transition-all"
+              className="px-4 py-2 rounded-xl bg-charcoal hover:bg-charcoal-hover disabled:opacity-50 text-warm-white text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer transition-all border border-charcoal"
             >
               <Send className="w-3.5 h-3.5 text-amber" />
               <span>{asking ? 'Submitting...' : 'Post Question'}</span>

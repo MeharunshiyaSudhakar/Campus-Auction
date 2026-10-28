@@ -142,11 +142,11 @@ export default function NeedsAttentionPage() {
           <span className="text-sm">Checking listing status...</span>
         </div>
       ) : items.length === 0 ? (
-        <div className="p-10 sm:p-14 rounded-2xl border border-dashed border-sage bg-warm-white-paper text-center space-y-3 shadow-xs">
-          <div className="w-14 h-14 rounded-2xl bg-forest-50 text-forest flex items-center justify-center mx-auto border border-forest/20">
-            <CheckCircle2 className="w-7 h-7 text-forest" />
+        <div className="p-10 sm:p-14 rounded-2xl border-2 border-dashed border-sage bg-warm-white-paper text-center space-y-3 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-charcoal text-warm-white flex items-center justify-center mx-auto border border-charcoal shadow-xs">
+            <CheckCircle2 className="w-7 h-7 text-amber" />
           </div>
-          <h3 className="text-lg font-bold text-forest">All Clear! No Items Need Attention</h3>
+          <h3 className="text-lg font-bold text-charcoal">All Clear! No Items Need Attention</h3>
           <p className="text-sm text-charcoal/70 max-w-md mx-auto">
             None of your items are currently stale or closed unsold. All active auctions are performing well.
           </p>
@@ -156,7 +156,7 @@ export default function NeedsAttentionPage() {
           {items.map((item) => (
             <div
               key={item._id}
-              className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs hover:border-forest/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border-2 border-sage/60 shadow-xs hover:border-charcoal transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -174,12 +174,12 @@ export default function NeedsAttentionPage() {
                   </span>
                 </div>
 
-                <h3 className="text-base sm:text-lg font-bold text-forest">{item.title}</h3>
+                <h3 className="text-base sm:text-lg font-bold text-charcoal">{item.title}</h3>
                 <p className="text-xs sm:text-sm text-charcoal/80">{item.reasonText}</p>
 
                 <div className="text-xs sm:text-sm text-charcoal flex items-center gap-3 pt-1">
                   <span>
-                    <strong>Starting Price:</strong> <span className="font-mono font-bold">₹{item.startingPrice}</span>
+                    <strong>Starting Price:</strong> <span className="font-mono font-bold text-charcoal">₹{item.startingPrice}</span>
                   </span>
                   <span className="text-sage">|</span>
                   <span>
@@ -197,14 +197,14 @@ export default function NeedsAttentionPage() {
                         setEditingItem(item);
                         setEditPrice(item.startingPrice.toString());
                       }}
-                      className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-sage/60 hover:bg-sage-100 text-charcoal text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <TrendingDown className="w-3.5 h-3.5 text-forest" />
+                      <TrendingDown className="w-3.5 h-3.5 text-charcoal" />
                       <span>Lower Price</span>
                     </button>
                     <button
                       onClick={() => handleCancelListing(item._id)}
-                      className="px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5"
+                      className="px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Cancel</span>
@@ -215,7 +215,7 @@ export default function NeedsAttentionPage() {
                 {item.status !== 'active' && (
                   <button
                     onClick={() => openRelistModal(item)}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-forest hover:bg-forest-hover text-warm-white text-xs sm:text-sm font-bold shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white text-xs sm:text-sm font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 border border-charcoal cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5 text-amber" />
                     <span>Relist as New Auction</span>

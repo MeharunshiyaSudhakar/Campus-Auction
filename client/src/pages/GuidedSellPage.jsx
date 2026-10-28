@@ -354,7 +354,7 @@ export default function GuidedSellPage() {
           </div>
           <div className="h-2 w-full bg-sage/30 rounded-full overflow-hidden">
             <div
-              className="h-full bg-forest transition-all duration-300 rounded-full"
+              className="h-full bg-charcoal transition-all duration-300 rounded-full"
               style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
             />
           </div>
@@ -370,13 +370,13 @@ export default function GuidedSellPage() {
 
       {/* --- QUESTION FLOW CARD --- */}
       {!isReviewScreen && currentQuestion && (
-        <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
           <form onSubmit={handleSaveAndNext} className="space-y-6">
             <div>
               <div className="text-metadata font-bold uppercase tracking-wider text-amber mb-1">
                 Step {currentStep + 1}
               </div>
-              <h2 className="text-card-title font-heading text-forest">
+              <h2 className="text-card-title font-heading text-charcoal">
                 {currentQuestion.label}
               </h2>
               {currentQuestion.helper && (
@@ -400,12 +400,12 @@ export default function GuidedSellPage() {
                         onClick={() => setCurrentInput(opt.value)}
                         className={`p-4 text-left rounded-xl border-2 transition-all flex items-center justify-between text-body cursor-pointer ${
                           isSelected
-                            ? 'border-forest bg-forest-50 text-forest font-bold shadow-xs'
-                            : 'border-sage/50 bg-warm-white hover:border-forest/50 text-charcoal'
+                            ? 'border-charcoal bg-sage-100 text-charcoal font-bold shadow-xs'
+                            : 'border-sage/50 bg-warm-white hover:border-charcoal/50 text-charcoal'
                         }`}
                       >
                         <span>{opt.label}</span>
-                        {isSelected && <Check className="w-4 h-4 text-forest stroke-[2.5]" />}
+                        {isSelected && <Check className="w-4 h-4 text-charcoal stroke-[2.5]" />}
                       </button>
                     );
                   })}
@@ -420,7 +420,7 @@ export default function GuidedSellPage() {
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
                   placeholder={currentQuestion.placeholder || 'Type your answer...'}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal placeholder:text-charcoal/40"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-charcoal focus:outline-none text-body bg-warm-white text-charcoal placeholder:text-charcoal/40"
                 />
               )}
 
@@ -617,7 +617,7 @@ export default function GuidedSellPage() {
               <button
                 type="submit"
                 disabled={saving || (currentQuestion.type === 'photos' && photosList.length < 2)}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-forest hover:bg-forest-light text-warm-white text-btn font-bold transition-all shadow-md shadow-forest/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white text-btn font-bold transition-all shadow-md shadow-charcoal/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 border border-charcoal"
               >
                 <span>{currentStep >= totalSteps - 1 ? 'Proceed to Review' : 'Next Question'}</span>
                 <ArrowRight className="w-4 h-4 text-amber" />
@@ -630,10 +630,10 @@ export default function GuidedSellPage() {
       {/* --- REVIEW SCREEN --- */}
       {isReviewScreen && (
         <div className="space-y-6">
-          <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h2 className="text-section-heading font-heading text-forest flex items-center gap-2.5">
-                <ShieldCheck className="w-6 h-6 text-forest" />
+              <h2 className="text-section-heading font-heading text-charcoal flex items-center gap-2.5">
+                <ShieldCheck className="w-6 h-6 text-charcoal" />
                 Listing Review & AI Verification
               </h2>
 
@@ -644,7 +644,7 @@ export default function GuidedSellPage() {
                   AI unavailable, showing a basic version
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest-50 text-forest border border-forest/30 text-metadata font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sage-100 text-charcoal border border-sage text-metadata font-bold">
                   <Sparkles className="w-3.5 h-3.5 text-amber" />
                   Groq AI Verified (Facts Only)
                 </span>
@@ -652,26 +652,26 @@ export default function GuidedSellPage() {
             </div>
 
             {/* Structured Facts Summary */}
-            <div className="bg-warm-white p-4 sm:p-5 rounded-xl border border-sage/60 space-y-3">
+            <div className="bg-sage-50 p-4 sm:p-5 rounded-xl border border-sage/60 space-y-3">
               <h3 className="text-metadata font-bold uppercase tracking-wider text-charcoal">
                 Disclosed Condition Summary
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-metadata">
-                <div><span className="font-bold text-forest">Title:</span> {answers.title}</div>
-                <div><span className="font-bold text-forest">Category:</span> {answers.category?.toUpperCase()}</div>
+                <div><span className="font-bold text-charcoal">Title:</span> {answers.title}</div>
+                <div><span className="font-bold text-charcoal">Category:</span> {answers.category?.toUpperCase()}</div>
                 <div>
-                  <span className="font-bold text-forest">Condition:</span>{' '}
-                  <span className="px-2 py-0.5 rounded bg-amber text-forest font-black text-xs">
+                  <span className="font-bold text-charcoal">Condition:</span>{' '}
+                  <span className="px-2 py-0.5 rounded bg-amber text-charcoal font-black text-xs">
                     {answers.conditionGrade}
                   </span>
                 </div>
-                <div><span className="font-bold text-forest">Duration of Use:</span> {answers.ageOfItem}</div>
-                <div><span className="font-bold text-forest">Working Status:</span> {answers.workingStatus}</div>
-                <div><span className="font-bold text-forest">Defects Disclosed:</span> {answers.defects || 'None reported'}</div>
-                <div><span className="font-bold text-forest">Starting Price:</span> ₹{answers.startingPrice}</div>
-                <div><span className="font-bold text-forest">Min Increment:</span> ₹{answers.minIncrement || 10}</div>
-                <div><span className="font-bold text-forest">Closing Time:</span> {new Date(answers.closingTime).toLocaleString()}</div>
-                <div><span className="font-bold text-forest">Real Photos:</span> {answers.photos?.length || photosList.length} attached</div>
+                <div><span className="font-bold text-charcoal">Duration of Use:</span> {answers.ageOfItem}</div>
+                <div><span className="font-bold text-charcoal">Working Status:</span> {answers.workingStatus}</div>
+                <div><span className="font-bold text-charcoal">Defects Disclosed:</span> {answers.defects || 'None reported'}</div>
+                <div><span className="font-bold text-charcoal">Starting Price:</span> ₹{answers.startingPrice}</div>
+                <div><span className="font-bold text-charcoal">Min Increment:</span> ₹{answers.minIncrement || 10}</div>
+                <div><span className="font-bold text-charcoal">Closing Time:</span> {new Date(answers.closingTime).toLocaleString()}</div>
+                <div><span className="font-bold text-charcoal">Real Photos:</span> {answers.photos?.length || photosList.length} attached</div>
               </div>
             </div>
 
@@ -688,12 +688,12 @@ export default function GuidedSellPage() {
               </div>
 
               {/* AI Rephrased Description */}
-              <div className="border-2 border-forest rounded-xl p-4 bg-warm-white-paper space-y-2">
+              <div className="border-2 border-charcoal rounded-xl p-4 bg-warm-white-paper space-y-2">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-metadata font-bold uppercase tracking-wider text-forest">
+                  <h4 className="text-metadata font-bold uppercase tracking-wider text-charcoal">
                     AI-Rephrased Description (Facts Only)
                   </h4>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-forest-50 text-forest border border-forest/20">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sage-100 text-charcoal border border-sage">
                     {reviewData?.source === 'ai' ? 'Groq AI Rephrase' : 'Template Basic'}
                   </span>
                 </div>
@@ -758,29 +758,29 @@ export default function GuidedSellPage() {
 
             {/* Editable Final Description */}
             <div className="space-y-1.5">
-              <label className="block text-metadata font-bold text-forest">
+              <label className="block text-metadata font-bold text-charcoal">
                 Final Description (You can polish or add any extra details before publishing):
               </label>
               <textarea
                 rows={5}
                 value={finalDescription}
                 onChange={(e) => setFinalDescription(e.target.value)}
-                className="w-full p-4 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal leading-relaxed"
+                className="w-full p-4 rounded-xl border-2 border-sage/60 focus:border-charcoal focus:outline-none text-body bg-warm-white text-charcoal leading-relaxed"
               />
             </div>
 
             {/* Mandatory Honesty Declaration Checkbox */}
-            <div className="bg-forest-50/50 border-2 border-forest rounded-xl p-4 sm:p-5">
+            <div className="bg-sage-50/70 border-2 border-charcoal rounded-xl p-4 sm:p-5">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   required
                   checked={honestyDeclaration}
                   onChange={(e) => setHonestyDeclaration(e.target.checked)}
-                  className="mt-1 w-5 h-5 rounded text-forest focus:ring-forest accent-forest"
+                  className="mt-1 w-5 h-5 rounded text-charcoal focus:ring-charcoal accent-charcoal"
                 />
                 <div className="text-body text-charcoal leading-relaxed">
-                  <strong className="text-forest">Seller Honesty & Accuracy Declaration *</strong>
+                  <strong className="text-charcoal font-bold">Seller Honesty & Accuracy Declaration *</strong>
                   <p className="text-metadata text-charcoal/80 mt-0.5">
                     I declare that all condition disclosures, known defects, and wear are genuine. I understand that concealing defects will cause the buyer to reject the item at campus pickup.
                   </p>
@@ -793,7 +793,7 @@ export default function GuidedSellPage() {
               <button
                 type="button"
                 onClick={handleBack}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-btn font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-100 text-charcoal text-btn font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Questions</span>
@@ -803,16 +803,16 @@ export default function GuidedSellPage() {
                 type="button"
                 disabled={publishing || !honestyDeclaration}
                 onClick={handlePublish}
-                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-amber hover:bg-amber-hover text-forest text-btn font-black transition-all shadow-md shadow-amber/25 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-amber hover:bg-amber-hover text-charcoal text-btn font-black transition-all shadow-md shadow-amber/25 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95 border border-amber/40"
               >
                 {publishing ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin text-forest" />
+                    <RefreshCw className="w-4 h-4 animate-spin text-charcoal" />
                     <span>Publishing Auction...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-forest" />
+                    <Sparkles className="w-4 h-4 text-charcoal" />
                     <span>Publish Verified Auction</span>
                   </>
                 )}

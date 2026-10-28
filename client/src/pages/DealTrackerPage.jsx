@@ -338,30 +338,30 @@ export default function DealTrackerPage() {
             <span className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block">
               Private Campus Deal Tracker
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-forest">
+            <h1 className="text-xl sm:text-2xl font-black text-charcoal">
               {deal.listing?.title}
             </h1>
             <div className="flex items-center gap-3 pt-1 text-xs text-charcoal/80">
               <span>
-                Seller: <strong className="font-bold text-forest">{deal.seller?.name}</strong>
+                Seller: <strong className="font-bold text-charcoal">{deal.seller?.name}</strong>
               </span>
               <span>&bull;</span>
               <span>
-                Winning Buyer: <strong className="font-bold text-forest">{deal.buyer?.name}</strong>
+                Winning Buyer: <strong className="font-bold text-charcoal">{deal.buyer?.name}</strong>
               </span>
             </div>
           </div>
 
           <div className="text-left sm:text-right">
             <span className="text-xs font-bold text-charcoal-muted block">Approved Final Price</span>
-            <span className="text-3xl font-black text-forest">₹{deal.amount}</span>
+            <span className="text-3xl font-black text-charcoal">₹{deal.amount}</span>
           </div>
         </div>
 
         {/* Global Action Notifications */}
         {actionSuccess && (
-          <div className="p-3.5 rounded-xl bg-sage-50 border border-sage text-forest text-xs font-bold flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-forest shrink-0" />
+          <div className="p-3.5 rounded-xl bg-sage-50 border border-sage text-charcoal text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-sage-dark shrink-0" />
             <span>{actionSuccess}</span>
           </div>
         )}
@@ -376,9 +376,9 @@ export default function DealTrackerPage() {
         {/* Step A: Buyer chooses payment method & fulfilment */}
         {isBuyer && deal.status === 'approved' && (
           <form onSubmit={handleChooseMethod} className="space-y-4 pt-2">
-            <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber/40 space-y-3">
-              <h3 className="font-black text-forest text-sm flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber" />
+            <div className="p-4 rounded-2xl bg-sage-50 border-2 border-sage space-y-3">
+              <h3 className="font-black text-charcoal text-sm flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-sage-dark" />
                 Step 1: Choose Your Payment Method & Delivery
               </h3>
               <p className="text-xs text-charcoal/80 leading-relaxed">
@@ -387,11 +387,11 @@ export default function DealTrackerPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-forest block mb-1.5">Payment Method</label>
+                  <label className="text-xs font-bold text-charcoal block mb-1.5">Payment Method</label>
                   <select
                     value={chosenMethod}
                     onChange={(e) => setChosenMethod(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-forest text-xs font-bold focus:outline-none focus:border-forest"
+                    className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-charcoal text-xs font-bold focus:outline-none focus:border-charcoal"
                   >
                     <option value="online">Online via Razorpay Route (Held in Escrow)</option>
                     <option value="upi">Direct UPI (GPay / PhonePe / Paytm)</option>
@@ -401,11 +401,11 @@ export default function DealTrackerPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-forest block mb-1.5">Fulfilment</label>
+                  <label className="text-xs font-bold text-charcoal block mb-1.5">Fulfilment</label>
                   <select
                     value={fulfilment}
                     onChange={(e) => setFulfilment(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-forest text-xs font-bold focus:outline-none focus:border-forest"
+                    className="w-full px-3 py-2 rounded-xl border border-sage/60 bg-warm-white text-charcoal text-xs font-bold focus:outline-none focus:border-charcoal"
                   >
                     <option value="campus_pickup">Campus Handover (Default)</option>
                     <option value="courier">Courier Delivery to Address</option>
@@ -474,13 +474,13 @@ export default function DealTrackerPage() {
 
         {/* Step B: Payment Details Revealed (UPI ID / Cash instructions) */}
         {deal.sellerPaymentDetails?.upiId && (
-          <div className="p-5 rounded-2xl bg-forest-50/50 border-2 border-forest/30 space-y-3">
+          <div className="p-5 rounded-2xl bg-sage-50 border-2 border-sage space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-forest flex items-center gap-1.5">
+              <span className="text-xs font-black uppercase tracking-wider text-charcoal flex items-center gap-1.5">
                 <DollarSign className="w-4 h-4 text-amber" />
                 Seller Direct Payment Information
               </span>
-              <span className="text-[11px] font-bold text-forest bg-sage/20 px-2.5 py-0.5 rounded-full border border-sage">
+              <span className="text-[11px] font-bold text-charcoal bg-sage-100 px-2.5 py-0.5 rounded-full border border-sage">
                 {deal.chosenMethod?.toUpperCase()}
               </span>
             </div>
@@ -488,23 +488,23 @@ export default function DealTrackerPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-warm-white border border-sage/50">
               <div>
                 <span className="text-[10px] uppercase font-bold text-charcoal-muted block">Seller UPI ID</span>
-                <span className="font-mono text-base font-black text-forest">
+                <span className="font-mono text-base font-black text-charcoal">
                   {deal.sellerPaymentDetails.upiId}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyUpi}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber hover:bg-amber-hover text-forest font-black text-xs shadow-xs self-start sm:self-auto cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-xs shadow-xs self-start sm:self-auto cursor-pointer border border-charcoal"
               >
-                {copiedUpi ? <Check className="w-3.5 h-3.5 text-forest" /> : <Copy className="w-3.5 h-3.5 text-forest" />}
+                {copiedUpi ? <Check className="w-3.5 h-3.5 text-sage" /> : <Copy className="w-3.5 h-3.5 text-sage" />}
                 <span>{copiedUpi ? 'Copied!' : 'Copy UPI ID'}</span>
               </button>
             </div>
 
             {deal.sellerPaymentDetails.contactPhone && (
               <div className="text-xs text-charcoal/80 font-medium">
-                Seller Contact Phone: <strong className="font-bold text-forest">{deal.sellerPaymentDetails.contactPhone}</strong>
+                Seller Contact Phone: <strong className="font-bold text-charcoal">{deal.sellerPaymentDetails.contactPhone}</strong>
               </div>
             )}
 
@@ -514,7 +514,7 @@ export default function DealTrackerPage() {
                 type="button"
                 onClick={handleMarkPaid}
                 disabled={actionLoading}
-                className="w-full py-3 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-xs shadow-md shadow-amber/25 transition-all"
+                className="w-full py-3 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white font-black text-xs shadow-md border border-charcoal transition-all cursor-pointer"
               >
                 {actionLoading ? 'Updating...' : 'I Have Paid via UPI (Notify Seller)'}
               </button>

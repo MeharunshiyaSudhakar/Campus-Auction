@@ -103,10 +103,10 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sage/40 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-forest text-warm-white flex items-center justify-center shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-charcoal text-warm-white flex items-center justify-center shadow-xs border border-charcoal">
               <Bell className="w-5 h-5 text-amber" />
             </div>
-            <h1 className="text-2xl font-black text-forest">Notifications Center</h1>
+            <h1 className="text-2xl font-black text-charcoal">Notifications Center</h1>
           </div>
           <p className="text-xs text-charcoal-muted">
             Stay updated on your live bids, winning outcomes, and buyer questions.
@@ -119,7 +119,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => setUnreadOnly(false)}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                !unreadOnly ? 'bg-forest text-warm-white' : 'text-forest hover:bg-sage/20'
+                !unreadOnly ? 'bg-charcoal text-warm-white font-black' : 'text-charcoal hover:bg-sage-100'
               }`}
             >
               All
@@ -127,12 +127,12 @@ export default function NotificationsPage() {
             <button
               onClick={() => setUnreadOnly(true)}
               className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
-                unreadOnly ? 'bg-forest text-warm-white' : 'text-forest hover:bg-sage/20'
+                unreadOnly ? 'bg-charcoal text-warm-white font-black' : 'text-charcoal hover:bg-sage-100'
               }`}
             >
               <span>Unread</span>
               {unreadCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-amber text-forest text-[10px] font-black flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-amber text-charcoal text-[10px] font-black flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
@@ -142,7 +142,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="px-3.5 py-2 rounded-xl bg-forest hover:bg-forest-light text-warm-white text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-charcoal hover:bg-charcoal-hover text-warm-white text-xs font-black flex items-center gap-1.5 shadow-xs cursor-pointer border border-charcoal"
             >
               <CheckCheck className="w-3.5 h-3.5 text-amber" />
               <span>Mark all read</span>
@@ -160,11 +160,11 @@ export default function NotificationsPage() {
             <div className="h-20 bg-sage/15 rounded-2xl" />
           </div>
         ) : notifications.length === 0 ? (
-          <div className="bg-warm-white-paper rounded-3xl border border-sage/60 p-12 text-center space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-sage/20 text-forest flex items-center justify-center mx-auto">
-              <Bell className="w-7 h-7 text-forest" />
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-12 text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-charcoal text-warm-white flex items-center justify-center mx-auto shadow-xs border border-charcoal">
+              <Bell className="w-7 h-7 text-amber" />
             </div>
-            <h3 className="text-base font-black text-forest">
+            <h3 className="text-base font-black text-charcoal">
               {unreadOnly ? 'No Unread Notifications' : 'No Notifications Yet'}
             </h3>
             <p className="text-xs text-charcoal-muted max-w-sm mx-auto">
@@ -178,13 +178,13 @@ export default function NotificationsPage() {
             <div
               key={n._id}
               onClick={() => handleMarkAsRead(n)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 hover:border-forest/50 ${
+              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-4 hover:border-charcoal ${
                 !n.isRead
-                  ? 'bg-amber/10 border-amber/60 shadow-xs'
-                  : 'bg-warm-white-paper border-sage/50'
+                  ? 'bg-amber-50/70 border-amber/60 shadow-xs'
+                  : 'bg-warm-white-paper border-sage/60'
               }`}
             >
-              <div className="p-2.5 rounded-xl bg-sage/20 shrink-0 mt-0.5">
+              <div className="p-2.5 rounded-xl bg-sage-100 text-charcoal border border-sage/50 shrink-0 mt-0.5">
                 {getTypeIcon(n.type)}
               </div>
 
