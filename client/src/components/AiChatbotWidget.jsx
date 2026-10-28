@@ -206,22 +206,22 @@ export default function AiChatbotWidget() {
 
   return (
     <>
-      {/* Floating Widget Launcher Button (Bottom Right) */}
-      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50">
+      {/* Floating Widget Launcher Button (Bottom Right, adjusted to not obstruct mobile action buttons) */}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-40 pointer-events-auto">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
             aria-label="Open Campus AI Assistant Chat"
-            className="group relative flex items-center gap-2.5 px-4 py-3 sm:px-5 sm:py-3.5 rounded-full bg-charcoal hover:bg-charcoal-hover text-warm-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-sage cursor-pointer"
+            className="group relative flex items-center gap-2 px-3 py-2 sm:px-5 sm:py-3.5 rounded-full bg-charcoal hover:bg-charcoal-hover text-warm-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-sage cursor-pointer"
           >
             {/* Glowing / Pulse Badge */}
-            <span className="relative flex h-3 w-3">
+            <span className="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-amber"></span>
             </span>
 
             <div className="flex items-center gap-1.5 font-heading font-black text-xs sm:text-sm tracking-wide">
-              <Sparkles className="w-4 h-4 text-amber animate-pulse" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber animate-pulse" />
               <span>Campus AI</span>
             </div>
 

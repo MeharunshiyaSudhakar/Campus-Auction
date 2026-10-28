@@ -323,7 +323,7 @@ export default function AuctionDetailPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 pb-28 sm:pb-12">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-charcoal/70">
         <Link to="/" className="hover:text-forest font-semibold">

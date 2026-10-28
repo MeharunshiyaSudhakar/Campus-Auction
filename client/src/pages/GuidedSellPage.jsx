@@ -326,7 +326,7 @@ export default function GuidedSellPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6 pb-28 sm:pb-16">
       {/* Header & Autosave Badge */}
       <div className="flex items-center justify-between gap-4 border-b border-sage/40 pb-4">
         <div>

@@ -60,7 +60,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Navigation Links: Home | Live Auctions (icon) | AI Assistant | Needs Attention */}
+        {/* Desktop Navigation Links: Home | Live Auctions | My Listings | Needs Attention */}
         <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-warm-white/90">
           <Link
             to="/"
@@ -99,18 +99,6 @@ export default function Navbar() {
               <span>My Listings</span>
             </Link>
           )}
-
-          <Link
-            to="/sell"
-            className={`transition-colors py-1 flex items-center gap-1.5 ${
-              isActive('/sell')
-                ? 'text-sage font-extrabold border-b-2 border-sage'
-                : 'text-warm-white/90 hover:text-sage-light'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-sage" />
-            <span>AI Assistant</span>
-          </Link>
 
           {user && (
             <Link

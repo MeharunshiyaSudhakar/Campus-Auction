@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
@@ -37,6 +37,7 @@ export default function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/needs-attention" element={<NeedsAttentionPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/assistant" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
           <footer className="border-t border-sage/40 bg-warm-white-muted/60 py-6 px-4 text-center text-xs text-charcoal/70">
