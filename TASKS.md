@@ -18,14 +18,14 @@
 - [x] Check: public profile shows only the name (zero private leak)
 
 ## Module 2: Item Listings
-- [ ] Listing model with structured condition (grade, age, working status, defects, accessories, category details)
-- [ ] Create listing endpoint with validation (required fields, defects mandatory for Fair/Poor)
-- [ ] Photo upload (minimum 2-3 photos, size limit, defect photo prompt)
-- [ ] Honesty declaration checkbox
-- [ ] Edit listing (lock price fields once bids exist)
-- [ ] Cancel listing (record cancelled outcome)
-- [ ] Create-listing form in React with category-specific fields
-- [ ] "My Listings" page
+- [x] Listing model with structured condition (grade, age, working status, defects, accessories, category details)
+- [x] Create listing endpoint with validation (required fields, defects mandatory for Fair/Poor)
+- [x] Photo upload (minimum 2-3 photos, size limit, defect photo prompt)
+- [x] Honesty declaration checkbox
+- [x] Edit listing (lock price fields once bids exist)
+- [x] Cancel listing (record cancelled outcome)
+- [x] Create-listing form in React with category-specific fields
+- [x] "My Listings" page
 
 ## Module 3: AI Description Helper
 - [ ] aiService.js with provider, fallback and API key in .env

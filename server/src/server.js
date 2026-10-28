@@ -10,6 +10,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
+const listingRoutes = require('./routes/listingRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +40,7 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/listings', listingRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

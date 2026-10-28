@@ -35,6 +35,11 @@ export default function Navbar() {
           <Link to="/" className="hover:text-indigo-600 transition-colors">
             Live Auctions
           </Link>
+          {user && (
+            <Link to="/my-listings" className="hover:text-indigo-600 transition-colors">
+              My Listings
+            </Link>
+          )}
           <span className="text-slate-300">|</span>
           <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-medium border border-emerald-200 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
