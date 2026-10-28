@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle, Zap } from 'lucide-react';
 
 export default function CountdownTimer({ targetDate, compact = false, onExpire }) {
   const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
@@ -21,6 +21,9 @@ export default function CountdownTimer({ targetDate, compact = false, onExpire }
   }
 
   useEffect(() => {
+    // Immediate recalculation on targetDate prop change (e.g. anti-sniping extension)
+    setTimeLeft(calculateTimeLeft(targetDate));
+
     const timer = setInterval(() => {
       const remaining = calculateTimeLeft(targetDate);
       setTimeLeft(remaining);
@@ -42,6 +45,7 @@ export default function CountdownTimer({ targetDate, compact = false, onExpire }
     );
   }
 
+  const isUnder30Seconds = timeLeft.total > 0 && timeLeft.total <= 30000;
   const isUrgent = timeLeft.total < 2 * 60 * 60 * 1000; // Under 2 hours
 
   if (compact) {
@@ -92,11 +96,18 @@ export default function CountdownTimer({ targetDate, compact = false, onExpire }
           <div className="text-xl sm:text-2xl font-black">{timeLeft.minutes}</div>
           <div className="text-[10px] sm:text-xs text-sage-light uppercase font-bold tracking-wider">Mins</div>
         </div>
-        <div className={`p-2 sm:p-3 rounded-xl border shadow-xs ${isUrgent ? 'bg-amber text-forest border-amber/60 font-black' : 'bg-forest text-warm-white border-forest-light'}`}>
+        <div className={`p-2 sm:p-3 rounded-xl border shadow-xs ${isUnder30Seconds ? 'bg-amber text-forest border-amber/80 font-black animate-pulse' : isUrgent ? 'bg-amber text-forest border-amber/60 font-black' : 'bg-forest text-warm-white border-forest-light'}`}>
           <div className="text-xl sm:text-2xl font-black">{timeLeft.seconds}</div>
-          <div className={`text-[10px] sm:text-xs uppercase font-bold tracking-wider ${isUrgent ? 'text-forest' : 'text-sage-light'}`}>Secs</div>
+          <div className={`text-[10px] sm:text-xs uppercase font-bold tracking-wider ${isUrgent || isUnder30Seconds ? 'text-forest' : 'text-sage-light'}`}>Secs</div>
         </div>
       </div>
+
+      {isUnder30Seconds && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber/20 border border-amber/70 text-forest text-xs font-black animate-pulse">
+          <Zap className="w-4 h-4 text-amber-hover fill-amber shrink-0 animate-bounce" />
+          <span>⚡ Anti-sniping active: Any bid placed right now extends the auction by 60s!</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ async function runTests() {
 
   // Clean test data
   await Listing.deleteMany({ title: { $regex: /\[Test-M16\]/ } });
-  await User.deleteMany({ email: { $regex: /m16test/ } });
+  await User.deleteMany({ $or: [{ email: { $regex: /m16test/ } }, { campusRollNumber: { $in: ['ME21B099', 'CS24B011', 'EE24B033'] } }] });
   await Deal.deleteMany({});
   await DealMessage.deleteMany({});
 

@@ -22,7 +22,9 @@ import {
   DollarSign,
   History,
   Lock,
+  Zap,
 } from 'lucide-react';
+import useAuctionSocket from '../hooks/useAuctionSocket';
 
 export default function AuctionDetailPage() {
   const { id } = useParams();
@@ -34,11 +36,51 @@ export default function AuctionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Bidding form state (Prepared for Module 5)
+  // Live real-time socket events state (Module 6)
+  const [extensionAlert, setExtensionAlert] = useState(null);
+  const [liveBidBanner, setLiveBidBanner] = useState(null);
+
+  // Bidding form state
   const [bidAmount, setBidAmount] = useState('');
   const [bidError, setBidError] = useState(null);
   const [bidSuccess, setBidSuccess] = useState(null);
   const [submittingBid, setSubmittingBid] = useState(false);
+
+  // Subscribe to live auction Socket.io room (Module 6)
+  useAuctionSocket(id, {
+    onNewBid: (data) => {
+      setListing((prev) => {
+        if (!prev) return prev;
+        const bids = prev.bids || [];
+        const alreadyExists = bids.some((b) => b._id === data.bid?._id);
+        const nextBids = alreadyExists ? bids : [data.bid, ...bids];
+        return {
+          ...prev,
+          currentPrice: data.currentPrice,
+          bidCount: data.bidCount,
+          closingTime: data.closingTime,
+          leadingBidder: data.leadingBidder,
+          bids: nextBids,
+        };
+      });
+
+      // Dynamically update next valid minimum bid amount
+      setBidAmount((prevAmount) => {
+        const nextMin = data.currentPrice + (listing?.minIncrement || 50);
+        return String(Math.max(Number(prevAmount) || 0, nextMin));
+      });
+
+      // Flash live bid banner if from another student
+      if (!user || data.leadingBidder?._id !== user._id) {
+        setLiveBidBanner(`⚡ New leading bid of ₹${data.currentPrice} placed by ${data.leadingBidder?.name || 'Fellow Student'}!`);
+        setTimeout(() => setLiveBidBanner(null), 6000);
+      }
+    },
+    onAuctionExtended: (data) => {
+      setExtensionAlert(data.message || '⚡ Anti-sniping active: Auction closing time extended by 60 seconds!');
+      setTimeout(() => setExtensionAlert(null), 8000);
+    },
+  });
 
   useEffect(() => {
     let isSubscribed = true;
@@ -449,6 +491,25 @@ export default function AuctionDetailPage() {
 
         {/* Right Column: Live Auction Box, Bidding Form & Public Bid History (5 Cols) */}
         <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+          {/* Anti-Sniping Live Extension Banner */}
+          {extensionAlert && (
+            <div className="p-4 rounded-2xl bg-amber/20 border-2 border-amber flex items-center gap-3 animate-pulse text-forest shadow-md">
+              <Zap className="w-6 h-6 text-amber-hover fill-amber shrink-0 animate-bounce" />
+              <div>
+                <h4 className="font-black text-xs uppercase tracking-wider text-forest">Anti-Sniping Triggered</h4>
+                <p className="text-xs font-bold text-charcoal">{extensionAlert}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Real-time Bid Notification Banner */}
+          {liveBidBanner && (
+            <div className="p-3.5 rounded-2xl bg-forest text-warm-white flex items-center gap-2.5 shadow-md border border-forest-light animate-fade-in">
+              <Gavel className="w-4 h-4 text-amber shrink-0 animate-pulse" />
+              <span className="text-xs font-bold">{liveBidBanner}</span>
+            </div>
+          )}
+
           {/* Main Auction Box */}
           <div className="bg-warm-white-paper rounded-3xl border-2 border-forest p-6 sm:p-7 space-y-6 shadow-md">
             {/* Title & Category Header */}

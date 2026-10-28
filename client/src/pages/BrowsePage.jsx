@@ -17,6 +17,7 @@ import {
 import api from '../api/client';
 import ListingCard from '../components/ListingCard';
 import FilterSidebar from '../components/FilterSidebar';
+import useAuctionSocket from '../hooks/useAuctionSocket';
 
 export default function BrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +30,24 @@ export default function BrowsePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Live real-time socket updates for listings grid
+  useAuctionSocket(null, {
+    onPriceUpdated: (data) => {
+      setListings((prevListings) =>
+        prevListings.map((item) =>
+          item._id === data.listingId
+            ? {
+                ...item,
+                currentPrice: data.currentPrice,
+                bidCount: data.bidCount,
+                closingTime: data.closingTime || item.closingTime,
+              }
+            : item
+        )
+      );
+    },
+  });
 
   // Extract current filter values from URL searchParams
   const currentFilters = {

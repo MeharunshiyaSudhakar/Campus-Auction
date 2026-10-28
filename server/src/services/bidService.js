@@ -143,6 +143,58 @@ class BidService {
     // Populate bidder public name only (zero private details)
     await bid.populate('bidder', 'name');
 
+    // Broadcast live updates via Socket.io
+    try {
+      const { getIO } = require('../config/socket');
+      const io = getIO();
+
+      const broadcastPayload = {
+        listingId: updatedListing._id.toString(),
+        amount: numAmount,
+        currentPrice: updatedListing.currentPrice,
+        bidCount: updatedListing.bidCount,
+        closingTime: updatedListing.closingTime,
+        extended: isUnder30Seconds,
+        leadingBidder: {
+          _id: bidderId,
+          name: bid.bidder?.name || 'Fellow Student',
+        },
+        bid: {
+          _id: bid._id,
+          amount: bid.amount,
+          bidTime: bid.bidTime,
+          bidder: {
+            _id: bidderId,
+            name: bid.bidder?.name || 'Fellow Student',
+          },
+        },
+      };
+
+      // 1. Emit to auction room
+      io.to(`auction:${listingId}`).emit('new_bid', broadcastPayload);
+
+      // 2. If extended, emit explicit anti-sniping extension event
+      if (isUnder30Seconds) {
+        io.to(`auction:${listingId}`).emit('auction_extended', {
+          listingId: updatedListing._id.toString(),
+          newClosingTime: updatedListing.closingTime,
+          message: '⚡ Anti-sniping active: Auction extended by 60 seconds!',
+        });
+      }
+
+      // 3. Emit global feed update so browse cards stay in sync without page refresh
+      io.emit('listing_price_updated', {
+        listingId: updatedListing._id.toString(),
+        currentPrice: updatedListing.currentPrice,
+        bidCount: updatedListing.bidCount,
+        closingTime: updatedListing.closingTime,
+        extended: isUnder30Seconds,
+      });
+    } catch (socketErr) {
+      // Socket errors shouldn't fail the atomic bid transaction
+      console.warn('[Socket.io] Broadcast warning:', socketErr.message);
+    }
+
     return {
       bid,
       listing: {
