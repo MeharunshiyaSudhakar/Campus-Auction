@@ -205,7 +205,7 @@ class ListingService {
    * Get a single listing by ID with full details, transparent bid history, and server clock
    */
   static async getListingById(id) {
-    const listing = await Listing.findById(id)
+    let listing = await Listing.findById(id)
       .populate('seller', 'name')
       .populate('leadingBidder', 'name')
       .populate('winner', 'name');
@@ -216,13 +216,31 @@ class ListingService {
       throw error;
     }
 
+    // Lazy Server-Clock Auction Closing: if expired but still active, close now
+    if (listing.status === 'active' && new Date() >= new Date(listing.closingTime)) {
+      const AuctionClosingService = require('./auctionClosingService');
+      const closeResult = await AuctionClosingService.closeListing(listing._id);
+      if (closeResult.closed && closeResult.listing) {
+        listing = closeResult.listing;
+      }
+    }
+
     // Fetch public transparent bid history
     const bids = await Bid.find({ listing: id })
       .sort({ amount: -1, bidTime: -1, createdAt: -1 })
       .populate('bidder', 'name');
 
-    const listingObj = listing.toObject();
+    // If approved, attach deal reference if created
+    let dealId = null;
+    if (['approved', 'pickup_scheduled', 'completed'].includes(listing.status)) {
+      const Deal = require('../models/Deal');
+      const deal = await Deal.findOne({ listing: listing._id }).select('_id');
+      if (deal) dealId = deal._id;
+    }
+
+    const listingObj = listing.toObject ? listing.toObject() : listing;
     listingObj.bids = bids;
+    listingObj.dealId = dealId;
     listingObj.serverTime = new Date();
     listingObj.timeLeftMs = Math.max(0, new Date(listing.closingTime).getTime() - Date.now());
     listingObj.isClosed = listingObj.timeLeftMs === 0 || listing.status !== 'active';

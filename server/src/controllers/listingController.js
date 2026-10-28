@@ -115,6 +115,51 @@ class ListingController {
       next(error);
     }
   }
+
+  /**
+   * @route   POST /api/listings/:id/approve
+   * @desc    Seller approves winning bid on closed auction, creating Deal & handover code
+   * @access  Private (Seller only)
+   */
+  static async approveWinningBid(req, res, next) {
+    try {
+      const ApprovalService = require('../services/approvalService');
+      const result = await ApprovalService.approveWinningBid(req.user._id, req.params.id);
+      return ApiResponse.success(res, result, result.message, 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @route   POST /api/listings/:id/reject
+   * @desc    Seller declines winning bid on closed auction
+   * @access  Private (Seller only)
+   */
+  static async rejectWinningBid(req, res, next) {
+    try {
+      const ApprovalService = require('../services/approvalService');
+      const result = await ApprovalService.rejectWinningBid(req.user._id, req.params.id, req.body.reason);
+      return ApiResponse.success(res, result, result.message, 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @route   POST /api/listings/:id/close
+   * @desc    Verify and close an expired auction immediately
+   * @access  Public
+   */
+  static async closeAuction(req, res, next) {
+    try {
+      const AuctionClosingService = require('../services/auctionClosingService');
+      const result = await AuctionClosingService.closeListing(req.params.id);
+      return ApiResponse.success(res, result, 'Auction closing check complete', 200);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = ListingController;

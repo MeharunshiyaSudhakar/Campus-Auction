@@ -15,4 +15,9 @@ router.get('/:id', ListingController.getListingById);
 router.put('/:id', protect, ListingController.updateListing);
 router.delete('/:id', protect, ListingController.cancelListing);
 
+// Modules 7 & 8: Closing and Seller Approval Routes
+router.post('/:id/approve', protect, ListingController.approveWinningBid);
+router.post('/:id/reject', protect, ListingController.rejectWinningBid);
+router.post('/:id/close', ListingController.closeAuction);
+
 module.exports = router;

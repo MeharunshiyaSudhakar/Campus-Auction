@@ -8,7 +8,14 @@ import getSocket from '../services/socket';
  */
 export function useAuctionSocket(listingId, callbacks = {}) {
   const [connected, setConnected] = useState(false);
-  const { onNewBid, onAuctionExtended, onPriceUpdated } = callbacks;
+  const {
+    onNewBid,
+    onAuctionExtended,
+    onPriceUpdated,
+    onAuctionClosed,
+    onAuctionApproved,
+    onAuctionRejected,
+  } = callbacks;
 
   useEffect(() => {
     const socket = getSocket();
@@ -41,9 +48,30 @@ export function useAuctionSocket(listingId, callbacks = {}) {
       if (onPriceUpdated) onPriceUpdated(data);
     };
 
+    const handleAuctionClosed = (data) => {
+      if (!listingId || data.listingId === listingId) {
+        if (onAuctionClosed) onAuctionClosed(data);
+      }
+    };
+
+    const handleAuctionApproved = (data) => {
+      if (!listingId || data.listingId === listingId) {
+        if (onAuctionApproved) onAuctionApproved(data);
+      }
+    };
+
+    const handleAuctionRejected = (data) => {
+      if (!listingId || data.listingId === listingId) {
+        if (onAuctionRejected) onAuctionRejected(data);
+      }
+    };
+
     socket.on('new_bid', handleNewBid);
     socket.on('auction_extended', handleAuctionExtended);
     socket.on('listing_price_updated', handlePriceUpdated);
+    socket.on('auction_closed', handleAuctionClosed);
+    socket.on('auction_approved', handleAuctionApproved);
+    socket.on('auction_rejected', handleAuctionRejected);
 
     return () => {
       if (listingId) {
@@ -54,8 +82,19 @@ export function useAuctionSocket(listingId, callbacks = {}) {
       socket.off('new_bid', handleNewBid);
       socket.off('auction_extended', handleAuctionExtended);
       socket.off('listing_price_updated', handlePriceUpdated);
+      socket.off('auction_closed', handleAuctionClosed);
+      socket.off('auction_approved', handleAuctionApproved);
+      socket.off('auction_rejected', handleAuctionRejected);
     };
-  }, [listingId, onNewBid, onAuctionExtended, onPriceUpdated]);
+  }, [
+    listingId,
+    onNewBid,
+    onAuctionExtended,
+    onPriceUpdated,
+    onAuctionClosed,
+    onAuctionApproved,
+    onAuctionRejected,
+  ]);
 
   return { connected };
 }

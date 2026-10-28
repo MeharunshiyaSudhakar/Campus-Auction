@@ -29,6 +29,16 @@ initSocket(server);
 connectDB().then(() => {
   // Start background schedulers after DB connection is ready
   startUnsoldAlertScheduler();
+
+  // Module 7: Start periodic auction closing engine (every 15 seconds)
+  const AuctionClosingService = require('./services/auctionClosingService');
+  setInterval(async () => {
+    try {
+      await AuctionClosingService.closeAllExpired();
+    } catch (err) {
+      console.warn('[AuctionClosingScheduler] Periodic check error:', err.message);
+    }
+  }, 15000);
 });
 
 // Global Middlewares

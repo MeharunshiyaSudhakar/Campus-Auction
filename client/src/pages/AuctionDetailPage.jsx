@@ -76,9 +76,43 @@ export default function AuctionDetailPage() {
         setTimeout(() => setLiveBidBanner(null), 6000);
       }
     },
-    onAuctionExtended: (data) => {
-      setExtensionAlert(data.message || '⚡ Anti-sniping active: Auction closing time extended by 60 seconds!');
-      setTimeout(() => setExtensionAlert(null), 8000);
+    onAuctionClosed: (data) => {
+      setListing((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: data.status,
+          finalPrice: data.finalPrice || prev.currentPrice,
+          winner: data.winner || prev.winner || prev.leadingBidder,
+        };
+      });
+      setLiveBidBanner(
+        data.status === 'pending_approval'
+          ? `Auction closed! Awaiting seller approval for winning bid of ₹${data.finalPrice || ''}`
+          : `Auction closed without bids.`
+      );
+      setTimeout(() => setLiveBidBanner(null), 8000);
+    },
+    onAuctionApproved: (data) => {
+      setListing((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: 'approved',
+          dealId: data.dealId,
+        };
+      });
+      setLiveBidBanner(`🎉 Sale Approved! Deal tracker is now open.`);
+      setTimeout(() => setLiveBidBanner(null), 8000);
+    },
+    onAuctionRejected: () => {
+      setListing((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: 'rejected',
+        };
+      });
     },
   });
 
@@ -148,6 +182,60 @@ export default function AuctionDetailPage() {
   }
 
   const isSeller = user && listing.seller && (user._id === listing.seller._id || user._id === listing.seller);
+  const isWinner =
+    user &&
+    ((listing.winner && (user._id === listing.winner._id || user._id === listing.winner)) ||
+      (listing.leadingBidder &&
+        (user._id === listing.leadingBidder._id || user._id === listing.leadingBidder)));
+
+  // Seller approval / decline states (Module 8)
+  const [decisionLoading, setDecisionLoading] = useState(false);
+  const [decisionError, setDecisionError] = useState(null);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declineReason, setDeclineReason] = useState('');
+
+  const handleApproveSale = async () => {
+    setDecisionLoading(true);
+    setDecisionError(null);
+    try {
+      const res = await api.post(`/listings/${id}/approve`);
+      const deal = res.data?.data?.deal;
+      setListing((prev) => ({
+        ...prev,
+        status: 'approved',
+        dealId: deal?._id,
+      }));
+      if (deal?._id) {
+        navigate(`/deals/${deal._id}`);
+      }
+    } catch (err) {
+      console.error('Failed to approve bid:', err);
+      setDecisionError(err.response?.data?.message || 'Failed to approve bid');
+    } finally {
+      setDecisionLoading(false);
+    }
+  };
+
+  const handleRejectSale = async () => {
+    setDecisionLoading(true);
+    setDecisionError(null);
+    try {
+      await api.post(`/listings/${id}/reject`, {
+        reason: declineReason || 'Price below expectations',
+      });
+      setListing((prev) => ({
+        ...prev,
+        status: 'rejected',
+      }));
+      setShowDeclineModal(false);
+    } catch (err) {
+      console.error('Failed to decline bid:', err);
+      setDecisionError(err.response?.data?.message || 'Failed to decline bid');
+    } finally {
+      setDecisionLoading(false);
+    }
+  };
+
   const minValidBid = listing.bidCount > 0 ? listing.currentPrice + listing.minIncrement : listing.startingPrice;
   const isClosed = listing.status !== 'active' || (listing.timeLeftMs !== undefined && listing.timeLeftMs <= 0);
 
@@ -574,15 +662,187 @@ export default function AuctionDetailPage() {
               </div>
             </div>
 
-            {/* Bidding Action Form */}
+            {/* Post-Auction Lifecycle & Bidding Action Form */}
             {isClosed ? (
-              <div className="p-4 rounded-2xl bg-charcoal/10 border border-charcoal/20 text-center space-y-1">
-                <span className="font-black text-charcoal block">This Auction has Ended</span>
-                <span className="text-xs text-charcoal-muted">
-                  {listing.winner?.name
-                    ? `Won by ${listing.winner.name} at ₹${listing.finalPrice || listing.currentPrice}`
-                    : 'Auction closed with no winning bids'}
-                </span>
+              <div className="space-y-4">
+                {/* 1. Pending Seller Approval */}
+                {listing.status === 'pending_approval' && (
+                  <>
+                    {isSeller ? (
+                      <div className="p-5 rounded-2xl bg-amber/15 border-2 border-amber space-y-3 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-amber fill-amber shrink-0 animate-pulse" />
+                          <h3 className="text-xs font-black text-forest uppercase tracking-wider">
+                            Seller Decision Required
+                          </h3>
+                        </div>
+                        <p className="text-xs text-charcoal leading-relaxed font-semibold">
+                          Auction closed with a winning bid of{' '}
+                          <strong className="text-forest font-black">
+                            ₹{listing.finalPrice || listing.currentPrice}
+                          </strong>{' '}
+                          from{' '}
+                          <strong className="text-forest font-bold">
+                            {listing.winner?.name || listing.leadingBidder?.name || 'Winning Student'}
+                          </strong>
+                          . Approve to generate the campus handover code and open direct payment.
+                        </p>
+
+                        {decisionError && (
+                          <p className="text-xs text-red-600 font-bold">{decisionError}</p>
+                        )}
+
+                        {showDeclineModal ? (
+                          <div className="space-y-2 pt-2 border-t border-amber/40">
+                            <label className="text-[11px] font-black uppercase text-charcoal block">
+                              Reason for declining (optional):
+                            </label>
+                            <input
+                              type="text"
+                              value={declineReason}
+                              onChange={(e) => setDeclineReason(e.target.value)}
+                              placeholder="e.g. Expected a higher price"
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-sage bg-warm-white text-forest focus:outline-none"
+                            />
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                onClick={handleRejectSale}
+                                disabled={decisionLoading}
+                                className="flex-1 py-2.5 rounded-xl bg-red-600 text-warm-white text-xs font-black hover:bg-red-700 cursor-pointer"
+                              >
+                                {decisionLoading ? 'Declining...' : 'Confirm Decline'}
+                              </button>
+                              <button
+                                onClick={() => setShowDeclineModal(false)}
+                                className="px-3 py-2.5 rounded-xl bg-sage/20 text-forest text-xs font-bold hover:bg-sage/40 cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                            <button
+                              onClick={handleApproveSale}
+                              disabled={decisionLoading}
+                              className="flex-1 py-3 rounded-xl bg-forest hover:bg-forest-light text-warm-white text-xs font-black flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                            >
+                              <CheckCircle2 className="w-4 h-4 text-amber" />
+                              <span>
+                                {decisionLoading
+                                  ? 'Approving...'
+                                  : `Approve Sale (₹${listing.finalPrice || listing.currentPrice})`}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => setShowDeclineModal(true)}
+                              disabled={decisionLoading}
+                              className="py-3 px-4 rounded-xl border-2 border-charcoal/30 text-charcoal hover:bg-charcoal/10 text-xs font-bold cursor-pointer"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : isWinner ? (
+                      <div className="p-5 rounded-2xl bg-forest-50 border-2 border-forest/30 space-y-2 text-center">
+                        <div className="w-10 h-10 rounded-full bg-forest text-amber flex items-center justify-center mx-auto shadow-xs">
+                          <Sparkles className="w-5 h-5 fill-amber" />
+                        </div>
+                        <h3 className="text-base font-black text-forest">You Hold the Winning Bid!</h3>
+                        <p className="text-xs text-charcoal/80 leading-relaxed max-w-sm mx-auto">
+                          Your bid of <strong className="text-forest font-black">₹{listing.finalPrice || listing.currentPrice}</strong> was the highest when the auction closed. The seller has been notified to approve the price.
+                        </p>
+                        <div className="p-2.5 rounded-xl bg-warm-white border border-sage/60 text-xs font-bold text-forest mt-2">
+                          ⏳ Awaiting seller confirmation (deal tracker unlocks upon approval)
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-2xl bg-charcoal/10 border border-charcoal/20 text-center space-y-1">
+                        <span className="font-black text-charcoal block">Auction Closed</span>
+                        <span className="text-xs text-charcoal-muted">
+                          Winning bid of ₹{listing.finalPrice || listing.currentPrice} placed by {listing.winner?.name || 'Fellow Student'}. Awaiting seller confirmation.
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* 2. Approved Sale */}
+                {listing.status === 'approved' && (
+                  <div className="p-5 rounded-2xl bg-forest/10 border-2 border-forest space-y-3 text-center">
+                    <div className="w-10 h-10 rounded-full bg-forest text-warm-white flex items-center justify-center mx-auto shadow-xs">
+                      <CheckCircle2 className="w-5 h-5 text-amber" />
+                    </div>
+                    <h3 className="text-base font-black text-forest">Sale Approved!</h3>
+                    <p className="text-xs text-charcoal/80">
+                      Final price of <strong className="text-forest font-black">₹{listing.finalPrice || listing.currentPrice}</strong> was confirmed by the senior.
+                    </p>
+                    {(isSeller || isWinner) && (
+                      <Link
+                        to={`/deals/${listing.dealId || id}`}
+                        className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-forest hover:bg-forest-light text-warm-white font-black text-xs shadow-md shadow-forest/20 transition-all cursor-pointer"
+                      >
+                        <span>Open Deal Tracker (Payment & Handover)</span>
+                        <ChevronRight className="w-4 h-4 text-amber" />
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. Unsold Item */}
+                {listing.status === 'unsold' && (
+                  <div className="p-4 rounded-2xl bg-charcoal/10 border border-charcoal/20 text-center space-y-2">
+                    <span className="font-black text-charcoal block">Auction Closed (Unsold)</span>
+                    <span className="text-xs text-charcoal-muted block">
+                      This item ended with no bids.
+                    </span>
+                    {isSeller && (
+                      <Link
+                        to="/needs-attention"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest text-warm-white text-xs font-bold hover:bg-forest-light"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber" />
+                        <span>Relist from Needs Attention</span>
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {/* 4. Rejected Sale */}
+                {listing.status === 'rejected' && (
+                  <div className="p-4 rounded-2xl bg-charcoal/10 border border-charcoal/20 text-center space-y-2">
+                    <span className="font-black text-charcoal block">Auction Closed (Sale Declined)</span>
+                    <span className="text-xs text-charcoal-muted block">
+                      The seller declined the final price for this item.
+                    </span>
+                    {isSeller && (
+                      <Link
+                        to="/needs-attention"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-forest text-warm-white text-xs font-bold hover:bg-forest-light"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber" />
+                        <span>Adjust Price & Relist</span>
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {/* Generic Completed fallback */}
+                {['completed', 'pickup_scheduled'].includes(listing.status) && (
+                  <div className="p-4 rounded-2xl bg-forest-50 border border-forest/20 text-center space-y-2">
+                    <span className="font-black text-forest block">Deal In Progress / Completed</span>
+                    {(isSeller || isWinner) && (
+                      <Link
+                        to={`/deals/${listing.dealId || id}`}
+                        className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-forest text-warm-white text-xs font-bold"
+                      >
+                        <span>View Deal Tracker</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-amber" />
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             ) : isSeller ? (
               <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber/40 space-y-2">

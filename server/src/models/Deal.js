@@ -77,7 +77,11 @@ const dealSchema = new mongoose.Schema(
       trackingId: { type: String, default: '' },
       dispatchDate: { type: Date, default: null },
     },
-    // Campus pickup details
+    // Campus pickup details and 6-digit verification code
+    handoverCode: {
+      type: String,
+      default: '',
+    },
     pickupInfo: {
       location: { type: String, default: '' },
       scheduledTime: { type: Date, default: null },
