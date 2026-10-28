@@ -14,12 +14,85 @@
   body {
     background-color: var(--warm-white);
     color: var(--charcoal);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.5;
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Headings: Manrope 600-700 */
   h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--forest);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Emphasis: Inter 600 */
+  button, input, select, textarea {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Typography Scale Classes per Design System Specification */
+@layer utilities {
+  /* Main page heading: 36–44 px (Manrope 600-700) */
+  .text-page-heading {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: clamp(36px, 5vw, 44px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  /* Section heading: 24–28 px (Manrope 600-700) */
+  .text-section-heading {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: clamp(24px, 3.5vw, 28px);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+
+  /* Auction card title: 18–20 px (Manrope 600-700) */
+  .text-card-title {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: clamp(18px, 2.5vw, 20px);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  /* Current bid price: 24–32 px (Inter 600 Emphasis) */
+  .text-bid-price {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: clamp(24px, 4vw, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Body text: 15–16 px (Inter 400-500) */
+  .text-body {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(15px, 2vw, 16px);
+    line-height: 1.6;
+  }
+
+  /* Labels and metadata: 13–14 px (Inter 400-500) */
+  .text-metadata {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(13px, 1.8vw, 14px);
+    line-height: 1.4;
+  }
+
+  /* Buttons: 14–16 px (Inter 600 Emphasis) */
+  .text-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: clamp(14px, 2vw, 16px);
+    line-height: 1.25;
   }
 }
 

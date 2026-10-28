@@ -6,6 +6,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Manrope', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
         forest: {
           DEFAULT: '#1F4D3A',
@@ -44,7 +49,6 @@ export default {
           light: '#767676',
           border: '#E5E0D5',
         },
-        // Map primary to forest green for consistent branding
         primary: {
           DEFAULT: '#1F4D3A',
           50: '#F0F5F2',

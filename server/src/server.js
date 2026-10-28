@@ -1,6 +1,14 @@
 require('dotenv').config();
+
+// Fail loudly at startup if GROQ_API_KEY is missing per project specification
+if (!process.env.GROQ_API_KEY) {
+  console.error('[FATAL CONFIG ERROR] GROQ_API_KEY is missing from environment variables (.env). AI rephrase service requires a valid Groq API key.');
+  process.exit(1);
+}
+
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const cors = require('cors');
 const morgan = require('morgan');
 
@@ -50,6 +58,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Serve uploaded listing photos statically
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

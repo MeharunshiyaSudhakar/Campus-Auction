@@ -1,5 +1,6 @@
 const SellService = require('../services/sellService');
 const ApiResponse = require('../utils/apiResponse');
+const { FileStorageHelper } = require('../utils/fileStorage');
 
 class SellController {
   /**
@@ -68,6 +69,45 @@ class SellController {
     try {
       const result = await SellService.goBack(req.user._id, req.params.id);
       return ApiResponse.success(res, result, 'Stepped back successfully', 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @route   POST /api/sell/drafts/:id/photos
+   * @desc    Upload photos to draft (up to 6 photos, max 5MB each, JPEG/PNG/WebP)
+   * @access  Private (Owner only)
+   */
+  static async uploadPhotos(req, res, next) {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return ApiResponse.error(res, 'No photo files uploaded', 400);
+      }
+      const result = await SellService.uploadPhotos(req.user._id, req.params.id, req.files);
+      return ApiResponse.success(res, result, 'Photos uploaded successfully', 200);
+    } catch (error) {
+      // Clean up uploaded files on error (e.g. non-owner 403 or limit exceeded)
+      if (req.files && Array.isArray(req.files)) {
+        req.files.forEach((f) => FileStorageHelper.deleteFile(`/uploads/${f.filename}`));
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * @route   DELETE /api/sell/drafts/:id/photos
+   * @desc    Delete a photo from draft
+   * @access  Private (Owner only)
+   */
+  static async deletePhoto(req, res, next) {
+    try {
+      const { photoUrl } = req.body;
+      if (!photoUrl) {
+        return ApiResponse.error(res, 'photoUrl is required', 400);
+      }
+      const result = await SellService.deletePhoto(req.user._id, req.params.id, photoUrl);
+      return ApiResponse.success(res, result, 'Photo removed successfully', 200);
     } catch (error) {
       next(error);
     }

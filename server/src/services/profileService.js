@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const Listing = require('../models/Listing');
 const Bid = require('../models/Bid');
+const User = require('../models/User');
+const Repost = require('../models/Repost');
+const Reel = require('../models/Reel');
+const Question = require('../models/Question');
 
 class ProfileService {
   /**
@@ -28,6 +32,241 @@ class ProfileService {
       return { $gte: startDate, $lte: endDate };
     }
     return null;
+  }
+
+  /**
+   * Public Profile: Safe student info (name, campus badge, posts/reels/reposts counts, engagement).
+   * STRICT PRIVACY: NEVER exposes email, roll number, phone, UPI, or financial totals.
+   */
+  static async getPublicProfile(userId) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      const err = new Error('Invalid user ID');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const user = await User.findById(userId).select('name createdAt');
+    if (!user) {
+      const err = new Error('Student profile not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    // Aggregate public counts
+    const [postsCount, reelsCount, repostsCount, viewsAgg, bidsAgg] = await Promise.all([
+      Listing.countDocuments({ seller: userObjId }),
+      Reel.countDocuments({ seller: userObjId }),
+      Repost.countDocuments({ user: userObjId }),
+      Listing.aggregate([
+        { $match: { seller: userObjId } },
+        { $group: { _id: null, totalViews: { $sum: '$views' } } },
+      ]),
+      Listing.aggregate([
+        { $match: { seller: userObjId } },
+        { $group: { _id: null, totalBids: { $sum: '$bidCount' } } },
+      ]),
+    ]);
+
+    const totalViews = viewsAgg.length > 0 ? viewsAgg[0].totalViews : 0;
+    const totalBidsReceived = bidsAgg.length > 0 ? bidsAgg[0].totalBids : 0;
+
+    return {
+      user: {
+        _id: user._id,
+        name: user.name,
+        createdAt: user.createdAt,
+      },
+      stats: {
+        postsCount,
+        reelsCount,
+        repostsCount,
+        totalViews,
+        totalBidsReceived,
+      },
+    };
+  }
+
+  /**
+   * Get Posts (Listings created by this user)
+   */
+  static async getUserPosts(userId, query = {}) {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+    const filter = { seller: userObjId };
+
+    if (query.status && query.status !== 'all') {
+      filter.status = query.status;
+    }
+
+    const posts = await Listing.find(filter)
+      .populate('seller', 'name')
+      .populate('leadingBidder', 'name')
+      .sort({ createdAt: -1 })
+      .limit(Number(query.limit) || 30);
+
+    return posts;
+  }
+
+  /**
+   * Get Reposts (Auctions reshared by this user)
+   */
+  static async getUserReposts(userId, query = {}) {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const reposts = await Repost.find({ user: userObjId })
+      .populate({
+        path: 'listing',
+        populate: [
+          { path: 'seller', select: 'name' },
+          { path: 'leadingBidder', select: 'name' },
+        ],
+      })
+      .sort({ createdAt: -1 })
+      .limit(Number(query.limit) || 30);
+
+    // Filter out any dangling references if listing was deleted
+    const validReposts = reposts
+      .filter((r) => r.listing)
+      .map((r) => ({
+        _id: r._id,
+        repostedAt: r.createdAt,
+        listing: r.listing,
+      }));
+
+    return validReposts;
+  }
+
+  /**
+   * Get Reels (Condition demo video clips by this user)
+   */
+  static async getUserReels(userId) {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const reels = await Reel.find({ seller: userObjId })
+      .populate('listing', 'title category currentPrice startingPrice condition photos')
+      .sort({ createdAt: -1 });
+
+    return reels;
+  }
+
+  /**
+   * Toggle Repost (Reshare / Unreshare an auction)
+   */
+  static async toggleRepost(userId, listingId) {
+    if (!mongoose.Types.ObjectId.isValid(listingId)) {
+      const err = new Error('Invalid listing ID');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      const err = new Error('Listing not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const existing = await Repost.findOne({ user: userId, listing: listingId });
+
+    if (existing) {
+      await Repost.deleteOne({ _id: existing._id });
+      const updated = await Listing.findByIdAndUpdate(
+        listingId,
+        { $inc: { repostCount: -1 } },
+        { new: true }
+      );
+      return { reposted: false, repostCount: Math.max(0, updated.repostCount) };
+    } else {
+      await Repost.create({ user: userId, listing: listingId });
+      const updated = await Listing.findByIdAndUpdate(
+        listingId,
+        { $inc: { repostCount: 1 } },
+        { new: true }
+      );
+      return { reposted: true, repostCount: updated.repostCount };
+    }
+  }
+
+  /**
+   * Check if user has reposted a specific listing
+   */
+  static async hasUserReposted(userId, listingId) {
+    if (!userId || !listingId) return false;
+    const exists = await Repost.exists({ user: userId, listing: listingId });
+    return !!exists;
+  }
+
+  /**
+   * Create a Demo Reel for a listing
+   */
+  static async createReel(sellerId, reelData) {
+    const { listingId, title, videoUrl, thumbnailUrl, caption, durationSeconds } = reelData;
+
+    if (!listingId || !title || !videoUrl) {
+      const err = new Error('Listing ID, title, and video URL are required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      const err = new Error('Listing not found');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (listing.seller.toString() !== sellerId.toString()) {
+      const err = new Error('Only the seller of the listing can post a condition demo reel');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    const reel = await Reel.create({
+      seller: sellerId,
+      listing: listingId,
+      title,
+      videoUrl,
+      thumbnailUrl: thumbnailUrl || (listing.photos?.[0] || ''),
+      caption: caption || '',
+      durationSeconds: Math.min(60, Number(durationSeconds) || 15),
+    });
+
+    return reel;
+  }
+
+  /**
+   * Owner-Only Detailed Engagement & Analytics
+   */
+  static async getOwnerEngagement(userId) {
+    const userObjId = new mongoose.Types.ObjectId(userId);
+
+    const listings = await Listing.find({ seller: userObjId }).select('_id title views repostCount bidCount status');
+    const listingIds = listings.map((l) => l._id);
+
+    const questionsAnswered = await Question.countDocuments({
+      listing: { $in: listingIds },
+      answer: { $ne: null },
+    });
+
+    const totalViews = listings.reduce((acc, l) => acc + (l.views || 0), 0);
+    const totalBidsReceived = listings.reduce((acc, l) => acc + (l.bidCount || 0), 0);
+    const totalRepostsReceived = listings.reduce((acc, l) => acc + (l.repostCount || 0), 0);
+
+    return {
+      totalViews,
+      totalBidsReceived,
+      totalRepostsReceived,
+      questionsAnswered,
+      listingEngagement: listings.map((l) => ({
+        _id: l._id,
+        title: l.title,
+        views: l.views || 0,
+        bids: l.bidCount || 0,
+        reposts: l.repostCount || 0,
+        status: l.status,
+      })),
+    };
   }
 
   /**
@@ -69,6 +308,8 @@ class ProfileService {
         startingPrice: item.startingPrice,
         finalPrice: item.finalPrice || (['completed', 'approved', 'pending_approval'].includes(item.status) ? item.currentPrice : null),
         bidCount: item.bidCount,
+        views: item.views || 0,
+        repostCount: item.repostCount || 0,
         status: item.status,
         outcome,
         winnerName: item.winner?.name || null,

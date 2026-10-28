@@ -230,6 +230,13 @@ class ListingService {
       .sort({ amount: -1, bidTime: -1, createdAt: -1 })
       .populate('bidder', 'name');
 
+    // Fetch condition demo reels attached to this listing
+    const Reel = require('../models/Reel');
+    const reels = await Reel.find({ listing: id }).sort({ createdAt: -1 });
+
+    // Asynchronously increment views counter for Instagram-style engagement analytics
+    Listing.findByIdAndUpdate(id, { $inc: { views: 1 } }).exec().catch(() => {});
+
     // If approved, attach deal reference if created
     let dealId = null;
     if (['approved', 'pickup_scheduled', 'completed'].includes(listing.status)) {
@@ -240,6 +247,8 @@ class ListingService {
 
     const listingObj = listing.toObject ? listing.toObject() : listing;
     listingObj.bids = bids;
+    listingObj.reels = reels;
+    listingObj.views = (listingObj.views || 0) + 1;
     listingObj.dealId = dealId;
     listingObj.serverTime = new Date();
     listingObj.timeLeftMs = Math.max(0, new Date(listing.closingTime).getTime() - Date.now());

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import {
@@ -7,17 +7,21 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
+  Upload,
   Camera,
   Trash2,
   ShieldCheck,
   Check,
   X,
+  Star,
   RefreshCw,
+  HelpCircle,
+  FileImage,
 } from 'lucide-react';
 
 export default function GuidedSellPage() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [draftId, setDraftId] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -26,7 +30,11 @@ export default function GuidedSellPage() {
   const [answers, setAnswers] = useState({});
   const [currentInput, setCurrentInput] = useState('');
   const [photosList, setPhotosList] = useState([]);
-  const [photoInputUrl, setPhotoInputUrl] = useState('');
+
+  // File Upload states
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Status
   const [loading, setLoading] = useState(true);
@@ -39,6 +47,7 @@ export default function GuidedSellPage() {
   const [reviewData, setReviewData] = useState(null);
   const [finalDescription, setFinalDescription] = useState('');
   const [acceptedSuggestions, setAcceptedSuggestions] = useState([]);
+  const [dismissedSuggestions, setDismissedSuggestions] = useState([]);
   const [honestyDeclaration, setHonestyDeclaration] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
@@ -104,6 +113,84 @@ export default function GuidedSellPage() {
     }
   };
 
+  // Real Image Upload via Multer
+  const handleFileUpload = async (filesList) => {
+    if (!filesList || filesList.length === 0) return;
+    setError('');
+
+    const filesArray = Array.from(filesList);
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    for (const file of filesArray) {
+      if (!allowedTypes.includes(file.type)) {
+        setError(`Invalid file type: "${file.name}". Only JPEG, PNG, and WebP images are allowed.`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`File too large: "${file.name}". Maximum size allowed is 5 MB per photo.`);
+        return;
+      }
+    }
+
+    if (photosList.length + filesArray.length > 6) {
+      setError(`Maximum 6 photos allowed per listing (currently ${photosList.length} uploaded).`);
+      return;
+    }
+
+    const formData = new FormData();
+    filesArray.forEach((f) => formData.append('photos', f));
+
+    try {
+      setUploadingPhotos(true);
+      setUploadProgress(25);
+
+      const res = await api.post(`/sell/drafts/${draftId}/photos`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+          }
+        },
+      });
+
+      if (res.data?.success) {
+        setPhotosList(res.data.data.photos);
+        setUploadProgress(100);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to upload photo(s).');
+    } finally {
+      setUploadingPhotos(false);
+      setTimeout(() => setUploadProgress(0), 1200);
+    }
+  };
+
+  // Delete a Photo
+  const handleDeletePhoto = async (photoUrl) => {
+    setError('');
+    try {
+      const res = await api.delete(`/sell/drafts/${draftId}/photos`, {
+        data: { photoUrl },
+      });
+      if (res.data?.success) {
+        setPhotosList(res.data.data.photos);
+      }
+    } catch (err) {
+      // Fallback
+      setPhotosList(photosList.filter((p) => p !== photoUrl));
+    }
+  };
+
+  // Mark one photo as the cover (moves to front)
+  const handleSetCoverPhoto = (index) => {
+    if (index === 0) return;
+    const reordered = [...photosList];
+    const [selected] = reordered.splice(index, 1);
+    reordered.unshift(selected);
+    setPhotosList(reordered);
+  };
+
   const handleSaveAndNext = async (e) => {
     if (e) e.preventDefault();
     if (!currentQuestion) return;
@@ -118,7 +205,25 @@ export default function GuidedSellPage() {
       }
       valueToSave = photosList;
     } else if (currentQuestion.type === 'number') {
-      valueToSave = Number(currentInput);
+      const numVal = Number(currentInput);
+      if (isNaN(numVal) || numVal < (currentQuestion.min || 1)) {
+        setError(`Please enter a valid amount (minimum ₹${currentQuestion.min || 1})`);
+        return;
+      }
+      valueToSave = numVal;
+    } else if (currentQuestion.type === 'datetime') {
+      if (!currentInput || new Date(currentInput) <= new Date()) {
+        setError('Auction closing time must be set in the future');
+        return;
+      }
+    } else if (currentQuestion.key === 'defects') {
+      const grade = answers.conditionGrade;
+      if (['Fair', 'Poor'].includes(grade)) {
+        if (!currentInput || currentInput.trim().length < 8) {
+          setError('Detailed disclosure of known defects (min 8 characters) is mandatory for Fair or Poor condition');
+          return;
+        }
+      }
     }
 
     setSaving(true);
@@ -172,46 +277,16 @@ export default function GuidedSellPage() {
     }
   };
 
-  const handleAddPhoto = () => {
-    if (!photoInputUrl.trim()) return;
-    try {
-      new URL(photoInputUrl.trim());
-      if (!photosList.includes(photoInputUrl.trim())) {
-        setPhotosList([...photosList, photoInputUrl.trim()]);
-        setPhotoInputUrl('');
-      }
-    } catch {
-      setError('Please provide a valid image URL (e.g. https://...)');
-    }
-  };
-
-  const handleUseSamplePhotos = () => {
-    const category = answers.category || 'cycle';
-    const samples = {
-      cycle: [
-        'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=800&q=80',
-      ],
-      calculator: [
-        'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1587145820266-a5951ee6f620?auto=format&fit=crop&w=800&q=80',
-      ],
-      books: [
-        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
-      ],
-      electronics: [
-        'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80',
-      ],
-    };
-    setPhotosList(samples[category] || samples.cycle);
-  };
-
   const handleAcceptSuggestion = (suggestion) => {
     if (!acceptedSuggestions.includes(suggestion)) {
       setAcceptedSuggestions([...acceptedSuggestions, suggestion]);
       setFinalDescription((prev) => `${prev}\n• Note: ${suggestion}`);
+    }
+  };
+
+  const handleDismissSuggestion = (suggestion) => {
+    if (!dismissedSuggestions.includes(suggestion)) {
+      setDismissedSuggestions([...dismissedSuggestions, suggestion]);
     }
   };
 
@@ -231,92 +306,81 @@ export default function GuidedSellPage() {
       });
 
       if (res.data?.success) {
-        navigate('/my-listings');
+        const listing = res.data.data;
+        navigate(`/listings/${listing._id}`);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to publish auction');
+      setError(err.response?.data?.message || 'Failed to publish auction listing');
     } finally {
       setPublishing(false);
     }
   };
 
-  if (loading) {
+  if (loading && !draftId) {
     return (
-      <div style={{ maxWidth: 700, margin: '60px auto', textAlign: 'center', color: 'var(--charcoal)' }}>
-        <RefreshCw className="animate-spin inline-block w-8 h-8 mb-2" style={{ color: 'var(--forest)' }} />
-        <p>Loading AI-Guided Sell Flow...</p>
+      <div className="py-24 text-center flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-3 border-forest border-t-transparent rounded-full animate-spin" />
+        <span className="text-body font-semibold text-charcoal-muted">Initializing AI-Guided Sell Session...</span>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 760, margin: '30px auto', padding: '0 16px' }}>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
       {/* Header & Autosave Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div className="flex items-center justify-between gap-4 border-b border-sage/40 pb-4">
         <div>
-          <h1 style={{ margin: 0, fontSize: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Sparkles style={{ color: 'var(--amber)' }} className="w-6 h-6" />
+          <h1 className="text-section-heading font-heading text-forest flex items-center gap-2.5">
+            <Sparkles className="w-6 h-6 text-amber stroke-[2.5]" />
             AI-Guided Sell Flow
           </h1>
-          <span style={{ fontSize: 13, color: 'var(--charcoal)', opacity: 0.8 }}>
-            100% honest disclosure &bull; One question at a time
-          </span>
+          <p className="text-metadata text-charcoal/75 mt-0.5">
+            100% honest disclosure &bull; One question at a time &bull; Senior to junior campus handoff
+          </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, background: 'var(--sage)', color: 'var(--charcoal)', padding: '4px 10px', borderRadius: 20 }}>
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>{autosaved ? 'Draft Autosaved' : 'Saving...'}</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sage-50 text-forest border border-sage/60 text-metadata font-semibold shrink-0">
+          <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+          <span>{autosaved ? 'Autosaved' : 'Saving...'}</span>
         </div>
       </div>
 
       {/* Progress Bar */}
       {!isReviewScreen && totalSteps > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--charcoal)', marginBottom: 6 }}>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-metadata font-semibold text-charcoal-muted">
             <span>Question {currentStep + 1} of {totalSteps}</span>
             <span>{Math.round(((currentStep + 1) / totalSteps) * 100)}% Complete</span>
           </div>
-          <div style={{ height: 6, background: 'var(--sage)', borderRadius: 3, overflow: 'hidden' }}>
+          <div className="h-2 w-full bg-sage/30 rounded-full overflow-hidden">
             <div
-              style={{
-                height: '100%',
-                background: 'var(--forest)',
-                width: `${((currentStep + 1) / totalSteps) * 100}%`,
-                transition: 'width 0.3s ease',
-              }}
+              className="h-full bg-forest transition-all duration-300 rounded-full"
+              style={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
             />
           </div>
         </div>
       )}
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#b91c1c', border: '1px solid #f87171', padding: 12, borderRadius: 8, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-body flex items-start gap-2.5 animate-fadeIn">
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       {/* --- QUESTION FLOW CARD --- */}
       {!isReviewScreen && currentQuestion && (
-        <div
-          style={{
-            background: '#fff',
-            border: '2px solid var(--sage)',
-            borderRadius: 16,
-            padding: 28,
-            boxShadow: '0 4px 12px rgba(31, 77, 58, 0.06)',
-          }}
-        >
-          <form onSubmit={handleSaveAndNext} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <form onSubmit={handleSaveAndNext} className="space-y-6">
             <div>
-              <div style={{ fontSize: 12, fontWeight: 'bold', color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
+              <div className="text-metadata font-bold uppercase tracking-wider text-amber mb-1">
                 Step {currentStep + 1}
               </div>
-              <h2 style={{ fontSize: 20, margin: '0 0 6px 0', color: 'var(--forest)' }}>
+              <h2 className="text-card-title font-heading text-forest">
                 {currentQuestion.label}
               </h2>
               {currentQuestion.helper && (
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--charcoal)', opacity: 0.75 }}>
+                <p className="text-metadata text-charcoal-muted mt-1 leading-relaxed">
                   {currentQuestion.helper}
                 </p>
               )}
@@ -326,7 +390,7 @@ export default function GuidedSellPage() {
             <div>
               {/* SELECT INPUT */}
               {currentQuestion.type === 'select' && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {currentQuestion.options.map((opt) => {
                     const isSelected = currentInput === opt.value;
                     return (
@@ -334,22 +398,14 @@ export default function GuidedSellPage() {
                         key={opt.value}
                         type="button"
                         onClick={() => setCurrentInput(opt.value)}
-                        style={{
-                          padding: '14px 16px',
-                          textAlign: 'left',
-                          borderRadius: 10,
-                          border: isSelected ? '2px solid var(--forest)' : '1px solid var(--sage)',
-                          background: isSelected ? 'var(--warm-white)' : '#fff',
-                          color: 'var(--charcoal)',
-                          fontWeight: isSelected ? 'bold' : 'normal',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}
+                        className={`p-4 text-left rounded-xl border-2 transition-all flex items-center justify-between text-body cursor-pointer ${
+                          isSelected
+                            ? 'border-forest bg-forest-50 text-forest font-bold shadow-xs'
+                            : 'border-sage/50 bg-warm-white hover:border-forest/50 text-charcoal'
+                        }`}
                       >
                         <span>{opt.label}</span>
-                        {isSelected && <Check className="w-4 h-4" style={{ color: 'var(--forest)' }} />}
+                        {isSelected && <Check className="w-4 h-4 text-forest stroke-[2.5]" />}
                       </button>
                     );
                   })}
@@ -364,15 +420,7 @@ export default function GuidedSellPage() {
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
                   placeholder={currentQuestion.placeholder || 'Type your answer...'}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: 10,
-                    border: '1px solid var(--sage)',
-                    fontSize: 15,
-                    boxSizing: 'border-box',
-                    color: 'var(--charcoal)',
-                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal placeholder:text-charcoal/40"
                 />
               )}
 
@@ -384,22 +432,14 @@ export default function GuidedSellPage() {
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
                   placeholder={currentQuestion.placeholder || 'Provide accurate details...'}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: 10,
-                    border: '1px solid var(--sage)',
-                    fontSize: 14,
-                    boxSizing: 'border-box',
-                    color: 'var(--charcoal)',
-                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal placeholder:text-charcoal/40"
                 />
               )}
 
               {/* NUMBER INPUT */}
               {currentQuestion.type === 'number' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 18, fontWeight: 'bold', color: 'var(--forest)' }}>₹</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-bid-price font-heading text-forest">₹</span>
                   <input
                     type="number"
                     min={currentQuestion.min || 1}
@@ -407,15 +447,7 @@ export default function GuidedSellPage() {
                     value={currentInput}
                     onChange={(e) => setCurrentInput(e.target.value)}
                     placeholder={currentQuestion.placeholder || '100'}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: 10,
-                      border: '1px solid var(--sage)',
-                      fontSize: 16,
-                      boxSizing: 'border-box',
-                      color: 'var(--charcoal)',
-                    }}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-bid-price bg-warm-white text-charcoal placeholder:text-charcoal/40 font-bold"
                   />
                 </div>
               )}
@@ -427,109 +459,156 @@ export default function GuidedSellPage() {
                   required={currentQuestion.required}
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: 10,
-                    border: '1px solid var(--sage)',
-                    fontSize: 15,
-                    boxSizing: 'border-box',
-                    color: 'var(--charcoal)',
-                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal"
                 />
               )}
 
-              {/* PHOTOS INPUT */}
+              {/* REAL PHOTO UPLOAD WITH MULTER & DRAG-AND-DROP */}
               {currentQuestion.type === 'photos' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                <div className="space-y-4">
+                  {/* Drag & Drop Upload Zone */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      handleFileUpload(e.dataTransfer.files);
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+                      isDragging
+                        ? 'border-forest bg-forest-50 scale-[1.01]'
+                        : 'border-sage/80 bg-warm-white hover:border-forest hover:bg-forest-50/30'
+                    }`}
+                  >
                     <input
-                      type="url"
-                      value={photoInputUrl}
-                      onChange={(e) => setPhotoInputUrl(e.target.value)}
-                      placeholder="Paste image URL (https://...)"
-                      style={{
-                        flex: 1,
-                        padding: '10px 14px',
-                        borderRadius: 8,
-                        border: '1px solid var(--sage)',
-                        fontSize: 14,
-                      }}
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(e) => handleFileUpload(e.target.files)}
+                      className="hidden"
                     />
-                    <button
-                      type="button"
-                      onClick={handleAddPhoto}
-                      style={{
-                        padding: '10px 16px',
-                        background: 'var(--forest)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        fontSize: 13,
-                      }}
-                    >
-                      + Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleUseSamplePhotos}
-                      style={{
-                        padding: '10px 14px',
-                        background: 'var(--sage)',
-                        color: 'var(--charcoal)',
-                        border: 'none',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        fontSize: 12,
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Use Sample Photos
-                    </button>
+
+                    <div className="w-12 h-12 rounded-full bg-forest-50 text-forest flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-forest" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-body font-bold text-forest">
+                        Drag & drop photos here, or <span className="underline decoration-amber underline-offset-4">browse</span>
+                      </p>
+                      <p className="text-metadata text-charcoal-muted">
+                        JPEG, PNG, or WebP &bull; Max 5 MB each &bull; Up to 6 photos
+                      </p>
+                    </div>
+
+                    {/* Prominent Defect Disclosure Hint */}
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-forest text-metadata font-bold border border-amber/40">
+                      <ShieldCheck className="w-4 h-4 text-amber" />
+                      <span>Honesty rule: Add a close-up of any defects or wear</span>
+                    </div>
                   </div>
 
-                  {/* Thumbnail grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
-                    {photosList.map((url, i) => (
-                      <div key={i} style={{ position: 'relative', height: 90, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--sage)' }}>
-                        <img src={url} alt={`Item ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button
-                          type="button"
-                          onClick={() => setPhotosList(photosList.filter((_, idx) => idx !== i))}
-                          style={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            background: '#dc2626',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: 4,
-                            padding: 3,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                  {/* Upload Progress Bar */}
+                  {uploadingPhotos && (
+                    <div className="space-y-1.5 p-3 rounded-xl bg-forest-50 border border-forest/20 animate-fadeIn">
+                      <div className="flex justify-between text-metadata font-bold text-forest">
+                        <span>Uploading real photos to server...</span>
+                        <span>{uploadProgress}%</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="h-2 w-full bg-sage/30 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber transition-all duration-200"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
 
-                  <span style={{ fontSize: 12, color: photosList.length >= 2 ? '#059669' : '#dc2626', fontWeight: 'bold' }}>
-                    {photosList.length >= 2 ? `✓ ${photosList.length} photos added` : `At least 2 photos required (${photosList.length} added)`}
-                  </span>
+                  {/* Thumbnails Grid with Cover Badge and Reorder */}
+                  {photosList.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-metadata font-bold text-forest flex items-center justify-between">
+                        <span>Uploaded Photos ({photosList.length} of 6):</span>
+                        <span className="text-xs text-charcoal-muted font-normal">Click any photo to make it the Cover Photo</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {photosList.map((url, i) => (
+                          <div
+                            key={url + i}
+                            className={`group relative rounded-xl overflow-hidden border-2 aspect-4/3 bg-warm-white transition-all ${
+                              i === 0 ? 'border-amber shadow-sm ring-2 ring-amber/30' : 'border-sage/60 hover:border-forest'
+                            }`}
+                          >
+                            <img
+                              src={url.startsWith('/') ? url : url}
+                              alt={`Item photo ${i + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+
+                            {/* Cover Photo Badge */}
+                            {i === 0 ? (
+                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-amber text-forest text-xs font-black flex items-center gap-1 shadow-md">
+                                <Star className="w-3 h-3 fill-forest text-forest" />
+                                <span>Cover Photo</span>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSetCoverPhoto(i)}
+                                className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-charcoal/80 text-warm-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-forest"
+                                title="Set as main cover photo"
+                              >
+                                Set as Cover
+                              </button>
+                            )}
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePhoto(url)}
+                              className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-md transition-all active:scale-90 cursor-pointer"
+                              title="Delete photo"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Minimum 2 Photos Indicator */}
+                  <div className="flex items-center gap-2 text-metadata font-bold">
+                    {photosList.length >= 2 ? (
+                      <span className="text-emerald-700 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        ✓ {photosList.length} photos uploaded (Ready to proceed)
+                      </span>
+                    ) : (
+                      <span className="text-amber-hover flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 text-amber" />
+                        Minimum 2 photos required ({photosList.length} currently uploaded)
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Navigation buttons (Responsive: stack on mobile, row on tablet/desktop) */}
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/30">
+            {/* Navigation buttons */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/40">
               <button
                 type="button"
                 disabled={currentStep === 0 || saving}
                 onClick={handleBack}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-btn font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -537,10 +616,10 @@ export default function GuidedSellPage() {
 
               <button
                 type="submit"
-                disabled={saving}
-                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-forest hover:bg-forest-hover text-white text-sm font-bold shadow-md shadow-forest/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+                disabled={saving || (currentQuestion.type === 'photos' && photosList.length < 2)}
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-forest hover:bg-forest-light text-warm-white text-btn font-bold transition-all shadow-md shadow-forest/20 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
               >
-                <span>{currentStep === totalSteps - 1 ? 'Go to Review Screen' : 'Save & Next'}</span>
+                <span>{currentStep >= totalSteps - 1 ? 'Proceed to Review' : 'Next Question'}</span>
                 <ArrowRight className="w-4 h-4 text-amber" />
               </button>
             </div>
@@ -550,154 +629,171 @@ export default function GuidedSellPage() {
 
       {/* --- REVIEW SCREEN --- */}
       {isReviewScreen && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div style={{ background: '#fff', border: '2px solid var(--sage)', borderRadius: 16, padding: 24, boxShadow: '0 4px 12px rgba(31, 77, 58, 0.06)' }}>
-            <h2 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--forest)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ShieldCheck className="w-6 h-6" style={{ color: 'var(--forest)' }} />
-              Listing Review & AI Verification
-            </h2>
+        <div className="space-y-6">
+          <div className="bg-warm-white-paper border-2 border-sage rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h2 className="text-section-heading font-heading text-forest flex items-center gap-2.5">
+                <ShieldCheck className="w-6 h-6 text-forest" />
+                Listing Review & AI Verification
+              </h2>
+
+              {/* Explicit AI vs Template Fallback Source Flag Banner */}
+              {reviewData?.source === 'template' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-hover border border-amber/40 text-metadata font-bold">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  AI unavailable, showing a basic version
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest-50 text-forest border border-forest/30 text-metadata font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-amber" />
+                  Groq AI Verified (Facts Only)
+                </span>
+              )}
+            </div>
 
             {/* Structured Facts Summary */}
-            <div style={{ background: 'var(--warm-white)', padding: 16, borderRadius: 10, border: '1px solid var(--sage)', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 14, margin: '0 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--charcoal)' }}>
-                Structured Condition Summary
+            <div className="bg-warm-white p-4 sm:p-5 rounded-xl border border-sage/60 space-y-3">
+              <h3 className="text-metadata font-bold uppercase tracking-wider text-charcoal">
+                Disclosed Condition Summary
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, fontSize: 13 }}>
-                <div><strong>Title:</strong> {answers.title}</div>
-                <div><strong>Category:</strong> {answers.category?.toUpperCase()}</div>
-                <div><strong>Condition:</strong> <span style={{ background: 'var(--amber)', color: 'var(--charcoal)', padding: '2px 6px', borderRadius: 4, fontWeight: 'bold' }}>{answers.conditionGrade}</span></div>
-                <div><strong>Duration of Use:</strong> {answers.ageOfItem}</div>
-                <div><strong>Working Status:</strong> {answers.workingStatus}</div>
-                <div><strong>Defects:</strong> {answers.defects || 'None reported'}</div>
-                <div><strong>Starting Price:</strong> ₹{answers.startingPrice}</div>
-                <div><strong>Min Increment:</strong> ₹{answers.minIncrement || 10}</div>
-                <div><strong>Closing Date:</strong> {new Date(answers.closingTime).toLocaleString()}</div>
-                <div><strong>Photos:</strong> {answers.photos?.length || 0} attached</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-metadata">
+                <div><span className="font-bold text-forest">Title:</span> {answers.title}</div>
+                <div><span className="font-bold text-forest">Category:</span> {answers.category?.toUpperCase()}</div>
+                <div>
+                  <span className="font-bold text-forest">Condition:</span>{' '}
+                  <span className="px-2 py-0.5 rounded bg-amber text-forest font-black text-xs">
+                    {answers.conditionGrade}
+                  </span>
+                </div>
+                <div><span className="font-bold text-forest">Duration of Use:</span> {answers.ageOfItem}</div>
+                <div><span className="font-bold text-forest">Working Status:</span> {answers.workingStatus}</div>
+                <div><span className="font-bold text-forest">Defects Disclosed:</span> {answers.defects || 'None reported'}</div>
+                <div><span className="font-bold text-forest">Starting Price:</span> ₹{answers.startingPrice}</div>
+                <div><span className="font-bold text-forest">Min Increment:</span> ₹{answers.minIncrement || 10}</div>
+                <div><span className="font-bold text-forest">Closing Time:</span> {new Date(answers.closingTime).toLocaleString()}</div>
+                <div><span className="font-bold text-forest">Real Photos:</span> {answers.photos?.length || photosList.length} attached</div>
               </div>
             </div>
 
             {/* Side-by-Side Descriptions: Original vs AI Rephrased */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 20 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Original Seller Wording */}
-              <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 14, background: '#fafafa' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: 13, color: '#6b7280' }}>YOUR ORIGINAL WORDING</h4>
-                <p style={{ margin: 0, fontSize: 13, color: '#374151', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+              <div className="border border-sage/50 rounded-xl p-4 bg-warm-white space-y-2">
+                <h4 className="text-metadata font-bold uppercase tracking-wider text-charcoal-muted">
+                  Your Original Wording
+                </h4>
+                <p className="text-body text-charcoal/80 whitespace-pre-wrap leading-relaxed">
                   {reviewData?.originalDescription || answers.sellerDescription || 'No personal notes provided.'}
                 </p>
               </div>
 
               {/* AI Rephrased Description */}
-              <div style={{ border: '2px solid var(--forest)', borderRadius: 8, padding: 14, background: '#fff' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <h4 style={{ margin: 0, fontSize: 13, color: 'var(--forest)', fontWeight: 'bold' }}>
-                    AI-REPHRASED (FACTS ONLY)
+              <div className="border-2 border-forest rounded-xl p-4 bg-warm-white-paper space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-metadata font-bold uppercase tracking-wider text-forest">
+                    AI-Rephrased Description (Facts Only)
                   </h4>
-                  <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'var(--sage)', color: 'var(--charcoal)' }}>
-                    {reviewData?.provider === 'template_fallback' ? 'Template Engine' : 'AI Verified'}
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-forest-50 text-forest border border-forest/20">
+                    {reviewData?.source === 'ai' ? 'Groq AI Rephrase' : 'Template Basic'}
                   </span>
                 </div>
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--charcoal)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                <p className="text-body text-charcoal whitespace-pre-wrap leading-relaxed">
                   {reviewData?.rephrasedDescription}
                 </p>
               </div>
             </div>
 
-            {/* AI Category Suggestions */}
+            {/* AI Category Suggestions (Accept or Reject) */}
             {reviewData?.suggestions && reviewData.suggestions.length > 0 && (
-              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: 16, marginBottom: 20 }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: 13, color: '#92400e', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  Category Suggestions (What Buyers Usually Ask)
+              <div className="bg-amber-50/60 border border-amber/40 rounded-xl p-4 sm:p-5 space-y-3">
+                <h4 className="text-metadata font-bold text-forest flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber" />
+                  Category Suggestions (Buyers Usually Ask These Questions)
                 </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {reviewData.suggestions.map((sug, idx) => {
-                    const isAccepted = acceptedSuggestions.includes(sug);
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          fontSize: 12,
-                          background: '#fff',
-                          padding: '8px 12px',
-                          borderRadius: 6,
-                          border: '1px solid #fef3c7',
-                        }}
-                      >
-                        <span style={{ color: '#78350f' }}>{sug}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleAcceptSuggestion(sug)}
-                          disabled={isAccepted}
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: 4,
-                            border: 'none',
-                            background: isAccepted ? 'var(--sage)' : 'var(--forest)',
-                            color: isAccepted ? 'var(--charcoal)' : '#fff',
-                            fontSize: 11,
-                            fontWeight: 'bold',
-                            cursor: isAccepted ? 'default' : 'pointer',
-                          }}
+                <p className="text-xs text-charcoal-muted">
+                  Review these common buyer questions. You can accept to include them in your description or dismiss them.
+                </p>
+
+                <div className="space-y-2">
+                  {reviewData.suggestions
+                    .filter((sug) => !dismissedSuggestions.includes(sug))
+                    .map((sug, idx) => {
+                      const isAccepted = acceptedSuggestions.includes(sug);
+                      return (
+                        <div
+                          key={idx}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-lg bg-warm-white-paper border border-amber/30 text-metadata"
                         >
-                          {isAccepted ? '✓ Included' : '+ Include in Description'}
-                        </button>
-                      </div>
-                    );
-                  })}
+                          <span className="text-charcoal font-medium">{sug}</span>
+                          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleAcceptSuggestion(sug)}
+                              disabled={isAccepted}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                isAccepted
+                                  ? 'bg-sage-50 text-forest border border-sage'
+                                  : 'bg-forest text-warm-white hover:bg-forest-light'
+                              }`}
+                            >
+                              {isAccepted ? '✓ Included' : '+ Include in Description'}
+                            </button>
+                            {!isAccepted && (
+                              <button
+                                type="button"
+                                onClick={() => handleDismissSuggestion(sug)}
+                                className="p-1 rounded-lg text-charcoal-muted hover:text-rose-600 transition-colors"
+                                title="Dismiss suggestion"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
 
             {/* Editable Final Description */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 'bold', color: 'var(--forest)', marginBottom: 6 }}>
-                Final Description (You can edit or polish before publishing):
+            <div className="space-y-1.5">
+              <label className="block text-metadata font-bold text-forest">
+                Final Description (You can polish or add any extra details before publishing):
               </label>
               <textarea
                 rows={5}
                 value={finalDescription}
                 onChange={(e) => setFinalDescription(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 14px',
-                  borderRadius: 8,
-                  border: '1px solid var(--sage)',
-                  fontSize: 13,
-                  boxSizing: 'border-box',
-                  lineHeight: 1.5,
-                  color: 'var(--charcoal)',
-                }}
+                className="w-full p-4 rounded-xl border-2 border-sage/60 focus:border-forest focus:outline-none text-body bg-warm-white text-charcoal leading-relaxed"
               />
             </div>
 
             {/* Mandatory Honesty Declaration Checkbox */}
-            <div style={{ background: 'var(--warm-white)', border: '2px solid var(--forest)', borderRadius: 10, padding: 16, marginBottom: 24 }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+            <div className="bg-forest-50/50 border-2 border-forest rounded-xl p-4 sm:p-5">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   required
                   checked={honestyDeclaration}
                   onChange={(e) => setHonestyDeclaration(e.target.checked)}
-                  style={{ marginTop: 3, width: 18, height: 18, accentColor: 'var(--forest)' }}
+                  className="mt-1 w-5 h-5 rounded text-forest focus:ring-forest accent-forest"
                 />
-                <div style={{ fontSize: 13, color: 'var(--charcoal)', lineHeight: 1.5 }}>
-                  <strong style={{ color: 'var(--forest)' }}>Seller Honesty & Accuracy Declaration *</strong>
-                  <p style={{ margin: '4px 0 0 0', fontSize: 12, opacity: 0.85 }}>
+                <div className="text-body text-charcoal leading-relaxed">
+                  <strong className="text-forest">Seller Honesty & Accuracy Declaration *</strong>
+                  <p className="text-metadata text-charcoal/80 mt-0.5">
                     I declare that all condition disclosures, known defects, and wear are genuine. I understand that concealing defects will cause the buyer to reject the item at campus pickup.
                   </p>
                 </div>
               </label>
             </div>
 
-            {/* Review Screen Actions (Responsive: stack on mobile, row on tablet/desktop) */}
-            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/30">
+            {/* Review Screen Actions */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/40">
               <button
                 type="button"
                 onClick={handleBack}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-btn font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Questions</span>
@@ -707,10 +803,19 @@ export default function GuidedSellPage() {
                 type="button"
                 disabled={publishing || !honestyDeclaration}
                 onClick={handlePublish}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-sage disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base shadow-md shadow-forest/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-amber hover:bg-amber-hover text-forest text-btn font-black transition-all shadow-md shadow-amber/25 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
               >
-                <span>{publishing ? 'Publishing Auction...' : 'Publish Auction Now'}</span>
-                <CheckCircle2 className="w-5 h-5 text-amber" />
+                {publishing ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin text-forest" />
+                    <span>Publishing Auction...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-forest" />
+                    <span>Publish Verified Auction</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

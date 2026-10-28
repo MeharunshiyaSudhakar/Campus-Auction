@@ -31,3 +31,8 @@ logs/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# User Uploads
+uploads/
+server/uploads/
+

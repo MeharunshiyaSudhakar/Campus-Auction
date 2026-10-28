@@ -15,9 +15,15 @@ router.get('/:id', ListingController.getListingById);
 router.put('/:id', protect, ListingController.updateListing);
 router.delete('/:id', protect, ListingController.cancelListing);
 
+const ProfileController = require('../controllers/profileController');
+
 // Modules 7 & 8: Closing and Seller Approval Routes
 router.post('/:id/approve', protect, ListingController.approveWinningBid);
 router.post('/:id/reject', protect, ListingController.rejectWinningBid);
 router.post('/:id/close', ListingController.closeAuction);
+
+// Module 19: Instagram-Style Repost (Reshare) Routes
+router.post('/:id/repost', protect, ProfileController.toggleRepost);
+router.get('/:id/repost-status', protect, ProfileController.checkRepostStatus);
 
 module.exports = router;

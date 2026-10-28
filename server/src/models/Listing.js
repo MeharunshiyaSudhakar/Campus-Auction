@@ -242,8 +242,16 @@ const listingSchema = new mongoose.Schema(
       index: true,
     },
 
-    // --- Live Bid State (Denormalized for O(1) reads) ---
+    // --- Live Bid & Social State (Denormalized for O(1) reads) ---
     bidCount: {
+      type: Number,
+      default: 0,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    repostCount: {
       type: Number,
       default: 0,
     },

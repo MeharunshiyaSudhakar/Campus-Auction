@@ -2,6 +2,7 @@ const SellDraft = require('../models/SellDraft');
 const Listing = require('../models/Listing');
 const AiService = require('./aiService');
 const { getQuestionsForCategory } = require('../config/questionsConfig');
+const { FileStorageHelper } = require('../utils/fileStorage');
 
 class SellService {
   /**
@@ -198,6 +199,59 @@ class SellService {
   }
 
   /**
+   * Upload real photos to draft (up to 6 photos per draft, random filenames)
+   */
+  static async uploadPhotos(sellerId, draftId, files) {
+    const draft = await this.getDraft(sellerId, draftId);
+
+    if (!draft.answers) draft.answers = {};
+    if (!Array.isArray(draft.answers.photos)) draft.answers.photos = [];
+
+    // Max 6 photos per draft limit check
+    if (draft.answers.photos.length + files.length > 6) {
+      files.forEach((f) => FileStorageHelper.deleteFile(`/uploads/${f.filename}`));
+      const error = new Error('A draft can have at most 6 photos in total.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const newPhotoUrls = files.map((f) => FileStorageHelper.getPublicUrl(f.filename));
+    draft.answers.photos.push(...newPhotoUrls);
+    draft.markModified('answers');
+    await draft.save();
+
+    return {
+      photos: draft.answers.photos,
+      uploaded: newPhotoUrls,
+    };
+  }
+
+  /**
+   * Delete a photo from draft (owner only, cleans up storage)
+   */
+  static async deletePhoto(sellerId, draftId, photoUrl) {
+    const draft = await this.getDraft(sellerId, draftId);
+
+    if (!draft.answers || !Array.isArray(draft.answers.photos)) {
+      return { photos: [] };
+    }
+
+    const index = draft.answers.photos.indexOf(photoUrl);
+    if (index !== -1) {
+      draft.answers.photos.splice(index, 1);
+      draft.markModified('answers');
+      await draft.save();
+
+      // Clean up local file
+      FileStorageHelper.deleteFile(photoUrl);
+    }
+
+    return {
+      photos: draft.answers.photos,
+    };
+  }
+
+  /**
    * Generate AI review (facts-only rephrase + category suggestions)
    */
   static async generateReview(sellerId, draftId) {
@@ -210,6 +264,8 @@ class SellService {
       originalDescription: answers.sellerDescription || '',
       rephrasedDescription: aiResult.rephrasedDescription,
       suggestions: aiResult.suggestions || [],
+      source: aiResult.source || 'template',
+      provider: aiResult.provider,
       generatedAt: new Date(),
     };
     draft.markModified('aiReview');
@@ -220,6 +276,7 @@ class SellService {
       originalDescription: draft.aiReview.originalDescription,
       rephrasedDescription: draft.aiReview.rephrasedDescription,
       suggestions: draft.aiReview.suggestions,
+      source: aiResult.source || 'template',
       provider: aiResult.provider,
     };
   }
