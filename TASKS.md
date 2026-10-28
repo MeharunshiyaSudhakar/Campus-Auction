@@ -34,11 +34,11 @@
 - [x] Add palette as CSS variables in the client
 
 ## Module 4: Search and Filters
-- [ ] Text index and keyword search
-- [ ] Filters: category, condition, price range, closing soon
-- [ ] Listings grid with condition badges
-- [ ] Auction detail page (details, photos, leading bid, bid history)
-- [ ] Pagination or lazy loading
+- [x] Text index and keyword search
+- [x] Filters: category, condition, price range, closing soon
+- [x] Listings grid with condition badges
+- [x] Auction detail page (details, photos, leading bid, bid history)
+- [x] Pagination or lazy loading
 
 ## Module 5: Bidding
 - [ ] Bid model (bidder, amount, time)

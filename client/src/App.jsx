@@ -9,6 +9,8 @@ import GuidedSellPage from './pages/GuidedSellPage';
 import MyListingsPage from './pages/MyListingsPage';
 import ProfilePage from './pages/ProfilePage';
 import NeedsAttentionPage from './pages/NeedsAttentionPage';
+import BrowsePage from './pages/BrowsePage';
+import AuctionDetailPage from './pages/AuctionDetailPage';
 
 export default function App() {
   return (
@@ -19,6 +21,10 @@ export default function App() {
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="/browse" element={<BrowsePage />} />
+              <Route path="/listings" element={<BrowsePage />} />
+              <Route path="/listings/:id" element={<AuctionDetailPage />} />
+              <Route path="/auction/:id" element={<AuctionDetailPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/sell" element={<GuidedSellPage />} />

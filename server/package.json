@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "node tests/test_modules_14_15.js && node tests/test_guided_sell.js"
+    "test": "node tests/test_modules_14_15.js && node tests/test_guided_sell.js && node tests/test_module_4_search_filters.js"
   },
   "keywords": [
     "auction",

@@ -186,10 +186,11 @@ export default function ProfilePage() {
             <div className="space-y-6 sm:space-y-8">
               {/* Money Summary Cards (Grid: 1 col mobile, 2 col tab, 3 col desktop) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-forest-50 border border-forest/20 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-forest uppercase tracking-wider">
+                {/* Card 1: FOREST (Received) */}
+                <div className="p-5 rounded-2xl bg-forest-50 border-2 border-forest/30 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-black text-forest uppercase tracking-wider">
                     <span>Total Received (Sales)</span>
-                    <ArrowDownLeft className="w-4 h-4 text-forest" />
+                    <ArrowDownLeft className="w-4 h-4 text-forest stroke-[2.5]" />
                   </div>
                   <div className="text-2xl sm:text-3xl font-black text-forest">
                     ₹{summary?.totalReceived || 0}
@@ -199,10 +200,11 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-amber-50 border border-amber/30 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-amber-hover uppercase tracking-wider">
+                {/* Card 2: AMBER (Spent) */}
+                <div className="p-5 rounded-2xl bg-amber-50/70 border-2 border-amber/50 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-black text-amber-hover uppercase tracking-wider">
                     <span>Total Spent (Purchases)</span>
-                    <ArrowUpRight className="w-4 h-4 text-amber-hover" />
+                    <ArrowUpRight className="w-4 h-4 text-amber-hover stroke-[2.5]" />
                   </div>
                   <div className="text-2xl sm:text-3xl font-black text-charcoal">
                     ₹{summary?.totalSpent || 0}
@@ -212,14 +214,15 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
-                  <div className="flex items-center justify-between text-xs font-bold text-charcoal-muted uppercase tracking-wider">
+                {/* Card 3: SAGE (Sold vs Unsold) */}
+                <div className="p-5 rounded-2xl bg-sage/20 border-2 border-sage shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
+                  <div className="flex items-center justify-between text-xs font-black text-forest uppercase tracking-wider">
                     <span>Items Sold vs Unsold</span>
-                    <Package className="w-4 h-4 text-forest" />
+                    <Package className="w-4 h-4 text-forest stroke-[2.5]" />
                   </div>
                   <div className="text-lg sm:text-xl font-extrabold text-charcoal pt-1">
                     Sold: <span className="text-forest font-black">{summary?.stats?.soldCount || 0}</span>
-                    <span className="text-sage mx-2">|</span>
+                    <span className="text-sage mx-2 font-bold">|</span>
                     Unsold: <span className="text-amber-hover font-black">{summary?.stats?.unsoldCount || 0}</span>
                   </div>
                   <div className="text-xs text-charcoal-muted font-medium">

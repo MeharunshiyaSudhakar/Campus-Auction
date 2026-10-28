@@ -1,0 +1,628 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
+import CountdownTimer from '../components/CountdownTimer';
+import {
+  Gavel,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  ArrowLeft,
+  ChevronRight,
+  User,
+  Tag,
+  Camera,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+  Calendar,
+  Sparkles,
+  Info,
+  DollarSign,
+  History,
+  Lock,
+} from 'lucide-react';
+
+export default function AuctionDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [listing, setListing] = useState(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Bidding form state (Prepared for Module 5)
+  const [bidAmount, setBidAmount] = useState('');
+  const [bidError, setBidError] = useState(null);
+  const [bidSuccess, setBidSuccess] = useState(null);
+  const [submittingBid, setSubmittingBid] = useState(false);
+
+  useEffect(() => {
+    let isSubscribed = true;
+    setLoading(true);
+    setError(null);
+
+    api.get(`/listings/${id}`)
+      .then((res) => {
+        if (!isSubscribed) return;
+        const data = res.data?.data;
+        setListing(data);
+        if (data) {
+          const nextMin = (data.currentPrice || data.startingPrice) + (data.bidCount > 0 ? data.minIncrement : 0);
+          setBidAmount(String(nextMin));
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!isSubscribed) return;
+        console.error('Failed to fetch listing:', err);
+        setError(err.response?.data?.message || 'Listing not found or failed to load');
+        setLoading(false);
+      });
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse space-y-8">
+        <div className="h-6 bg-sage/20 rounded w-1/4" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="aspect-4/3 bg-sage/20 rounded-2xl" />
+          <div className="space-y-4">
+            <div className="h-8 bg-sage/20 rounded w-3/4" />
+            <div className="h-6 bg-sage/15 rounded w-1/2" />
+            <div className="h-24 bg-sage/20 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !listing) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 text-amber flex items-center justify-center border border-amber/40">
+          <AlertTriangle className="w-8 h-8 text-amber" />
+        </div>
+        <h2 className="text-2xl font-black text-forest">Auction Not Found</h2>
+        <p className="text-sm text-charcoal/70">
+          {error || "The auction listing you're looking for doesn't exist or has been removed."}
+        </p>
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-forest text-warm-white font-bold text-xs hover:bg-forest-light"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Live Auctions</span>
+        </Link>
+      </div>
+    );
+  }
+
+  const isSeller = user && listing.seller && (user._id === listing.seller._id || user._id === listing.seller);
+  const minValidBid = listing.bidCount > 0 ? listing.currentPrice + listing.minIncrement : listing.startingPrice;
+  const isClosed = listing.status !== 'active' || (listing.timeLeftMs !== undefined && listing.timeLeftMs <= 0);
+
+  const categoryEmoji = {
+    cycle: '🚲 Cycle',
+    calculator: '🔢 Calculator',
+    books: '📚 Books',
+    electronics: '💻 Electronics',
+  }[listing.category] || listing.category;
+
+  const conditionColorMap = {
+    'New': 'bg-sage/25 text-forest border-sage font-black',
+    'Like new': 'bg-sage/25 text-forest border-sage font-black',
+    'Good': 'bg-forest/10 text-forest border-forest/30 font-extrabold',
+    'Fair': 'bg-amber/20 text-amber-hover border-amber/50 font-black',
+    'Poor': 'bg-red-50 text-red-700 border-red-300 font-black',
+  };
+  const conditionBadgeStyle = conditionColorMap[listing.condition?.grade] || 'bg-sage/20 text-forest border-sage';
+
+  const placeholderImages = {
+    cycle: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80',
+    calculator: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=800&q=80',
+    books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+    electronics: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80',
+  };
+
+  const photosList = Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos : [placeholderImages[listing.category]];
+
+  const handlePlaceBidMock = (e) => {
+    e.preventDefault();
+    setBidError(null);
+    setBidSuccess(null);
+
+    const val = Number(bidAmount);
+    if (!val || isNaN(val)) {
+      setBidError('Please enter a valid bid amount');
+      return;
+    }
+    if (val < minValidBid) {
+      setBidError(`Bid must be at least ₹${minValidBid}`);
+      return;
+    }
+
+    setSubmittingBid(true);
+    // Prepared for Module 5 bidding endpoint:
+    // In Module 5, this will call `api.post('/bids', { listingId: listing._id, amount: val })`
+    setTimeout(() => {
+      setSubmittingBid(false);
+      setBidSuccess(`Bid placed: ₹${val}. (Full live WebSocket broadcasting active in Module 5 & 6)`);
+    }, 400);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center gap-2 text-xs text-charcoal/70">
+        <Link to="/" className="hover:text-forest font-semibold">
+          Live Auctions
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <Link to={`/?category=${listing.category}`} className="hover:text-forest font-semibold capitalize">
+          {listing.category}
+        </Link>
+        <ChevronRight className="w-3.5 h-3.5" />
+        <span className="text-forest font-bold truncate max-w-xs">{listing.title}</span>
+      </nav>
+
+      {/* Main Grid: Left Photos & Details, Right Live Auction Panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Photos & Structured Condition Breakdown (7 Cols) */}
+        <div className="lg:col-span-7 space-y-8">
+          {/* Photo Showcase */}
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-4 space-y-4 shadow-xs">
+            {/* Active Hero Image */}
+            <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-warm-white-muted">
+              <img
+                src={photosList[selectedPhotoIndex] || placeholderImages[listing.category]}
+                alt={listing.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = placeholderImages[listing.category];
+                }}
+              />
+
+              {listing.defectPhotoIncluded && (
+                <div className="absolute top-3 left-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber text-forest text-xs font-black shadow-md">
+                    <Camera className="w-4 h-4 text-forest" />
+                    Defect Close-up Photo Included
+                  </span>
+                </div>
+              )}
+
+              <div className="absolute bottom-3 right-3">
+                <span className="px-3 py-1 rounded-full bg-forest/80 text-warm-white text-xs font-bold backdrop-blur-xs">
+                  Photo {selectedPhotoIndex + 1} of {photosList.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Thumbnail Strip */}
+            {photosList.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                {photosList.map((photo, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedPhotoIndex(idx)}
+                    className={`relative w-20 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                      selectedPhotoIndex === idx
+                        ? 'border-forest ring-2 ring-forest/30 scale-102'
+                        : 'border-sage/40 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={photo} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Core Principle: Structured Condition Disclosure Breakdown */}
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="flex items-center justify-between border-b border-sage/40 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-forest text-amber flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-amber" />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black text-forest">
+                    100% Structured Condition Disclosure
+                  </h2>
+                  <p className="text-xs text-charcoal-muted">
+                    Mandatory factual report filled by the senior prior to listing
+                  </p>
+                </div>
+              </div>
+
+              <span className={`px-3 py-1 rounded-full text-xs border ${conditionBadgeStyle}`}>
+                Grade: {listing.condition?.grade || 'Inspected'}
+              </span>
+            </div>
+
+            {/* 3 Major Condition Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-2xl bg-warm-white border border-sage/50">
+                <span className="text-[10px] uppercase font-black tracking-wider text-charcoal-muted block">
+                  Condition Grade
+                </span>
+                <span className="text-base font-extrabold text-forest">
+                  {listing.condition?.grade}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-warm-white border border-sage/50">
+                <span className="text-[10px] uppercase font-black tracking-wider text-charcoal-muted block">
+                  Item Age
+                </span>
+                <span className="text-base font-extrabold text-forest">
+                  {listing.condition?.age || 'Not specified'}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-warm-white border border-sage/50">
+                <span className="text-[10px] uppercase font-black tracking-wider text-charcoal-muted block">
+                  Working Status
+                </span>
+                <span className="text-base font-extrabold text-forest">
+                  {listing.condition?.workingStatus || 'Functional'}
+                </span>
+              </div>
+            </div>
+
+            {/* Mandatory Known Defects Disclosure (Amber Callout) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border-2 border-amber/40 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-forest">
+                <ShieldAlert className="w-4 h-4 text-amber" />
+                <span>Known Wear & Defects (Honesty Mandatory)</span>
+              </div>
+              <p className="text-sm font-semibold text-charcoal leading-relaxed">
+                {listing.condition?.defects && listing.condition.defects !== 'None'
+                  ? listing.condition.defects
+                  : 'Zero major defects reported. Senior confirmed item is in clean working condition.'}
+              </p>
+            </div>
+
+            {/* Included Accessories */}
+            {Array.isArray(listing.condition?.accessories) && listing.condition.accessories.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-xs font-black uppercase tracking-wider text-forest block">
+                  Included Accessories
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {listing.condition.accessories.map((acc, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sage-50 text-forest border border-sage text-xs font-bold"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+                      {acc}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Category-Specific Detailed Specs */}
+            {listing.condition?.categoryDetails && (
+              <div className="space-y-3 pt-2 border-t border-sage/40">
+                <span className="text-xs font-black uppercase tracking-wider text-forest block">
+                  Category-Specific Technical Specs
+                </span>
+
+                {listing.category === 'cycle' && listing.condition.categoryDetails.cycle && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Brakes</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.brakes || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Tyres</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.tyres || 'Good'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Frame Size</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.frameSize || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Geared</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.cycle.geared ? 'Yes' : 'Single Speed'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {listing.category === 'calculator' && listing.condition.categoryDetails.calculator && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Display</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.display || 'Clear'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Battery</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.battery || 'Good'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Model Type</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.calculator.modelType || 'Scientific'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {listing.category === 'books' && listing.condition.categoryDetails.books && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Edition</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.edition || 'Standard'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Page Markings</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.markedPages || 'Clean'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Binding</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.books.binding || 'Intact'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {listing.category === 'electronics' && listing.condition.categoryDetails.electronics && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Battery Health</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.batteryHealth || 'Good'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Charger</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.chargerIncluded ? 'Included' : 'Not included'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Screen</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.screenCondition || 'Good'}</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-warm-white border border-sage/40">
+                      <span className="text-[10px] text-charcoal-muted block font-bold">Ports</span>
+                      <span className="font-extrabold text-forest">{listing.condition.categoryDetails.electronics.portsFunctional ? 'All Functional' : 'Check defects'}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Seller Description */}
+            <div className="space-y-2 pt-2 border-t border-sage/40">
+              <span className="text-xs font-black uppercase tracking-wider text-forest block">
+                Seller's Detailed Notes
+              </span>
+              <p className="text-sm text-charcoal/90 leading-relaxed whitespace-pre-line bg-warm-white p-4 rounded-2xl border border-sage/40">
+                {listing.description}
+              </p>
+            </div>
+
+            {/* Honor Code Pledge */}
+            <div className="p-3 rounded-xl bg-sage/20 border border-sage/60 flex items-center gap-2 text-xs text-forest font-semibold">
+              <ShieldCheck className="w-4 h-4 text-forest shrink-0" />
+              <span>Campus Honor Code: Seller certified that all details are accurate upon listing.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Live Auction Box, Bidding Form & Public Bid History (5 Cols) */}
+        <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+          {/* Main Auction Box */}
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-forest p-6 sm:p-7 space-y-6 shadow-md">
+            {/* Title & Category Header */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-forest text-warm-white text-xs font-bold">
+                  {categoryEmoji}
+                </span>
+                <span className="text-xs text-charcoal-muted font-bold">
+                  Listed {new Date(listing.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-forest leading-snug">
+                {listing.title}
+              </h1>
+
+              {/* Public Seller Profile (Name ONLY, zero sensitive leaks) */}
+              <div className="flex items-center gap-2 pt-1 text-xs text-charcoal/80">
+                <div className="w-6 h-6 rounded-full bg-sage/30 text-forest font-black flex items-center justify-center text-[10px]">
+                  {listing.seller?.name ? listing.seller.name.charAt(0) : 'S'}
+                </div>
+                <span>
+                  Listed by <strong className="font-bold text-forest">{listing.seller?.name || 'Graduating Senior'}</strong>
+                </span>
+                <span className="text-sage">&bull;</span>
+                <span className="text-forest font-semibold">Campus Verified</span>
+              </div>
+            </div>
+
+            {/* Live Countdown Box */}
+            <div className="p-4 rounded-2xl bg-warm-white border border-sage/60 shadow-2xs">
+              <CountdownTimer targetDate={listing.closingTime} />
+              <div className="mt-2 text-[11px] text-charcoal-muted flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber shrink-0" />
+                <span>Anti-sniping: Bids in the last 30s extend auction by 60s.</span>
+              </div>
+            </div>
+
+            {/* Price & Bid Stats */}
+            <div className="p-4 rounded-2xl bg-forest-50/40 border border-forest/20 space-y-3">
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <span className="text-xs uppercase font-black tracking-wider text-charcoal-muted block">
+                    {listing.bidCount > 0 ? 'Current Leading Bid' : 'Starting Price'}
+                  </span>
+                  <div className="text-3xl sm:text-4xl font-black text-forest">
+                    ₹{listing.currentPrice || listing.startingPrice}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-xs font-bold text-charcoal-muted block">Total Bids</span>
+                  <span className="text-lg font-black text-amber-hover">
+                    {listing.bidCount || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-charcoal/80 pt-2 border-t border-forest/10 font-semibold">
+                <span>Min Increment: <strong>₹{listing.minIncrement}</strong></span>
+                <span>Next Minimum: <strong>₹{minValidBid}</strong></span>
+              </div>
+            </div>
+
+            {/* Bidding Action Form */}
+            {isClosed ? (
+              <div className="p-4 rounded-2xl bg-charcoal/10 border border-charcoal/20 text-center space-y-1">
+                <span className="font-black text-charcoal block">This Auction has Ended</span>
+                <span className="text-xs text-charcoal-muted">
+                  {listing.winner?.name
+                    ? `Won by ${listing.winner.name} at ₹${listing.finalPrice || listing.currentPrice}`
+                    : 'Auction closed with no winning bids'}
+                </span>
+              </div>
+            ) : isSeller ? (
+              <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber/40 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-forest">
+                  <Lock className="w-4 h-4 text-amber" />
+                  <span>Seller Controls</span>
+                </div>
+                <p className="text-xs text-charcoal/80">
+                  You are the seller of this auction. Campus rules prohibit bidding on your own item.
+                </p>
+                <div className="flex gap-2 pt-1">
+                  <Link
+                    to="/my-listings"
+                    className="w-full py-2 rounded-xl bg-forest text-warm-white text-xs font-bold text-center hover:bg-forest-light"
+                  >
+                    Manage in My Listings
+                  </Link>
+                </div>
+              </div>
+            ) : user ? (
+              <form onSubmit={handlePlaceBidMock} className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-black uppercase tracking-wider text-forest flex items-center justify-between">
+                    <span>Enter Your Bid (₹)</span>
+                    <span className="text-[11px] text-amber-hover font-bold">Min: ₹{minValidBid}</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-3 text-forest font-bold text-base">₹</span>
+                    <input
+                      type="number"
+                      min={minValidBid}
+                      step={listing.minIncrement || 1}
+                      value={bidAmount}
+                      onChange={(e) => setBidAmount(e.target.value)}
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-forest bg-warm-white text-forest text-lg font-black focus:outline-none focus:ring-2 focus:ring-forest/30"
+                    />
+                  </div>
+                </div>
+
+                {bidError && (
+                  <p className="text-xs text-red-600 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {bidError}
+                  </p>
+                )}
+
+                {bidSuccess && (
+                  <p className="text-xs text-forest font-bold flex items-center gap-1 bg-sage-50 p-2 rounded-lg border border-sage">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-forest" />
+                    {bidSuccess}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submittingBid}
+                  className="w-full py-3.5 rounded-xl bg-amber hover:bg-amber-hover text-forest font-black text-sm shadow-md shadow-amber/25 transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Gavel className="w-4 h-4 text-forest" />
+                  <span>{submittingBid ? 'Submitting Bid...' : `Place Bid for ₹${bidAmount || minValidBid}`}</span>
+                </button>
+              </form>
+            ) : (
+              <div className="p-4 rounded-2xl bg-sage/20 border border-sage text-center space-y-2">
+                <p className="text-xs font-bold text-forest">
+                  Log in with your verified campus account to bid on this item.
+                </p>
+                <Link
+                  to="/login"
+                  className="inline-block w-full py-2.5 rounded-xl bg-forest hover:bg-forest-light text-warm-white font-black text-xs shadow-xs"
+                >
+                  Log In to Bid
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Public Transparent Bid History Card */}
+          <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-6 space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-sage/40 pb-3">
+              <div className="flex items-center gap-2">
+                <History className="w-4 h-4 text-forest" />
+                <h3 className="font-black text-forest text-sm">Public Bid History</h3>
+              </div>
+              <span className="text-xs font-bold text-charcoal-muted">
+                {Array.isArray(listing.bids) ? `${listing.bids.length} recorded` : '0 recorded'}
+              </span>
+            </div>
+
+            {Array.isArray(listing.bids) && listing.bids.length > 0 ? (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {listing.bids.map((b, idx) => (
+                  <div
+                    key={b._id || idx}
+                    className={`p-3 rounded-xl flex items-center justify-between text-xs border ${
+                      idx === 0
+                        ? 'bg-amber-50 border-amber/50 font-black'
+                        : 'bg-warm-white border-sage/30 font-medium'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${idx === 0 ? 'bg-amber text-forest' : 'bg-sage/20 text-forest'}`}>
+                        #{idx + 1}
+                      </span>
+                      <span className="text-forest font-bold">
+                        {b.bidder?.name || 'Verified Student'}
+                      </span>
+                      {idx === 0 && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-forest text-warm-white font-bold">
+                          Leading
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-black text-forest text-sm">₹{b.amount}</div>
+                      <div className="text-[10px] text-charcoal-muted">
+                        {new Date(b.bidTime || b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 space-y-1">
+                <p className="text-xs font-bold text-forest">No bids placed yet</p>
+                <p className="text-[11px] text-charcoal-muted">
+                  First bid starts at ₹{listing.startingPrice}. Be the first to place a bid!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

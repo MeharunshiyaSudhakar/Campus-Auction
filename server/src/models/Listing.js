@@ -256,7 +256,10 @@ const listingSchema = new mongoose.Schema(
 
 // Search, filtering, profile history and alert indexes
 listingSchema.index({ status: 1, category: 1, closingTime: 1 });
-listingSchema.index({ title: 'text', description: 'text' });
+listingSchema.index(
+  { title: 'text', description: 'text', 'condition.defects': 'text' },
+  { weights: { title: 5, description: 2, 'condition.defects': 1 }, name: 'ListingTextIndex' }
+);
 listingSchema.index({ seller: 1, createdAt: -1 });
 listingSchema.index({ winner: 1, createdAt: -1 });
 listingSchema.index({ seller: 1, status: 1 });

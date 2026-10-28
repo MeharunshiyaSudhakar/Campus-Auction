@@ -1,4 +1,5 @@
 const Listing = require('../models/Listing');
+const Bid = require('../models/Bid');
 
 class ListingService {
   /**
@@ -77,42 +78,107 @@ class ListingService {
   }
 
   /**
-   * Get all active listings with optional filters
+   * Get all active listings with multi-faceted search, filters, and pagination
    */
   static async getListings(query = {}) {
-    const filter = { status: 'active' };
+    const filter = {};
 
-    if (query.category) {
-      filter.category = query.category;
+    // Status filter: default to 'active' unless explicitly overridden
+    if (query.status && query.status !== 'all') {
+      filter.status = query.status;
+    } else if (!query.status) {
+      filter.status = 'active';
     }
 
-    if (query.condition) {
-      filter['condition.grade'] = query.condition;
+    // Category filter: support single or comma-separated list
+    if (query.category && query.category !== 'all') {
+      const categories = query.category.split(',').map((c) => c.trim()).filter(Boolean);
+      if (categories.length > 0) {
+        filter.category = { $in: categories };
+      }
     }
 
-    if (query.search) {
-      filter.$text = { $search: query.search };
+    // Condition grade filter: support single or comma-separated list
+    if (query.condition && query.condition !== 'all') {
+      const conditions = query.condition.split(',').map((c) => c.trim()).filter(Boolean);
+      if (conditions.length > 0) {
+        filter['condition.grade'] = { $in: conditions };
+      }
     }
 
-    if (query.maxPrice) {
-      filter.currentPrice = { $lte: Number(query.maxPrice) };
+    // Keyword search across title, description, defects, and category
+    const searchTerm = (query.q || query.search || '').trim();
+    if (searchTerm) {
+      const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = new RegExp(escaped, 'i');
+      filter.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { 'condition.defects': searchRegex },
+        { category: searchRegex },
+      ];
     }
 
-    let sort = { closingTime: 1 }; // Default: closing soon first
+    // Price range filters
+    if (
+      (query.minPrice !== undefined && query.minPrice !== '') ||
+      (query.maxPrice !== undefined && query.maxPrice !== '')
+    ) {
+      filter.currentPrice = {};
+      if (query.minPrice !== undefined && query.minPrice !== '') {
+        const min = Number(query.minPrice);
+        if (!isNaN(min)) filter.currentPrice.$gte = min;
+      }
+      if (query.maxPrice !== undefined && query.maxPrice !== '') {
+        const max = Number(query.maxPrice);
+        if (!isNaN(max)) filter.currentPrice.$lte = max;
+      }
+    }
+
+    // Closing soon filter (e.g. items closing within 24 hours)
+    if (query.closingSoon === 'true') {
+      const now = new Date();
+      const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      filter.closingTime = { $gte: now, $lte: in24h };
+    }
+
+    // Sorting
+    let sort = { closingTime: 1 }; // Default: closing soonest first
     if (query.sort === 'price_asc') sort = { currentPrice: 1 };
-    if (query.sort === 'price_desc') sort = { currentPrice: -1 };
-    if (query.sort === 'newest') sort = { createdAt: -1 };
+    else if (query.sort === 'price_desc') sort = { currentPrice: -1 };
+    else if (query.sort === 'newest') sort = { createdAt: -1 };
+    else if (query.sort === 'most_bids') sort = { bidCount: -1 };
+    else if (query.sort === 'closing_soon') sort = { closingTime: 1 };
+
+    // Pagination
+    const page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(query.limit, 10) || 12));
+    const skip = (page - 1) * limit;
+
+    const total = await Listing.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit) || 1;
 
     const listings = await Listing.find(filter)
       .populate('seller', 'name')
       .populate('leadingBidder', 'name')
-      .sort(sort);
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
 
-    return listings;
+    return {
+      listings,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasMore: page < totalPages,
+      },
+    };
   }
 
   /**
-   * Get a single listing by ID with full details
+   * Get a single listing by ID with full details, transparent bid history, and server clock
    */
   static async getListingById(id) {
     const listing = await Listing.findById(id)
@@ -126,7 +192,18 @@ class ListingService {
       throw error;
     }
 
-    return listing;
+    // Fetch public transparent bid history
+    const bids = await Bid.find({ listing: id })
+      .sort({ amount: -1, bidTime: -1, createdAt: -1 })
+      .populate('bidder', 'name');
+
+    const listingObj = listing.toObject();
+    listingObj.bids = bids;
+    listingObj.serverTime = new Date();
+    listingObj.timeLeftMs = Math.max(0, new Date(listing.closingTime).getTime() - Date.now());
+    listingObj.isClosed = listingObj.timeLeftMs === 0 || listing.status !== 'active';
+
+    return listingObj;
   }
 
   /**
