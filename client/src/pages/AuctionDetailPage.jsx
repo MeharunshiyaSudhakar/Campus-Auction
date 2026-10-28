@@ -339,6 +339,7 @@ export default function AuctionDetailPage() {
               <ItemImage
                 src={photosList[selectedPhotoIndex]}
                 alt={listing.title}
+                category={listing.category}
                 useThumbnail={false}
                 className="w-full h-full object-cover"
                 containerClassName="rounded-2xl"
@@ -378,6 +379,7 @@ export default function AuctionDetailPage() {
                       src={photo}
                       thumbnailSrc={listing.photoThumbnails?.[idx]}
                       alt={`thumb ${idx}`}
+                      category={listing.category}
                       useThumbnail={true}
                       containerClassName="w-full h-full"
                     />

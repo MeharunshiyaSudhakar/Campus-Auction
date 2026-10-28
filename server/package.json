@@ -17,7 +17,8 @@
     "test:categories": "node tests/test_categories.js",
     "test:issue2": "node tests/test_issue_2_publish_payload.js",
     "test:issue3": "node tests/test_issue_3_my_listings.js",
-    "test": "node tests/test_modules_14_15.js && node tests/test_guided_sell.js && node tests/test_module_4_search_filters.js && node tests/test_module_5_bidding.js && node tests/test_module_16_deals.js && node tests/test_module_6_socket_live.js && node tests/test_modules_7_8_closing_approval.js && node tests/test_modules_9_10_notifications_qa.js && node tests/test_module_19_profile_reels_reposts.js && node tests/test_ai_service.js && node tests/test_photo_upload.js && node tests/test_anti_sniping.js && node tests/test_unsold_attention_notifications.js && node tests/test_email_otp.js && node tests/test_module_16_razorpay_route.js && node tests/test_categories.js && node tests/test_issue_2_publish_payload.js && node tests/test_issue_3_my_listings.js"
+    "test:issue4": "node tests/test_issue_4_image_visibility.js",
+    "test": "node tests/test_modules_14_15.js && node tests/test_guided_sell.js && node tests/test_module_4_search_filters.js && node tests/test_module_5_bidding.js && node tests/test_module_16_deals.js && node tests/test_module_6_socket_live.js && node tests/test_modules_7_8_closing_approval.js && node tests/test_modules_9_10_notifications_qa.js && node tests/test_module_19_profile_reels_reposts.js && node tests/test_ai_service.js && node tests/test_photo_upload.js && node tests/test_anti_sniping.js && node tests/test_unsold_attention_notifications.js && node tests/test_email_otp.js && node tests/test_module_16_razorpay_route.js && node tests/test_categories.js && node tests/test_issue_2_publish_payload.js && node tests/test_issue_3_my_listings.js && node tests/test_issue_4_image_visibility.js"
   },
   "keywords": [
     "auction",

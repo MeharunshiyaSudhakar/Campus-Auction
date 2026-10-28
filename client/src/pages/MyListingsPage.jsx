@@ -290,6 +290,7 @@ export default function MyListingsPage() {
                   thumbnailSrc={item.photoThumbnails && item.photoThumbnails.length > 0 ? item.photoThumbnails[0] : null}
                   useThumbnail={true}
                   alt={item.title}
+                  category={item.category}
                 />
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
                   {item._id === highlightId && (

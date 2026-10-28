@@ -61,9 +61,17 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Serve uploaded listing photos statically
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded listing photos statically with cross-origin resource policy
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+  },
+  express.static(path.resolve(__dirname, '../uploads')),
+  express.static(path.resolve(__dirname, '../../uploads'))
+);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

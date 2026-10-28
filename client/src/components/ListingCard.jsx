@@ -32,6 +32,7 @@ export default function ListingCard({ listing }) {
           thumbnailSrc={thumb}
           useThumbnail={true}
           alt={listing.title}
+          category={listing.category}
           className="group-hover:scale-105 transition-transform duration-300"
         />
 

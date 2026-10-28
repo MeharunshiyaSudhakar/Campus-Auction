@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Package } from 'lucide-react';
 import { getThumbnailUrl } from '../config/imageConfig';
+import { getCategoryConfig } from '../config/categoryConfig';
 
 /**
  * Reusable 1:1 Square Item Image Component
- * Ensures uniform 1:1 aspect ratio, center object-fit cover, and neutral placeholder on error/empty.
+ * Ensures uniform 1:1 aspect ratio, center object-fit cover, and category icon placeholder on error/empty.
  * 
  * @param {string} src - Full resolution image URL
  * @param {string} thumbnailSrc - Optional explicit thumbnail URL
  * @param {string} alt - Alt description
+ * @param {string} category - Category key for contextual fallback icon
  * @param {boolean} useThumbnail - When true, prefers the 400x400 thumbnail for lists/grids
  * @param {string} className - Additional CSS classes applied to <img>
  * @param {string} containerClassName - Additional CSS classes applied to outer container
@@ -18,6 +20,7 @@ export default function ItemImage({
   src,
   thumbnailSrc,
   alt = 'Auction item',
+  category,
   useThumbnail = false,
   className = '',
   containerClassName = '',
@@ -33,6 +36,14 @@ export default function ItemImage({
   }
 
   const isInvalid = !finalSrc || hasError;
+  const categoryConfig = category ? getCategoryConfig(category) : null;
+
+  const handleImageError = () => {
+    if (import.meta.env?.DEV || process.env.NODE_ENV !== 'production') {
+      console.warn(`[ItemImage] Failed to load image at URL: "${finalSrc}" for item "${alt}"`);
+    }
+    setHasError(true);
+  };
 
   return (
     <div
@@ -43,11 +54,17 @@ export default function ItemImage({
       }`}
     >
       {isInvalid ? (
-        // Neutral placeholder: warm-white background with sage icon, no stretched/letterboxed empty space
-        <div className="w-full h-full flex flex-col items-center justify-center bg-warm-white text-sage border border-sage/40 p-4">
-          <Package className="w-10 h-10 text-sage/70 stroke-[1.5]" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-charcoal/40 mt-1">
-            Campus Item
+        // Clean category icon placeholder with uniform 1:1 square
+        <div className="w-full h-full flex flex-col items-center justify-center bg-warm-white text-charcoal border border-sage/40 p-4 select-none">
+          {categoryConfig?.icon ? (
+            <span className="text-3xl sm:text-4xl leading-none mb-1.5" role="img" aria-label={categoryConfig.label}>
+              {categoryConfig.icon}
+            </span>
+          ) : (
+            <Package className="w-10 h-10 text-sage/70 stroke-[1.5] mb-1" />
+          )}
+          <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal/60 text-center">
+            {categoryConfig?.label || 'Campus Item'}
           </span>
         </div>
       ) : (
@@ -62,7 +79,7 @@ export default function ItemImage({
             alt={alt}
             loading="lazy"
             onLoad={() => setLoaded(true)}
-            onError={() => setHasError(true)}
+            onError={handleImageError}
             style={{ aspectRatio: '1 / 1', objectFit: 'cover' }}
             className={`w-full h-full object-cover transition-opacity duration-200 ${
               loaded ? 'opacity-100' : 'opacity-0'
