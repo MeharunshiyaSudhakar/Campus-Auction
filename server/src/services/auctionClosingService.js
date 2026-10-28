@@ -1,6 +1,7 @@
 const Listing = require('../models/Listing');
 const Bid = require('../models/Bid');
 const Notification = require('../models/Notification');
+const NotificationService = require('./notificationService');
 
 class AuctionClosingService {
   /**
@@ -70,21 +71,25 @@ class AuctionClosingService {
       }
 
       // 1. Notify Seller: action needed to approve or decline winning bid
-      await Notification.create({
+      await NotificationService.sendNotification({
         user: updatedListing.seller._id,
         type: 'approval_needed',
         title: 'Action Needed: Approve Winning Bid',
         message: `Your auction for "${updatedListing.title}" closed at ₹${updatedListing.finalPrice}! Please review and approve or decline the winning bid.`,
         listing: updatedListing._id,
+        link: '/needs-attention',
+        eventKey: `${updatedListing._id}_approval_needed`,
       });
 
       // 2. Notify Winner: won auction, awaiting seller price confirmation
-      await Notification.create({
+      await NotificationService.sendNotification({
         user: updatedListing.winner._id,
         type: 'won',
         title: 'Auction Won (Pending Seller Approval)',
         message: `You placed the winning bid of ₹${updatedListing.finalPrice} on "${updatedListing.title}". The seller has been notified to confirm the sale.`,
         listing: updatedListing._id,
+        link: '/deals',
+        eventKey: `${updatedListing._id}_won`,
       });
 
       // 3. Real-Time Socket Broadcasts
@@ -124,12 +129,14 @@ class AuctionClosingService {
       }
 
       // Notify Seller: item unsold, available in Needs Attention
-      await Notification.create({
+      await NotificationService.sendNotification({
         user: updatedListing.seller._id,
-        type: 'unsold_alert',
-        title: 'Auction Closed Unsold',
-        message: `Your auction for "${updatedListing.title}" ended with no bids. You can relist with an adjusted starting price from Needs Attention.`,
+        type: 'unsold_no_bids',
+        title: 'Auction Closed Without Bids',
+        message: `Your "${updatedListing.title}" closed without bids.`,
         listing: updatedListing._id,
+        link: '/needs-attention',
+        eventKey: `${updatedListing._id}_unsold_no_bids`,
       });
 
       // Real-Time Socket Broadcasts

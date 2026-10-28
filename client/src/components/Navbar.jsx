@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import api from '../api/client';
 import {
   Gavel,
   PlusCircle,
@@ -24,6 +25,32 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [attentionCount, setAttentionCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAttentionCount = async () => {
+      if (!user) {
+        setAttentionCount(0);
+        return;
+      }
+      try {
+        const res = await api.get('/listings/needs-attention/count');
+        if (isMounted && res.data?.success) {
+          setAttentionCount(res.data.data.count || 0);
+        }
+      } catch (e) {
+        // silent fallback
+      }
+    };
+
+    fetchAttentionCount();
+    const interval = setInterval(fetchAttentionCount, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [user, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -111,6 +138,11 @@ export default function Navbar() {
             >
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>Needs Attention</span>
+              {attentionCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black bg-amber text-charcoal">
+                  {attentionCount}
+                </span>
+              )}
             </Link>
           )}
         </nav>
@@ -141,8 +173,13 @@ export default function Navbar() {
                 }`}
                 title="Profile & Activity Dashboard"
               >
-                <div className="w-7 h-7 rounded-full bg-sage text-charcoal flex items-center justify-center text-xs font-black shadow-xs shrink-0">
+                <div className="relative w-7 h-7 rounded-full bg-sage text-charcoal flex items-center justify-center text-xs font-black shadow-xs shrink-0">
                   {user.name.charAt(0).toUpperCase()}
+                  {attentionCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber text-charcoal text-[9px] font-black flex items-center justify-center border border-charcoal">
+                      {attentionCount}
+                    </span>
+                  )}
                 </div>
                 <span className="hidden sm:inline-block font-semibold text-xs truncate max-w-[100px]">
                   {user.name}
@@ -288,14 +325,21 @@ export default function Navbar() {
                 <Link
                   to="/needs-attention"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                     isActive('/needs-attention')
-                      ? 'bg-amber text-forest font-black'
-                      : 'text-amber hover:bg-forest-light'
+                      ? 'bg-amber text-charcoal font-black'
+                      : 'text-amber hover:bg-charcoal-700'
                   }`}
                 >
-                  <AlertTriangle className="w-4 h-4 text-amber" />
-                  <span>Needs Attention (Alerts)</span>
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="w-4 h-4 text-amber" />
+                    <span>Needs Attention (Alerts)</span>
+                  </div>
+                  {attentionCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-black bg-amber text-charcoal">
+                      {attentionCount}
+                    </span>
+                  )}
                 </Link>
 
                 <Link

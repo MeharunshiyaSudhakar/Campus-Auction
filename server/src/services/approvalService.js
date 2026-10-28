@@ -1,6 +1,7 @@
 const Listing = require('../models/Listing');
 const Deal = require('../models/Deal');
 const Notification = require('../models/Notification');
+const NotificationService = require('./notificationService');
 
 class ApprovalService {
   /**
@@ -151,22 +152,26 @@ class ApprovalService {
 
     // 1. Notify Winning Buyer
     if (listing.winner) {
-      await Notification.create({
+      await NotificationService.sendNotification({
         user: listing.winner,
         type: 'rejected',
         title: 'Bid Declined by Seller',
         message: `The seller declined the final bid of ₹${listing.finalPrice} for "${listing.title}". Reason: ${reason}`,
         listing: listing._id,
+        link: '/browse',
+        eventKey: `${listing._id}_buyer_rejected`,
       });
     }
 
     // 2. Notify Seller (Item appears in Needs Attention)
-    await Notification.create({
+    await NotificationService.sendNotification({
       user: listing.seller,
-      type: 'unsold_alert',
+      type: 'rejection_confirmed',
       title: 'Listing Declined - Available to Relist',
       message: `You declined the final bid for "${listing.title}". You can adjust starting price and relist from Needs Attention.`,
       listing: listing._id,
+      link: '/needs-attention',
+      eventKey: `${listing._id}_rejection_confirmed`,
     });
 
     // 3. Socket.io Real-Time Broadcast

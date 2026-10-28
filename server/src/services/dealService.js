@@ -1,6 +1,7 @@
 const Deal = require('../models/Deal');
 const Listing = require('../models/Listing');
 const User = require('../models/User');
+const NotificationService = require('./notificationService');
 
 class DealService {
   /**
@@ -483,10 +484,48 @@ class DealService {
     });
     await deal.save();
 
-    // Update listing status
-    await Listing.findByIdAndUpdate(deal.listing, {
-      status: outcome === 'rejected' ? 'rejected' : 'cancelled',
-    });
+    // Update listing status matching outcome
+    let listingStatus = 'cancelled';
+    if (outcome === 'rejected') listingStatus = 'rejected';
+    else if (outcome === 'pickup_failed') listingStatus = 'pickup_failed';
+
+    const updatedListing = await Listing.findByIdAndUpdate(
+      deal.listing,
+      { status: listingStatus },
+      { new: true }
+    );
+
+    // Dispatch deduplicated seller attention notifications
+    if (updatedListing) {
+      const listingTitle = updatedListing.title || 'your item';
+      let notifType = 'deal_cancelled';
+      let notifTitle = 'Deal Cancelled - Needs Attention';
+      let notifMsg = `Deal for "${listingTitle}" was cancelled. You can relist anytime.`;
+
+      if (outcome === 'pickup_failed') {
+        notifType = 'pickup_failed';
+        notifTitle = 'Campus Handover Failed - Needs Attention';
+        notifMsg = `Campus handover for "${listingTitle}" could not be completed. Item is available in Needs Attention for relisting.`;
+      } else if (outcome === 'payment_not_received') {
+        notifType = 'payment_not_received';
+        notifTitle = 'Payment Window Expired - Needs Attention';
+        notifMsg = `Payment was not received for "${listingTitle}". You can relist your item now from Needs Attention.`;
+      } else if (outcome === 'rejected') {
+        notifType = 'rejection_confirmed';
+        notifTitle = 'Price Rejected - Needs Attention';
+        notifMsg = `Price rejected for "${listingTitle}". You can relist your item from Needs Attention.`;
+      }
+
+      await NotificationService.sendNotification({
+        user: deal.seller,
+        type: notifType,
+        title: notifTitle,
+        message: notifMsg,
+        listing: deal.listing,
+        link: '/needs-attention',
+        eventKey: `${deal.listing}_${notifType}`,
+      });
+    }
 
     // If online payment exists, initiate refund
     try {

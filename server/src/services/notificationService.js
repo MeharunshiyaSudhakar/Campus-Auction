@@ -79,6 +79,68 @@ class NotificationService {
     const count = await Notification.countDocuments({ user: userId, isRead: false });
     return { unreadCount: count };
   }
+
+  /**
+   * Deduplicated notification dispatcher with in-app socket & email alerts
+   * @param {object} params
+   * @param {string} params.user - Recipient user ID
+   * @param {string} params.type - Notification enum type
+   * @param {string} params.title - Alert headline
+   * @param {string} params.message - Full message body
+   * @param {string} [params.listing] - Related listing ID
+   * @param {string} [params.link] - Action URL (e.g. '/needs-attention')
+   * @param {string} [params.eventKey] - Unique deduplication key (e.g. `${listingId}_${type}`)
+   */
+  static async sendNotification({ user, type, title, message, listing = null, link = null, eventKey = null }) {
+    if (eventKey) {
+      const existing = await Notification.findOne({ eventKey });
+      if (existing) {
+        return { created: false, duplicate: true, notification: existing };
+      }
+    }
+
+    let notif;
+    try {
+      notif = await Notification.create({
+        user,
+        type,
+        title,
+        message,
+        listing,
+        link,
+        eventKey,
+      });
+    } catch (err) {
+      if (err.code === 11000) {
+        const existing = await Notification.findOne({ eventKey });
+        return { created: false, duplicate: true, notification: existing };
+      }
+      throw err;
+    }
+
+    // 1. Socket.io Real-Time Dispatch to User Room
+    try {
+      const { getIO } = require('../config/socket');
+      const io = getIO();
+      io.to(`user:${user}`).emit('new_notification', notif);
+    } catch (e) {
+      // Socket not active in CLI/tests
+    }
+
+    // 2. Email Notification Dispatch
+    try {
+      const EmailService = require('./emailService');
+      const User = require('../models/User');
+      const recipient = await User.findById(user).select('email name');
+      if (recipient && recipient.email) {
+        await EmailService.sendAlertEmail(recipient.email, title, message, link);
+      }
+    } catch (emailErr) {
+      console.warn('[NotificationService] Email alert warning:', emailErr.message);
+    }
+
+    return { created: true, notification: notif };
+  }
 }
 
 module.exports = NotificationService;

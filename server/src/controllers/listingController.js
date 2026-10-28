@@ -102,6 +102,21 @@ class ListingController {
   }
 
   /**
+   * @route   GET /api/listings/needs-attention/count
+   * @desc    Get count of items that need attention for badge display
+   * @access  Private
+   */
+  static async getNeedsAttentionCount(req, res, next) {
+    try {
+      const AlertService = require('../services/alertService');
+      const data = await AlertService.getNeedsAttentionCount(req.user._id);
+      return ApiResponse.success(res, data, 'Needs attention count retrieved successfully', 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * @route   POST /api/listings/relist/:id
    * @desc    Relist an old/unsold listing as a fresh auction
    * @access  Private

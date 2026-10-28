@@ -98,6 +98,7 @@ class AlertService {
         { status: 'unsold' },
         { status: 'rejected' },
         { status: 'pickup_failed' },
+        { status: 'cancelled' },
       ],
     }).sort({ updatedAt: -1 });
 
@@ -114,6 +115,9 @@ class AlertService {
       } else if (item.status === 'pickup_failed') {
         reasonKey = 'pickup_failed';
         reasonText = 'Campus handover could not be completed. Item can be relisted.';
+      } else if (item.status === 'cancelled') {
+        reasonKey = 'deal_cancelled';
+        reasonText = 'Deal was cancelled or payment expired. Ready for relisting.';
       }
 
       return {
@@ -132,6 +136,27 @@ class AlertService {
         reasonText,
       };
     });
+  }
+
+  /**
+   * Get count of items needing attention for seller badge
+   */
+  static async getNeedsAttentionCount(sellerId) {
+    const thresholdDays = Number(process.env.UNSOLD_ALERT_DAYS) || 3;
+    const cutoffDate = new Date(Date.now() - thresholdDays * 24 * 60 * 60 * 1000);
+
+    const count = await Listing.countDocuments({
+      seller: sellerId,
+      $or: [
+        { status: 'active', bidCount: 0, createdAt: { $lte: cutoffDate } },
+        { status: 'unsold' },
+        { status: 'rejected' },
+        { status: 'pickup_failed' },
+        { status: 'cancelled' },
+      ],
+    });
+
+    return { count };
   }
 
   /**

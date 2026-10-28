@@ -9,6 +9,7 @@ router.get('/', ListingController.getAllListings);
 // Protected routes (must be authenticated)
 router.get('/my', protect, ListingController.getMyListings);
 router.get('/needs-attention', protect, ListingController.getNeedsAttention);
+router.get('/needs-attention/count', protect, ListingController.getNeedsAttentionCount);
 router.post('/relist/:id', protect, ListingController.relistListing);
 router.post('/', protect, ListingController.createListing);
 router.get('/:id', ListingController.getListingById);
