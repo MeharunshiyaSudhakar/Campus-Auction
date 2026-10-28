@@ -7,6 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        forest: 'var(--forest)',
+        sage: 'var(--sage)',
+        'warm-white': 'var(--warm-white)',
+        amber: 'var(--amber)',
+        charcoal: 'var(--charcoal)',
         primary: {
           50: '#eef2ff',
           100: '#e0e7ff',

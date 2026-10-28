@@ -2,8 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --forest: #1F4D3A;      /* primary: header, main buttons, headings */
+  --sage: #A9BFA8;        /* secondary: cards, tags, borders */
+  --warm-white: #FAF7F0;  /* page background */
+  --amber: #E0A030;       /* accent: bids, countdown, highlights */
+  --charcoal: #2B2B2B;    /* text */
+}
+
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    background-color: var(--warm-white);
+    color: var(--charcoal);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--forest);
   }
 }

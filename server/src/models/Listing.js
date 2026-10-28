@@ -85,12 +85,10 @@ const listingSchema = new mongoose.Schema(
         cycle: {
           brakes: {
             type: String,
-            enum: ['Good', 'Needs adjustment', 'Needs pad replacement', 'N/A'],
             default: 'N/A',
           },
           tyres: {
             type: String,
-            enum: ['Like new', 'Good tread', 'Worn', 'Punctured / Needs replacement', 'N/A'],
             default: 'N/A',
           },
           frameSize: { type: String, default: '' },
@@ -100,17 +98,14 @@ const listingSchema = new mongoose.Schema(
         calculator: {
           display: {
             type: String,
-            enum: ['Flawless', 'Faint / Low contrast', 'Lines missing', 'N/A'],
             default: 'N/A',
           },
           battery: {
             type: String,
-            enum: ['Working', 'Needs replacement', 'Solar only', 'N/A'],
             default: 'N/A',
           },
           modelType: {
             type: String,
-            enum: ['Scientific', 'Graphing', 'Basic', 'N/A'],
             default: 'Scientific',
           },
         },
@@ -119,12 +114,10 @@ const listingSchema = new mongoose.Schema(
           edition: { type: String, default: '' },
           markedPages: {
             type: String,
-            enum: ['Clean / No marks', 'Light pencil notes', 'Heavy pen / Highlighting', 'N/A'],
             default: 'Clean / No marks',
           },
           binding: {
             type: String,
-            enum: ['Intact / Tight', 'Loose pages', 'Cover torn / taped', 'N/A'],
             default: 'Intact / Tight',
           },
         },

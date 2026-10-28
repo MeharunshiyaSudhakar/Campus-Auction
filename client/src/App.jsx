@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import CreateListingPage from './pages/CreateListingPage';
+import GuidedSellPage from './pages/GuidedSellPage';
 import MyListingsPage from './pages/MyListingsPage';
 import ProfilePage from './pages/ProfilePage';
 import NeedsAttentionPage from './pages/NeedsAttentionPage';
@@ -21,7 +21,8 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/create-listing" element={<CreateListingPage />} />
+              <Route path="/sell" element={<GuidedSellPage />} />
+              <Route path="/create-listing" element={<GuidedSellPage />} />
               <Route path="/my-listings" element={<MyListingsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/needs-attention" element={<NeedsAttentionPage />} />

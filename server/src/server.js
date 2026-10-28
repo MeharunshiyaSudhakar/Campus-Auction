@@ -12,6 +12,7 @@ const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const listingRoutes = require('./routes/listingRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const sellRoutes = require('./routes/sellRoutes');
 
 // Schedulers
 const { startUnsoldAlertScheduler } = require('./services/unsoldAlertScheduler');
@@ -49,6 +50,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/sell', sellRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

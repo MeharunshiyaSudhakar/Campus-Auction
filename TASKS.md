@@ -17,23 +17,21 @@
 - [x] Protected routes and logout
 - [x] Check: public profile shows only the name (zero private leak)
 
-## Module 2: Item Listings
-- [x] Listing model with structured condition (grade, age, working status, defects, accessories, category details)
-- [x] Create listing endpoint with validation (required fields, defects mandatory for Fair/Poor)
-- [x] Photo upload (minimum 2-3 photos, size limit, defect photo prompt)
-- [x] Honesty declaration checkbox
-- [x] Edit listing (lock price fields once bids exist)
-- [x] Cancel listing (record cancelled outcome)
-- [x] Create-listing form in React with category-specific fields
-- [x] "My Listings" page
-
-## Module 3: AI Description Helper
-- [ ] aiService.js with provider, fallback and API key in .env
-- [ ] Question flow per category (age, working status, defects, accessories)
-- [ ] Endpoint that turns answers into a draft description
-- [ ] Seller can edit and approve the draft
-- [ ] Template fallback when the AI call fails
-- [ ] Send no personal data to the AI
+## Module 2+3: AI-Guided Sell Flow
+- [x] SellDraft model (seller, category, answers, step, status)
+- [x] Question config per category (key, label, type, required)
+- [x] Endpoints: start draft, get next question, save answer, go back, resume draft
+- [x] Server-side validation per answer (price, increment, closing time in future, photos)
+- [x] Photo upload step (minimum 2-3 photos, size limit)
+- [x] AI endpoint: rephrase description from the seller's answers (facts only)
+- [x] AI endpoint: category suggestions for missing or helpful details
+- [x] Template fallback if the AI fails
+- [x] Review screen: structured summary, original vs rephrased, accept/reject suggestions
+- [x] Honesty declaration required before Publish
+- [x] Publish endpoint creates the Listing from the draft and deletes the draft
+- [x] Check: seller cannot publish with missing required fields
+- [x] Check: rephrase never adds details the seller did not give
+- [x] Add palette as CSS variables in the client
 
 ## Module 4: Search and Filters
 - [ ] Text index and keyword search

@@ -31,8 +31,7 @@ Other outcomes: unsold, rejected, cancelled, pickup_failed
 
 ## Modules
 1. Student Auth
-2. Item Listings (structured condition form, photos, honesty declaration)
-3. AI Description Helper (AI asks condition questions, drafts description, seller approves)
+2+3. AI-Guided Sell Flow (one-question-at-a-time, autosaved drafts, facts-only AI rephrase, review screen)
 4. Search & Filters (keyword, category, condition, price, closing soon, natural-language search)
 5. Live Bidding (validation, public history, Socket.io updates)
 6. Countdown & 30s Extension
@@ -45,6 +44,17 @@ Other outcomes: unsold, rejected, cancelled, pickup_failed
 13. Wanted Alerts (saved requests, notify even if offline)
 14. Profile & History Dashboard
 15. Unsold Item Alerts
+
+## Module 2+3: AI-Guided Sell Flow
+- "Sell Item" opens a guided page; the AI asks one question at a time
+- The backend defines the question list per category (cycle, calculator, books, electronics);
+  the AI adds friendly phrasing, category suggestions, and the final rephrase
+- Answers autosave to a SellDraft; the seller can resume
+- Review screen: structured summary, original vs AI-rephrased description, suggestions,
+  honesty declaration, edit anything, then Publish
+- The AI never invents facts and never publishes; the seller publishes after server validation
+- Fallback: template description if the AI call fails
+- Palette: Forest, Sage, Warm white, Amber, Charcoal (CSS variables)
 
 ## Module 14: Profile & History Dashboard
 Each student has a private profile area showing their own activity.
