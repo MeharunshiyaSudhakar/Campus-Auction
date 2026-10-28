@@ -43,13 +43,52 @@ const listingSchema = new mongoose.Schema(
     },
     acceptedPaymentMethods: {
       type: [String],
-      enum: ['razorpay', 'direct_upi', 'cash_on_pickup'],
-      default: ['cash_on_pickup', 'direct_upi'],
+      enum: ['upi', 'direct_upi', 'cash_on_pickup', 'other'],
+      default: ['upi', 'cash_on_pickup'],
       validate: {
         validator: function (val) {
           return Array.isArray(val) && val.length >= 1;
         },
         message: 'At least one accepted payment method must be selected',
+      },
+    },
+    // Strictly Private Seller Payment & Deal Details (select: false ensures zero leak in public queries)
+    upiId: {
+      type: String,
+      trim: true,
+      default: '',
+      select: false,
+      validate: {
+        validator: function (v) {
+          if (!v) return true;
+          // Valid UPI format: username@bank
+          return /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/.test(v);
+        },
+        message: 'Invalid UPI ID format. Expected format: username@bank',
+      },
+    },
+    contactPhone: {
+      type: String,
+      trim: true,
+      default: '',
+      select: false,
+    },
+    otherInstructions: {
+      type: String,
+      trim: true,
+      default: '',
+      select: false,
+    },
+    // Fulfilment options
+    fulfilment: {
+      type: [String],
+      enum: ['campus_pickup', 'courier'],
+      default: ['campus_pickup'],
+      validate: {
+        validator: function (val) {
+          return Array.isArray(val) && val.length >= 1;
+        },
+        message: 'At least one fulfilment option (campus_pickup or courier) is required',
       },
     },
     description: {

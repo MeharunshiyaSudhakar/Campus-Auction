@@ -74,16 +74,26 @@ Each student has a private profile area showing their own activity.
 - Relisting is a convenience that prefills a new listing from the old one; it creates a new auction
 - Build order: after Modules 8 and 9
 
-## Module 16: Payments (Razorpay)
-- Seller selects accepted payment methods when listing (>= 1): online via Razorpay
-  (UPI/cards/netbanking), direct UPI to seller, cash on pickup
-- After approval, the buyer chooses one of the seller's methods
-- Razorpay: server creates the order (amount from the DB, never the client), checkout on
-  the client, server verifies the payment signature; optional webhook
-- Cash / direct UPI: recorded as pending and confirmed by the seller at handover
-- Payment status shown in the pickup tracker; sale completes after handover
-- Failed pickup after an online payment is flagged "refund needed"
-- Key Secret only in server .env; test mode for the hackathon
+## Module 16: Direct Payment & Deal Details (replaces Razorpay)
+- No payment gateway. The seller is paid directly by the buyer.
+- Sell flow: the seller selects accepted payment methods (>= 1): UPI (UPI ID), cash on
+  pickup (contact phone), other (text instructions). Seller also selects fulfilment:
+  campus pickup and/or courier.
+- After the seller approves the winning price, the winner picks one of the offered
+  methods and a fulfilment type; the server then reveals the seller's payment details to
+  the winner only.
+- Courier: the buyer submits a delivery address and phone; the seller sees it for that
+  deal only; the seller adds courier name, tracking ID, dispatch date.
+- Payment confirmation by both sides (buyer "paid", seller "received"); cash confirmed
+  at handover. Sale completes on confirmed handover or "received".
+- Privacy: payment details, phone and address are never in public responses and never
+  sent to the AI.
+
+## Module 16b: Deal Chat
+- A private chat per approved deal, between the winner and the seller only (Socket.io +
+  stored messages), text only, rate-limited, safety banner.
+- Separate from the public pre-bid Q&A (Module 10).
+- Notifications for new messages, "paid", "received", "shipped".
 
 ## Module 17: Home Page & Navigation
 - Home (landing + feature explanations), Live Auctions via a header icon, Sell Item in the header

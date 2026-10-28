@@ -58,10 +58,29 @@ class ListingService {
       throw error;
     }
 
+    // Validate payment methods and fulfilment
+    const paymentMethods = Array.isArray(data.acceptedPaymentMethods) && data.acceptedPaymentMethods.length > 0
+      ? data.acceptedPaymentMethods
+      : ['upi', 'cash_on_pickup'];
+
+    const fulfilmentOptions = Array.isArray(data.fulfilment) && data.fulfilment.length > 0
+      ? data.fulfilment
+      : ['campus_pickup'];
+
+    if (paymentMethods.includes('upi') && data.upiId) {
+      const upiRegex = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
+      if (!upiRegex.test(data.upiId.trim())) {
+        const error = new Error('Invalid UPI ID format. Expected format: username@bank');
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
     const listing = await Listing.create({
       seller: sellerId,
       title: title.trim(),
       category,
+      itemSubtype: data.itemSubtype ? String(data.itemSubtype).trim() : '',
       description: description.trim(),
       photos,
       defectPhotoIncluded: !!defectPhotoIncluded,
@@ -72,6 +91,11 @@ class ListingService {
       currentPrice: Number(startingPrice),
       closingTime: closeDate,
       status: 'active',
+      acceptedPaymentMethods: paymentMethods,
+      upiId: data.upiId ? String(data.upiId).trim() : '',
+      contactPhone: data.contactPhone ? String(data.contactPhone).trim() : '',
+      otherInstructions: data.otherInstructions ? String(data.otherInstructions).trim() : '',
+      fulfilment: fulfilmentOptions,
     });
 
     return await listing.populate('seller', 'name');

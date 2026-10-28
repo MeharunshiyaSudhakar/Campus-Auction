@@ -14,6 +14,7 @@ const listingRoutes = require('./routes/listingRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const sellRoutes = require('./routes/sellRoutes');
 const bidRoutes = require('./routes/bidRoutes');
+const dealRoutes = require('./routes/dealRoutes');
 
 // Schedulers
 const { startUnsoldAlertScheduler } = require('./services/unsoldAlertScheduler');
@@ -53,6 +54,7 @@ app.use('/api/listings', listingRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/sell', sellRoutes);
 app.use('/api/bids', bidRoutes);
+app.use('/api/deals', dealRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

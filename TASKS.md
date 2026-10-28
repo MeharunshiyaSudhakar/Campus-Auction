@@ -132,17 +132,27 @@
 - [x] Notification created once per listing per threshold (store a flag)
 - [x] Needs Attention endpoint and page
 - [x] Quick actions: edit, cancel, relist (prefilled new listing)
-## Module 16: Payments
-- [ ] Razorpay test keys in server .env (Key Secret never committed)
-- [ ] Listing field: acceptedPaymentMethods (at least one) + step in the sell flow
-- [ ] Payment model (listing, buyer, method, amount, status)
-- [ ] Buyer selects from the seller's methods after approval
-- [ ] Create-order endpoint (amount read from DB, in paise)
-- [ ] Verify-payment endpoint (signature check) + idempotency
-- [ ] Cash / direct UPI: pending status, seller confirms at handover
-- [ ] Show payment status in the pickup tracker
-- [ ] "Refund needed" status on failed pickup after an online payment
-- [ ] Check: client cannot change the amount; invalid signature is rejected
+## Module 16: Direct Payment and Deal Details
+- [x] Listing fields: acceptedPaymentMethods, upiId, contactPhone, otherInstructions, fulfilment (pickup/courier)
+- [x] Validate UPI ID format; require at least one method and one fulfilment option
+- [x] Encrypt sensitive fields at rest (optional) and exclude them from every public query
+- [x] Deal model (listing, buyer, seller, chosenMethod, fulfilment, status, address snapshot)
+- [x] Buyer chooses a method and fulfilment after approval
+- [x] Endpoint reveals seller payment details to the winner only after approval
+- [x] Courier: address form for the buyer; seller adds courier name, tracking ID, dispatch date
+- [x] Buyer "I have paid" and seller "payment received" actions
+- [x] Buyer "received" confirmation for courier; handover confirmation for pickup
+- [x] Outcomes: payment_not_received, pickup_failed, courier_issue
+- [x] Optional job to purge delivery addresses N days after completion
+- [x] Check: third parties get 403 on deal details; the AI context never includes them
+- [x] Check: profile totals count only completed deals
+
+## Module 16b: Deal Chat
+- [x] Message model (deal, sender, text, time)
+- [x] Chat opens only after approval, and only for the two parties
+- [x] Socket.io room per deal, with REST fallback to load history
+- [x] Rate limit, length limit, safety banner
+- [x] Notifications for new messages and status changes
 
 ## Module 17: Home & Navigation
 - [ ] Header with Home, Live Auctions icon, Sell Item button, Assistant, bell, Profile

@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage';
 import NeedsAttentionPage from './pages/NeedsAttentionPage';
 import BrowsePage from './pages/BrowsePage';
 import AuctionDetailPage from './pages/AuctionDetailPage';
+import DealTrackerPage from './pages/DealTrackerPage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="/listings" element={<BrowsePage />} />
               <Route path="/listings/:id" element={<AuctionDetailPage />} />
               <Route path="/auction/:id" element={<AuctionDetailPage />} />
+              <Route path="/deals/:id" element={<DealTrackerPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/sell" element={<GuidedSellPage />} />

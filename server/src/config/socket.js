@@ -20,9 +20,15 @@ const initSocket = (httpServer) => {
       console.log(`[Socket.io] Socket ${socket.id} joined auction:${listingId}`);
     });
 
-    socket.on('leave_auction', (listingId) => {
-      socket.leave(`auction:${listingId}`);
-      console.log(`[Socket.io] Socket ${socket.id} left auction:${listingId}`);
+    // Join deal room for real-time private deal chat and status updates
+    socket.on('join_deal', (dealId) => {
+      socket.join(`deal:${dealId}`);
+      console.log(`[Socket.io] Socket ${socket.id} joined deal:${dealId}`);
+    });
+
+    socket.on('leave_deal', (dealId) => {
+      socket.leave(`deal:${dealId}`);
+      console.log(`[Socket.io] Socket ${socket.id} left deal:${dealId}`);
     });
 
     socket.on('disconnect', () => {
