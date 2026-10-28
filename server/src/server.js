@@ -11,6 +11,10 @@ const errorHandler = require('./middleware/errorHandler');
 // Route imports
 const authRoutes = require('./routes/authRoutes');
 const listingRoutes = require('./routes/listingRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+
+// Schedulers
+const { startUnsoldAlertScheduler } = require('./services/unsoldAlertScheduler');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,7 +23,10 @@ const server = http.createServer(app);
 initSocket(server);
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  // Start background schedulers after DB connection is ready
+  startUnsoldAlertScheduler();
+});
 
 // Global Middlewares
 app.use(cors({
@@ -41,6 +48,7 @@ app.get('/api/health', (req, res) => {
 // Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
+app.use('/api/profile', profileRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

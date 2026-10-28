@@ -116,6 +116,26 @@
 - [ ] On new listing, match alerts and create notifications
 - [ ] Show missed alerts on next login
 
+## Module 14: Profile and History Dashboard
+- [x] Profile page route (owner only)
+- [x] Selling history endpoint with outcome and final price
+- [x] Buying history endpoint with outcome (won / lost / pending)
+- [x] Totals: spent and received (completed handovers only); pending shown separately
+- [x] Mongo aggregation grouped by day / month / year
+- [x] Period filter (day, month, year, custom range) with query params
+- [x] Charts: spending and earnings over time, sold vs unsold
+- [x] Empty states when the period has no data
+- [x] Check: totals match the sum of listed history rows
+- [x] Check: another user cannot read someone else's history
+
+## Module 15: Unsold Item Alerts
+- [x] Configurable threshold (default 3 days, set in .env)
+- [x] Scheduled job finds stale listings (no bids) and unsold closures
+- [x] Notification created once per listing per threshold (store a flag)
+- [x] Needs Attention endpoint and page
+- [x] Quick actions: edit, cancel, relist (prefilled new listing)
+- [x] Check: no duplicate notifications after a server restart
+
 ## Polish and Submission
 - [ ] Mobile-responsive UI
 - [ ] Error and loading states everywhere

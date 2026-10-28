@@ -85,6 +85,36 @@ class ListingController {
       next(error);
     }
   }
+
+  /**
+   * @route   GET /api/listings/needs-attention
+   * @desc    Get listings that need attention (stale 0 bids, unsold, rejected)
+   * @access  Private
+   */
+  static async getNeedsAttention(req, res, next) {
+    try {
+      const AlertService = require('../services/alertService');
+      const items = await AlertService.getNeedsAttentionListings(req.user._id);
+      return ApiResponse.success(res, items, 'Items needing attention retrieved successfully', 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @route   POST /api/listings/relist/:id
+   * @desc    Relist an old/unsold listing as a fresh auction
+   * @access  Private
+   */
+  static async relistListing(req, res, next) {
+    try {
+      const AlertService = require('../services/alertService');
+      const newListing = await AlertService.relistListing(req.user._id, req.params.id, req.body);
+      return ApiResponse.success(res, newListing, 'Item relisted successfully as a new auction', 201);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = ListingController;

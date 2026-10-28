@@ -43,6 +43,26 @@ Other outcomes: unsold, rejected, cancelled, pickup_failed
 11. Auto-Bidding (max set by buyer, bids only as needed)
 12. AI Shopping Assistant (needs and budget, proposes bids, acts only with approval)
 13. Wanted Alerts (saved requests, notify even if offline)
+14. Profile & History Dashboard
+15. Unsold Item Alerts
+
+## Module 14: Profile & History Dashboard
+Each student has a private profile area showing their own activity.
+- Selling history: items listed, sold, unsold, cancelled, with outcome and final price
+- Buying history: auctions bid on, won, lost, with outcome
+- Money summary: total spent (completed purchases) and total received (completed sales).
+  Only count a sale after handover is confirmed. Show reserved/pending amounts separately.
+- Charts: spending and earnings over time (bar/line), plus sold vs unsold count
+- Period filter: day, month, year, or a custom date range; filters apply to the history list, totals and charts together
+- Privacy: this dashboard is visible only to its owner. The public profile still shows only the name.
+
+## Module 15: Unsold Item Alerts
+- Detect a seller's listings that are not selling: active listings with no bids after N days (default 3), and auctions that closed unsold
+- Notify the seller (in-app and browser), once per listing per threshold, with no repeats
+- "Needs Attention" page lists those items with reasons (no bids yet, closed unsold, rejected price)
+  and quick actions: edit the price/closing time, cancel, or relist
+- Relisting is a convenience that prefills a new listing from the old one; it creates a new auction
+- Build order: after Modules 8 and 9
 
 ## Standout Features (pick 2-3 to polish)
 - AI condition interview for honest listings

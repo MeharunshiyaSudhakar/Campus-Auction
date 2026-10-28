@@ -170,7 +170,11 @@ const listingSchema = new mongoose.Schema(
       required: [true, 'Auction closing time is required'],
       validate: {
         validator: function (v) {
-          return v > new Date();
+          // Enforce future time for newly created active auctions
+          if (this.isNew && (!this.status || this.status === 'active')) {
+            return v > new Date();
+          }
+          return true;
         },
         message: 'Auction closing time must be set in the future',
       },
@@ -239,14 +243,30 @@ const listingSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // --- Module 15: Unsold / Stale Alert Flags (Prevents duplicate notifications across restarts) ---
+    staleNoBidsAlertSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    unsoldAlertSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Search and filtering compound indexes
+// Search, filtering, profile history and alert indexes
 listingSchema.index({ status: 1, category: 1, closingTime: 1 });
 listingSchema.index({ title: 'text', description: 'text' });
+listingSchema.index({ seller: 1, createdAt: -1 });
+listingSchema.index({ winner: 1, createdAt: -1 });
+listingSchema.index({ seller: 1, status: 1 });
+listingSchema.index({ status: 1, bidCount: 1, createdAt: 1 });
 
 module.exports = mongoose.model('Listing', listingSchema);
