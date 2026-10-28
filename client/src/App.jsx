@@ -14,7 +14,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+        <div className="min-h-screen flex flex-col bg-warm-white text-charcoal">
           <Navbar />
           <main className="flex-1">
             <Routes>
@@ -28,8 +28,11 @@ export default function App() {
               <Route path="/needs-attention" element={<NeedsAttentionPage />} />
             </Routes>
           </main>
-          <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-            Campus Auction &bull; Built with MERN + Socket.io &bull; Fair & Transparent Campus Marketplace
+          <footer className="border-t border-sage/40 bg-warm-white-muted/60 py-6 px-4 text-center text-xs text-charcoal/70">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+              <span>Campus Auction &bull; Fair & Transparent Marketplace for Graduating Seniors & Juniors</span>
+              <span className="text-forest font-semibold">MERN Stack &bull; Socket.io Anti-Sniping &bull; 100% Honest Disclosure</span>
+            </div>
           </footer>
         </div>
       </Router>

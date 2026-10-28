@@ -13,6 +13,19 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import {
+  Shield,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Calendar,
+  DollarSign,
+  Package,
+  Clock,
+  TrendingUp,
+  Tag,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -70,52 +83,78 @@ export default function ProfilePage() {
   }, [period, customFrom, customTo]);
 
   return (
-    <div style={{ maxWidth: 1000, margin: '20px auto', padding: '0 16px', fontFamily: 'sans-serif' }}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8 bg-warm-white">
       {/* Header */}
-      <div style={{ borderBottom: '1px solid #ddd', paddingBottom: 16, marginBottom: 20 }}>
-        <h2>Student Profile & History Dashboard</h2>
-        <p style={{ color: '#666', margin: '4px 0' }}>
-          <strong>Owner:</strong> {user?.name} (Private area — visible only to you)
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-sage/40 pb-5">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+            Student Profile & History Dashboard
+          </h1>
+          <p className="text-sm text-charcoal/75 mt-1 flex items-center gap-1.5 flex-wrap">
+            <span className="font-semibold text-forest">Owner:</span> {user?.name}
+            <span className="text-xs px-2 py-0.5 rounded-full bg-sage-50 text-forest border border-sage/40 flex items-center gap-1">
+              <Shield className="w-3 h-3 text-forest" />
+              Private Dashboard &bull; Visible only to you
+            </span>
+          </p>
+        </div>
       </div>
 
-      {/* Period Filter Bar */}
-      <div style={{ background: '#f5f5f5', padding: 12, borderRadius: 8, marginBottom: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
-        <span><strong>Filter Period:</strong></span>
-        {['day', 'month', 'year', 'all', 'custom'].map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 4,
-              border: '1px solid #ccc',
-              cursor: 'pointer',
-              fontWeight: period === p ? 'bold' : 'normal',
-              background: period === p ? '#4f46e5' : '#fff',
-              color: period === p ? '#fff' : '#000',
-            }}
-          >
-            {p.toUpperCase()}
-          </button>
-        ))}
+      {/* Period Filter Bar (Responsive for mobile, tab, and desktop) */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-forest uppercase tracking-wider flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-forest" />
+            Period:
+          </span>
+          {['day', 'month', 'year', 'all', 'custom'].map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition-all ${
+                period === p
+                  ? 'bg-forest text-warm-white shadow-xs'
+                  : 'bg-sage-50 text-charcoal hover:bg-sage-100 hover:text-forest'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
 
         {period === 'custom' && (
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label>From: <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} /></label>
-            <label>To: <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} /></label>
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-sage/30">
+            <label className="text-xs font-semibold text-charcoal flex items-center gap-1">
+              From:
+              <input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-forest"
+              />
+            </label>
+            <label className="text-xs font-semibold text-charcoal flex items-center gap-1">
+              To:
+              <input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                className="px-2.5 py-1 rounded-lg border border-sage/60 text-xs bg-warm-white focus:outline-none focus:ring-1 focus:ring-forest"
+              />
+            </label>
           </div>
         )}
       </div>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#b91c1c', padding: 12, borderRadius: 6, marginBottom: 16 }}>
-          {error}
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, borderBottom: '2px solid #e5e7eb', marginBottom: 20 }}>
+      {/* Tabs Navigation (Touch friendly and responsive) */}
+      <div className="flex gap-2 sm:gap-4 border-b border-sage/40 overflow-x-auto pb-px">
         {[
           { id: 'overview', label: 'Overview & Charts' },
           { id: 'selling', label: `Selling History (${sellingHistory.length})` },
@@ -124,16 +163,11 @@ export default function ProfilePage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '10px 18px',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? '3px solid #4f46e5' : '3px solid transparent',
-              background: 'transparent',
-              fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-              color: activeTab === tab.id ? '#4f46e5' : '#6b7280',
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
+            className={`px-4 py-2.5 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${
+              activeTab === tab.id
+                ? 'border-forest text-forest'
+                : 'border-transparent text-charcoal/70 hover:text-forest'
+            }`}
           >
             {tab.label}
           </button>
@@ -141,51 +175,108 @@ export default function ProfilePage() {
       </div>
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: '#888' }}>Loading profile metrics...</div>
+        <div className="py-20 text-center text-charcoal-muted flex flex-col items-center justify-center gap-2">
+          <div className="w-6 h-6 border-2 border-forest border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm">Loading profile metrics...</span>
+        </div>
       ) : (
         <>
           {/* TAB 1: OVERVIEW & CHARTS */}
           {activeTab === 'overview' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-              {/* Money Summary Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-                <div style={{ border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, background: '#ecfdf5' }}>
-                  <div style={{ fontSize: 12, color: '#047857', fontWeight: 'bold' }}>TOTAL RECEIVED (COMPLETED SALES)</div>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#065f46', marginTop: 4 }}>₹{summary?.totalReceived || 0}</div>
-                  <div style={{ fontSize: 11, color: '#059669', marginTop: 4 }}>Pending/Reserved: ₹{summary?.pendingReceived || 0}</div>
-                </div>
-
-                <div style={{ border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, background: '#eff6ff' }}>
-                  <div style={{ fontSize: 12, color: '#1d4ed8', fontWeight: 'bold' }}>TOTAL SPENT (COMPLETED PURCHASES)</div>
-                  <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1e40af', marginTop: 4 }}>₹{summary?.totalSpent || 0}</div>
-                  <div style={{ fontSize: 11, color: '#2563eb', marginTop: 4 }}>Pending/Reserved: ₹{summary?.pendingSpent || 0}</div>
-                </div>
-
-                <div style={{ border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, background: '#f9fafb' }}>
-                  <div style={{ fontSize: 12, color: '#4b5563', fontWeight: 'bold' }}>ITEMS SOLD VS UNSOLD</div>
-                  <div style={{ fontSize: 18, fontWeight: 'bold', marginTop: 6 }}>
-                    Sold: <span style={{ color: '#059669' }}>{summary?.stats?.soldCount || 0}</span> | Unsold: <span style={{ color: '#dc2626' }}>{summary?.stats?.unsoldCount || 0}</span>
+            <div className="space-y-6 sm:space-y-8">
+              {/* Money Summary Cards (Grid: 1 col mobile, 2 col tab, 3 col desktop) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-5 rounded-2xl bg-forest-50 border border-forest/20 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-forest uppercase tracking-wider">
+                    <span>Total Received (Sales)</span>
+                    <ArrowDownLeft className="w-4 h-4 text-forest" />
                   </div>
-                  <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>Total Listed: {summary?.stats?.totalListed || 0}</div>
+                  <div className="text-2xl sm:text-3xl font-black text-forest">
+                    ₹{summary?.totalReceived || 0}
+                  </div>
+                  <div className="text-xs text-forest/80 font-medium">
+                    Pending / Handover in Progress: ₹{summary?.pendingReceived || 0}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-amber-50 border border-amber/30 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-amber-hover uppercase tracking-wider">
+                    <span>Total Spent (Purchases)</span>
+                    <ArrowUpRight className="w-4 h-4 text-amber-hover" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-charcoal">
+                    ₹{summary?.totalSpent || 0}
+                  </div>
+                  <div className="text-xs text-amber-hover font-medium">
+                    Reserved / Pending Handover: ₹{summary?.pendingSpent || 0}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs space-y-2 sm:col-span-2 lg:col-span-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-charcoal-muted uppercase tracking-wider">
+                    <span>Items Sold vs Unsold</span>
+                    <Package className="w-4 h-4 text-forest" />
+                  </div>
+                  <div className="text-lg sm:text-xl font-extrabold text-charcoal pt-1">
+                    Sold: <span className="text-forest font-black">{summary?.stats?.soldCount || 0}</span>
+                    <span className="text-sage mx-2">|</span>
+                    Unsold: <span className="text-amber-hover font-black">{summary?.stats?.unsoldCount || 0}</span>
+                  </div>
+                  <div className="text-xs text-charcoal-muted font-medium">
+                    Total Listed on Campus: {summary?.stats?.totalListed || 0}
+                  </div>
                 </div>
               </div>
 
-              {/* Chart 1: Spending & Earnings Over Time */}
-              <div style={{ border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, background: '#fff' }}>
-                <h4 style={{ margin: '0 0 12px 0' }}>Spending vs Earnings Over Time</h4>
+              {/* Chart 1: Spending vs Earnings Over Time */}
+              <div className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="text-base sm:text-lg font-bold text-forest flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-forest" />
+                    Spending vs Earnings Over Time
+                  </h3>
+                  <span className="text-xs text-charcoal-muted">
+                    Filtered by: {period.toUpperCase()}
+                  </span>
+                </div>
+
                 {chartData.length === 0 ? (
-                  <div style={{ padding: 30, textAlign: 'center', color: '#999' }}>No financial activity in this period.</div>
+                  <div className="py-16 text-center text-charcoal-muted text-sm border border-dashed border-sage/50 rounded-xl">
+                    No financial activity recorded in this selected period.
+                  </div>
                 ) : (
-                  <div style={{ width: '100%', height: 260 }}>
-                    <ResponsiveContainer>
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="received" name="Earnings (₹)" stroke="#059669" strokeWidth={2} />
-                        <Line type="monotone" dataKey="spent" name="Spent (₹)" stroke="#2563eb" strokeWidth={2} />
+                  <div className="w-full h-64 sm:h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E6ECE5" />
+                        <XAxis dataKey="date" tick={{ fill: '#5A5A5A', fontSize: 11 }} />
+                        <YAxis tick={{ fill: '#5A5A5A', fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#FAF7F0',
+                            borderColor: '#A9BFA8',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                          }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        <Line
+                          type="monotone"
+                          dataKey="received"
+                          name="Earnings (₹)"
+                          stroke="#1F4D3A"
+                          strokeWidth={2.5}
+                          dot={{ r: 4, fill: '#1F4D3A' }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="spent"
+                          name="Spent (₹)"
+                          stroke="#E0A030"
+                          strokeWidth={2.5}
+                          dot={{ r: 4, fill: '#E0A030' }}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -193,21 +284,34 @@ export default function ProfilePage() {
               </div>
 
               {/* Chart 2: Sold vs Unsold Counts */}
-              <div style={{ border: '1px solid #e5e7eb', padding: 16, borderRadius: 8, background: '#fff' }}>
-                <h4 style={{ margin: '0 0 12px 0' }}>Sold vs Unsold Items Count</h4>
+              <div className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs space-y-4">
+                <h3 className="text-base sm:text-lg font-bold text-forest">
+                  Sold vs Unsold Items Count
+                </h3>
+
                 {chartData.length === 0 ? (
-                  <div style={{ padding: 30, textAlign: 'center', color: '#999' }}>No listing outcomes in this period.</div>
+                  <div className="py-16 text-center text-charcoal-muted text-sm border border-dashed border-sage/50 rounded-xl">
+                    No listing outcomes recorded in this selected period.
+                  </div>
                 ) : (
-                  <div style={{ width: '100%', height: 220 }}>
-                    <ResponsiveContainer>
-                      <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis allowDecimals={false} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="soldCount" name="Sold Items" fill="#10b981" />
-                        <Bar dataKey="unsoldCount" name="Unsold Items" fill="#ef4444" />
+                  <div className="w-full h-56 sm:h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E6ECE5" />
+                        <XAxis dataKey="date" tick={{ fill: '#5A5A5A', fontSize: 11 }} />
+                        <YAxis allowDecimals={false} tick={{ fill: '#5A5A5A', fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#FAF7F0',
+                            borderColor: '#A9BFA8',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                          }}
+                        />
+                        <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                        <Bar dataKey="soldCount" name="Sold Items" fill="#1F4D3A" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="unsoldCount" name="Unsold Items" fill="#E0A030" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -218,104 +322,114 @@ export default function ProfilePage() {
 
           {/* TAB 2: SELLING HISTORY */}
           {activeTab === 'selling' && (
-            <div>
-              <h3>Selling History</h3>
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-forest">Selling History</h3>
               {sellingHistory.length === 0 ? (
-                <div style={{ padding: 30, border: '1px dashed #ccc', textAlign: 'center', color: '#888' }}>
+                <div className="p-10 rounded-2xl border border-dashed border-sage/50 text-center text-charcoal-muted text-sm bg-warm-white-paper">
                   No items listed during this period.
                 </div>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-                  <thead>
-                    <tr style={{ background: '#f3f4f6', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>
-                      <th style={{ padding: 10 }}>Item</th>
-                      <th style={{ padding: 10 }}>Category</th>
-                      <th style={{ padding: 10 }}>Condition</th>
-                      <th style={{ padding: 10 }}>Starting</th>
-                      <th style={{ padding: 10 }}>Final Price</th>
-                      <th style={{ padding: 10 }}>Outcome</th>
-                      <th style={{ padding: 10 }}>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sellingHistory.map((item) => (
-                      <tr key={item._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <td style={{ padding: 10, fontWeight: 'bold' }}>{item.title}</td>
-                        <td style={{ padding: 10 }}>{item.category}</td>
-                        <td style={{ padding: 10 }}>{item.conditionGrade}</td>
-                        <td style={{ padding: 10 }}>₹{item.startingPrice}</td>
-                        <td style={{ padding: 10, fontWeight: 'bold' }}>{item.finalPrice ? `₹${item.finalPrice}` : '-'}</td>
-                        <td style={{ padding: 10 }}>
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 'bold',
-                            background: item.outcome === 'sold' ? '#d1fae5' : item.outcome === 'pending' ? '#fef3c7' : '#fee2e2',
-                            color: item.outcome === 'sold' ? '#065f46' : item.outcome === 'pending' ? '#92400e' : '#991b1b',
-                          }}>
-                            {item.outcome.toUpperCase()}
-                          </span>
-                        </td>
-                        <td style={{ padding: 10, fontSize: 12, color: '#666' }}>
-                          {new Date(item.createdAt).toLocaleDateString()}
-                        </td>
+                <div className="overflow-x-auto rounded-2xl border border-sage/50 bg-warm-white-paper shadow-xs">
+                  <table className="w-full border-collapse text-left text-xs sm:text-sm">
+                    <thead>
+                      <tr className="bg-sage-50 text-forest font-bold uppercase tracking-wider border-b border-sage/40">
+                        <th className="p-3 sm:p-4">Item</th>
+                        <th className="p-3 sm:p-4">Category</th>
+                        <th className="p-3 sm:p-4">Condition</th>
+                        <th className="p-3 sm:p-4">Starting</th>
+                        <th className="p-3 sm:p-4">Final Price</th>
+                        <th className="p-3 sm:p-4">Outcome</th>
+                        <th className="p-3 sm:p-4">Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-sage/20 text-charcoal">
+                      {sellingHistory.map((item) => (
+                        <tr key={item._id} className="hover:bg-sage-50/50 transition-colors">
+                          <td className="p-3 sm:p-4 font-bold text-forest">{item.title}</td>
+                          <td className="p-3 sm:p-4 capitalize">{item.category}</td>
+                          <td className="p-3 sm:p-4">{item.conditionGrade}</td>
+                          <td className="p-3 sm:p-4 font-mono">₹{item.startingPrice}</td>
+                          <td className="p-3 sm:p-4 font-bold font-mono">
+                            {item.finalPrice ? `₹${item.finalPrice}` : '-'}
+                          </td>
+                          <td className="p-3 sm:p-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                                item.outcome === 'sold'
+                                  ? 'bg-forest-50 text-forest border-forest/20'
+                                  : item.outcome === 'pending'
+                                  ? 'bg-amber-50 text-amber-hover border-amber/30'
+                                  : 'bg-warm-white-muted text-charcoal-muted border-sage/40'
+                              }`}
+                            >
+                              {item.outcome.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="p-3 sm:p-4 text-xs text-charcoal-muted whitespace-nowrap">
+                            {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
 
           {/* TAB 3: BUYING HISTORY */}
           {activeTab === 'buying' && (
-            <div>
-              <h3>Buying History</h3>
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-forest">Buying History</h3>
               {buyingHistory.length === 0 ? (
-                <div style={{ padding: 30, border: '1px dashed #ccc', textAlign: 'center', color: '#888' }}>
+                <div className="p-10 rounded-2xl border border-dashed border-sage/50 text-center text-charcoal-muted text-sm bg-warm-white-paper">
                   No bids placed during this period.
                 </div>
               ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-                  <thead>
-                    <tr style={{ background: '#f3f4f6', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>
-                      <th style={{ padding: 10 }}>Item</th>
-                      <th style={{ padding: 10 }}>Category</th>
-                      <th style={{ padding: 10 }}>Seller</th>
-                      <th style={{ padding: 10 }}>My Max Bid</th>
-                      <th style={{ padding: 10 }}>Final Price</th>
-                      <th style={{ padding: 10 }}>Outcome</th>
-                      <th style={{ padding: 10 }}>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {buyingHistory.map((item) => (
-                      <tr key={item._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                        <td style={{ padding: 10, fontWeight: 'bold' }}>{item.title}</td>
-                        <td style={{ padding: 10 }}>{item.category}</td>
-                        <td style={{ padding: 10 }}>{item.sellerName}</td>
-                        <td style={{ padding: 10 }}>₹{item.myMaxBid}</td>
-                        <td style={{ padding: 10, fontWeight: 'bold' }}>{item.finalPrice ? `₹${item.finalPrice}` : '-'}</td>
-                        <td style={{ padding: 10 }}>
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 'bold',
-                            background: item.outcome === 'won' ? '#d1fae5' : item.outcome === 'pending' ? '#fef3c7' : '#fee2e2',
-                            color: item.outcome === 'won' ? '#065f46' : item.outcome === 'pending' ? '#92400e' : '#991b1b',
-                          }}>
-                            {item.outcome.toUpperCase()}
-                          </span>
-                        </td>
-                        <td style={{ padding: 10, fontSize: 12, color: '#666' }}>
-                          {new Date(item.createdAt).toLocaleDateString()}
-                        </td>
+                <div className="overflow-x-auto rounded-2xl border border-sage/50 bg-warm-white-paper shadow-xs">
+                  <table className="w-full border-collapse text-left text-xs sm:text-sm">
+                    <thead>
+                      <tr className="bg-sage-50 text-forest font-bold uppercase tracking-wider border-b border-sage/40">
+                        <th className="p-3 sm:p-4">Item</th>
+                        <th className="p-3 sm:p-4">Category</th>
+                        <th className="p-3 sm:p-4">Seller</th>
+                        <th className="p-3 sm:p-4">My Max Bid</th>
+                        <th className="p-3 sm:p-4">Final Price</th>
+                        <th className="p-3 sm:p-4">Outcome</th>
+                        <th className="p-3 sm:p-4">Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-sage/20 text-charcoal">
+                      {buyingHistory.map((item) => (
+                        <tr key={item._id} className="hover:bg-sage-50/50 transition-colors">
+                          <td className="p-3 sm:p-4 font-bold text-forest">{item.title}</td>
+                          <td className="p-3 sm:p-4 capitalize">{item.category}</td>
+                          <td className="p-3 sm:p-4 font-medium">{item.sellerName}</td>
+                          <td className="p-3 sm:p-4 font-mono">₹{item.myMaxBid}</td>
+                          <td className="p-3 sm:p-4 font-bold font-mono">
+                            {item.finalPrice ? `₹${item.finalPrice}` : '-'}
+                          </td>
+                          <td className="p-3 sm:p-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
+                                item.outcome === 'won'
+                                  ? 'bg-forest-50 text-forest border-forest/20'
+                                  : item.outcome === 'pending'
+                                  ? 'bg-amber-50 text-amber-hover border-amber/30'
+                                  : 'bg-warm-white-muted text-charcoal-muted border-sage/40'
+                              }`}
+                            >
+                              {item.outcome.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="p-3 sm:p-4 text-xs text-charcoal-muted whitespace-nowrap">
+                            {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}

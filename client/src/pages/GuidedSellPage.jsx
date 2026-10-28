@@ -523,50 +523,25 @@ export default function GuidedSellPage() {
               )}
             </div>
 
-            {/* Navigation buttons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+            {/* Navigation buttons (Responsive: stack on mobile, row on tablet/desktop) */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/30">
               <button
                 type="button"
                 disabled={currentStep === 0 || saving}
                 onClick={handleBack}
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: 8,
-                  border: '1px solid var(--sage)',
-                  background: 'transparent',
-                  color: 'var(--charcoal)',
-                  cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
-                  opacity: currentStep === 0 ? 0.4 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 14,
-                }}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-sm font-semibold transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back
+                <span>Back</span>
               </button>
 
               <button
                 type="submit"
                 disabled={saving}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: 'var(--forest)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontSize: 14,
-                  boxShadow: '0 2px 6px rgba(31, 77, 58, 0.2)',
-                }}
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-forest hover:bg-forest-hover text-white text-sm font-bold shadow-md shadow-forest/20 transition-all flex items-center justify-center gap-2 active:scale-95"
               >
                 <span>{currentStep === totalSteps - 1 ? 'Go to Review Screen' : 'Save & Next'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-amber" />
               </button>
             </div>
           </form>
@@ -717,44 +692,25 @@ export default function GuidedSellPage() {
               </label>
             </div>
 
-            {/* Review Screen Actions */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Review Screen Actions (Responsive: stack on mobile, row on tablet/desktop) */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-4 border-t border-sage/30">
               <button
                 type="button"
                 onClick={handleBack}
-                style={{
-                  padding: '10px 18px',
-                  borderRadius: 8,
-                  border: '1px solid var(--sage)',
-                  background: 'transparent',
-                  color: 'var(--charcoal)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6,
-                }}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back to Questions
+                <span>Back to Questions</span>
               </button>
 
               <button
                 type="button"
                 disabled={publishing || !honestyDeclaration}
                 onClick={handlePublish}
-                style={{
-                  padding: '14px 28px',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: honestyDeclaration ? 'var(--forest)' : '#ccc',
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  fontSize: 15,
-                  cursor: honestyDeclaration ? 'pointer' : 'not-allowed',
-                  boxShadow: honestyDeclaration ? '0 4px 12px rgba(31, 77, 58, 0.25)' : 'none',
-                }}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-sage disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base shadow-md shadow-forest/25 transition-all flex items-center justify-center gap-2 active:scale-95"
               >
-                {publishing ? 'Publishing Auction...' : 'Publish Auction Now'}
+                <span>{publishing ? 'Publishing Auction...' : 'Publish Auction Now'}</span>
+                <CheckCircle2 className="w-5 h-5 text-amber" />
               </button>
             </div>
           </div>

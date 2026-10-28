@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/client';
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertTriangle,
+  RefreshCw,
+  Clock,
+  Tag,
+  TrendingDown,
+  XCircle,
+  CheckCircle2,
+  DollarSign,
+  X,
+  AlertCircle
+} from 'lucide-react';
 
 export default function NeedsAttentionPage() {
   const [items, setItems] = useState([]);
@@ -99,74 +111,85 @@ export default function NeedsAttentionPage() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '20px auto', padding: '0 16px', fontFamily: 'sans-serif' }}>
-      <div style={{ borderBottom: '1px solid #ddd', paddingBottom: 16, marginBottom: 20 }}>
-        <h2>Items Needing Attention (Unsold & Stale Alerts)</h2>
-        <p style={{ color: '#666', margin: '4px 0' }}>
-          Listings with zero bids after 3+ days, closed unsold auctions, or rejected bids. Take quick action to find a buyer!
-        </p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8 bg-warm-white">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-sage/40 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-forest tracking-tight">
+              Items Needing Attention
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-hover border border-amber/30">
+              {items.length} Active Alerts
+            </span>
+          </div>
+          <p className="text-sm text-charcoal/75 mt-1">
+            Active listings with zero bids after 3+ days, closed unsold auctions, or rejected bids. Take quick action to find a buyer!
+          </p>
+        </div>
       </div>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#b91c1c', padding: 12, borderRadius: 6, marginBottom: 16 }}>
-          {error}
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, color: '#888' }}>Checking listing status...</div>
+        <div className="py-20 text-center text-charcoal-muted flex flex-col items-center justify-center gap-2">
+          <div className="w-6 h-6 border-2 border-forest border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm">Checking listing status...</span>
+        </div>
       ) : items.length === 0 ? (
-        <div style={{ border: '1px dashed #10b981', background: '#ecfdf5', padding: 32, borderRadius: 8, textAlign: 'center' }}>
-          <h3 style={{ color: '#065f46', margin: '0 0 8px 0' }}>All Clear! No Items Need Attention</h3>
-          <p style={{ color: '#047857', margin: 0 }}>
-            None of your items are currently stale or closed unsold.
+        <div className="p-10 sm:p-14 rounded-2xl border border-dashed border-sage bg-warm-white-paper text-center space-y-3 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-forest-50 text-forest flex items-center justify-center mx-auto border border-forest/20">
+            <CheckCircle2 className="w-7 h-7 text-forest" />
+          </div>
+          <h3 className="text-lg font-bold text-forest">All Clear! No Items Need Attention</h3>
+          <p className="text-sm text-charcoal/70 max-w-md mx-auto">
+            None of your items are currently stale or closed unsold. All active auctions are performing well.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="space-y-4">
           {items.map((item) => (
             <div
               key={item._id}
-              style={{
-                border: '1px solid #e5e7eb',
-                borderRadius: 8,
-                padding: 16,
-                background: '#fff',
-                display: 'flex',
-                flexWrap: 'wrap',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 16,
-              }}
+              className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border border-sage/50 shadow-xs hover:border-forest/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div style={{ flex: '1 1 300px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span
-                    style={{
-                      background: item.reasonKey === 'no_bids_stale' ? '#fef3c7' : '#fee2e2',
-                      color: item.reasonKey === 'no_bids_stale' ? '#92400e' : '#991b1b',
-                      fontSize: 11,
-                      fontWeight: 'bold',
-                      padding: '3px 8px',
-                      borderRadius: 4,
-                    }}
+                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                      item.reasonKey === 'no_bids_stale'
+                        ? 'bg-amber-50 text-amber-hover border-amber/30'
+                        : 'bg-warm-white-muted text-charcoal-muted border-sage/40'
+                    }`}
                   >
                     {item.reasonKey.replace(/_/g, ' ').toUpperCase()}
                   </span>
-                  <span style={{ fontSize: 12, color: '#6b7280' }}>
-                    Listed: {new Date(item.createdAt).toLocaleDateString()}
+                  <span className="text-xs text-charcoal-muted">
+                    Listed on {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                   </span>
                 </div>
 
-                <h4 style={{ margin: '0 0 4px 0', fontSize: 16 }}>{item.title}</h4>
-                <p style={{ margin: '0 0 8px 0', color: '#4b5563', fontSize: 13 }}>{item.reasonText}</p>
-                <div style={{ fontSize: 13 }}>
-                  <strong>Current Starting Price:</strong> ₹{item.startingPrice} | <strong>Bids:</strong> {item.bidCount}
+                <h3 className="text-base sm:text-lg font-bold text-forest">{item.title}</h3>
+                <p className="text-xs sm:text-sm text-charcoal/80">{item.reasonText}</p>
+
+                <div className="text-xs sm:text-sm text-charcoal flex items-center gap-3 pt-1">
+                  <span>
+                    <strong>Starting Price:</strong> <span className="font-mono font-bold">₹{item.startingPrice}</span>
+                  </span>
+                  <span className="text-sage">|</span>
+                  <span>
+                    <strong>Bids:</strong> <span className="font-bold">{item.bidCount}</span>
+                  </span>
                 </div>
               </div>
 
-              {/* Quick Actions */}
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {/* Quick Actions (Responsive stack on mobile, horizontal on tablet/PC) */}
+              <div className="flex items-center gap-2 flex-wrap pt-2 md:pt-0 border-t md:border-t-0 border-sage/30">
                 {item.status === 'active' && (
                   <>
                     <button
@@ -174,15 +197,17 @@ export default function NeedsAttentionPage() {
                         setEditingItem(item);
                         setEditPrice(item.startingPrice.toString());
                       }}
-                      style={{ padding: '8px 14px', borderRadius: 4, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer' }}
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5"
                     >
-                      Lower Price
+                      <TrendingDown className="w-3.5 h-3.5 text-forest" />
+                      <span>Lower Price</span>
                     </button>
                     <button
                       onClick={() => handleCancelListing(item._id)}
-                      style={{ padding: '8px 14px', borderRadius: 4, border: '1px solid #f87171', background: '#fee2e2', color: '#991b1b', cursor: 'pointer' }}
+                      className="px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-1.5"
                     >
-                      Cancel
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>Cancel</span>
                     </button>
                   </>
                 )}
@@ -190,9 +215,10 @@ export default function NeedsAttentionPage() {
                 {item.status !== 'active' && (
                   <button
                     onClick={() => openRelistModal(item)}
-                    style={{ padding: '8px 16px', borderRadius: 4, border: 'none', background: '#4f46e5', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-forest hover:bg-forest-hover text-warm-white text-xs sm:text-sm font-bold shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5"
                   >
-                    + Relist Item
+                    <RefreshCw className="w-3.5 h-3.5 text-amber" />
+                    <span>Relist as New Auction</span>
                   </button>
                 )}
               </div>
@@ -201,18 +227,27 @@ export default function NeedsAttentionPage() {
         </div>
       )}
 
-      {/* RELIST MODAL */}
+      {/* RELIST MODAL (Centered & responsive for mobile/tablet) */}
       {relistingItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: '#fff', padding: 24, borderRadius: 8, maxWidth: 450, width: '100%' }}>
-            <h3>Relist Item as New Auction</h3>
-            <p style={{ color: '#555', fontSize: 13 }}>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-warm-white-paper rounded-2xl border border-sage/50 p-6 max-w-md w-full shadow-xl space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-forest">Relist Item as New Auction</h3>
+              <button
+                onClick={() => setRelistingItem(null)}
+                className="p-1 rounded-lg hover:bg-sage-50 text-charcoal-muted"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-charcoal/75 leading-relaxed">
               Relisting creates a fresh auction prefilled with your photos and verified condition details from <strong>{relistingItem.title}</strong>.
             </p>
 
-            <form onSubmit={handleConfirmRelist} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={handleConfirmRelist} className="space-y-4">
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>
+                <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
                   New Starting Price (₹):
                 </label>
                 <input
@@ -221,40 +256,40 @@ export default function NeedsAttentionPage() {
                   min={1}
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
-                  style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
+                  className="w-full px-3.5 py-2 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest text-sm bg-warm-white font-mono"
                 />
-                <span style={{ fontSize: 11, color: '#059669' }}>
-                  Suggested lower price for a faster sale.
+                <span className="text-[11px] text-forest font-medium mt-1 block">
+                  Suggested discount applied for faster bidding.
                 </span>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>
+                <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
                   New Auction Duration (Hours):
                 </label>
                 <select
                   value={newClosingHours}
                   onChange={(e) => setNewClosingHours(e.target.value)}
-                  style={{ width: '100%', padding: 8 }}
+                  className="w-full px-3.5 py-2 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest text-sm bg-warm-white"
                 >
                   <option value="24">24 Hours (Quick Campus Sale)</option>
-                  <option value="48">48 Hours (Standard)</option>
+                  <option value="48">48 Hours (Standard 2 Days)</option>
                   <option value="72">72 Hours (3 Days)</option>
                 </select>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setRelistingItem(null)}
-                  style={{ padding: '8px 14px', background: '#ccc', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                  className="px-4 py-2 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={relisting}
-                  style={{ padding: '8px 16px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 'bold' }}
+                  className="px-5 py-2 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-forest/50 text-white text-xs font-bold shadow-xs"
                 >
                   {relisting ? 'Publishing...' : 'Publish Relisted Auction'}
                 </button>
@@ -266,16 +301,25 @@ export default function NeedsAttentionPage() {
 
       {/* QUICK PRICE UPDATE MODAL */}
       {editingItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: '#fff', padding: 24, borderRadius: 8, maxWidth: 400, width: '100%' }}>
-            <h3>Adjust Starting Price</h3>
-            <p style={{ color: '#555', fontSize: 13 }}>
-              Lowering starting price can attract bids from students looking for affordable campus gear.
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-warm-white-paper rounded-2xl border border-sage/50 p-6 max-w-sm w-full shadow-xl space-y-4 animate-scaleUp">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-forest">Adjust Starting Price</h3>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="p-1 rounded-lg hover:bg-sage-50 text-charcoal-muted"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-charcoal/75 leading-relaxed">
+              Lowering the starting price attracts interested juniors browsing for deals.
             </p>
 
-            <form onSubmit={handleQuickPriceUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={handleQuickPriceUpdate} className="space-y-4">
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 'bold', marginBottom: 4 }}>
+                <label className="block text-xs font-bold text-forest uppercase tracking-wider mb-1">
                   New Starting Price (₹):
                 </label>
                 <input
@@ -284,22 +328,22 @@ export default function NeedsAttentionPage() {
                   min={1}
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
-                  style={{ width: '100%', padding: 8, boxSizing: 'border-box' }}
+                  className="w-full px-3.5 py-2 rounded-xl border border-sage/60 focus:outline-none focus:ring-2 focus:ring-forest text-sm bg-warm-white font-mono"
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  style={{ padding: '8px 14px', background: '#ccc', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                  className="px-4 py-2 rounded-xl border border-sage/60 hover:bg-sage-50 text-charcoal text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  style={{ padding: '8px 16px', background: '#059669', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 'bold' }}
+                  className="px-5 py-2 rounded-xl bg-forest hover:bg-forest-hover disabled:bg-forest/50 text-white text-xs font-bold shadow-xs"
                 >
                   {savingEdit ? 'Saving...' : 'Update Price'}
                 </button>
