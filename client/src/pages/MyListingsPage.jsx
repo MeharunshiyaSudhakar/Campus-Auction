@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import api from '../api/client';
 import {
   Gavel,
@@ -13,11 +13,17 @@ import {
   Eye,
   CheckCircle2,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import ItemImage from '../components/ItemImage';
 
 export default function MyListingsPage() {
+  const location = useLocation();
+  const [highlightId, setHighlightId] = useState(location.state?.newListingId || null);
+  const [successBanner, setSuccessBanner] = useState(location.state?.successMessage || null);
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +48,9 @@ export default function MyListingsPage() {
   const fetchMyListings = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/listings/my');
+      setError('');
+      // Fresh fetch with cache-busting timestamp param to ensure immediate visibility
+      const res = await api.get(`/listings/my?_t=${Date.now()}`);
       if (res.data && res.data.success) {
         setListings(res.data.data);
       }
@@ -56,6 +64,29 @@ export default function MyListingsPage() {
   useEffect(() => {
     fetchMyListings();
   }, []);
+
+  // Scroll newly published item into view and keep highlight
+  useEffect(() => {
+    if (highlightId && listings.length > 0) {
+      const el = document.getElementById(`listing-${highlightId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const timer = setTimeout(() => {
+        setHighlightId(null);
+      }, 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightId, listings]);
+
+  const filteredListings = listings.filter((item) => {
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'active') return item.status === 'active';
+    if (statusFilter === 'pending_approval') return item.status === 'pending_approval';
+    if (statusFilter === 'completed') return ['approved', 'pickup_scheduled', 'completed'].includes(item.status);
+    if (statusFilter === 'closed') return ['closed', 'unsold', 'rejected', 'cancelled'].includes(item.status);
+    return true;
+  });
 
   const openEditModal = (item) => {
     setEditingListing(item);
@@ -157,6 +188,47 @@ export default function MyListingsPage() {
         </Link>
       </div>
 
+      {/* Success Notification Banner (after publish) */}
+      {successBanner && (
+        <div className="p-4 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-emerald-900 text-body flex items-center justify-between gap-3 animate-fadeIn shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span className="font-bold">{successBanner}</span>
+          </div>
+          <button
+            onClick={() => setSuccessBanner(null)}
+            className="text-emerald-700 hover:text-emerald-900 text-xs font-bold px-2 py-1 rounded-md hover:bg-emerald-100 transition-colors cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Filter Tabs */}
+      {!loading && listings.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-sage/40">
+          {[
+            { key: 'all', label: `All (${listings.length})` },
+            { key: 'active', label: `Active (${listings.filter((i) => i.status === 'active').length})` },
+            { key: 'pending_approval', label: `Pending Approval (${listings.filter((i) => i.status === 'pending_approval').length})` },
+            { key: 'completed', label: `Deals / Sold (${listings.filter((i) => ['approved', 'pickup_scheduled', 'completed'].includes(i.status)).length})` },
+            { key: 'closed', label: `Closed (${listings.filter((i) => ['closed', 'unsold', 'rejected', 'cancelled'].includes(i.status)).length})` },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                statusFilter === tab.key
+                  ? 'bg-charcoal text-warm-white shadow-xs'
+                  : 'bg-warm-white-paper text-charcoal hover:bg-sage-100 border border-sage/50'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && (
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center gap-2">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -169,29 +241,47 @@ export default function MyListingsPage() {
           <div className="w-6 h-6 border-2 border-charcoal border-t-transparent rounded-full animate-spin"></div>
           <span className="text-sm">Loading your listings...</span>
         </div>
-      ) : listings.length === 0 ? (
+      ) : filteredListings.length === 0 ? (
         <div className="bg-warm-white-paper rounded-2xl border-2 border-sage/60 p-8 sm:p-14 text-center space-y-4 shadow-xs">
           <div className="w-16 h-16 rounded-2xl bg-charcoal text-warm-white border border-charcoal flex items-center justify-center mx-auto shadow-xs">
             <Gavel className="w-8 h-8 text-amber" />
           </div>
-          <h3 className="text-lg font-bold text-charcoal">No Listings Created Yet</h3>
+          <h3 className="text-lg font-bold text-charcoal">
+            {statusFilter === 'all' ? 'No Listings Created Yet' : `No ${statusFilter.replace('_', ' ')} listings found`}
+          </h3>
           <p className="text-sm text-charcoal/70 max-w-sm mx-auto">
-            Have a cycle, scientific calculator, or textbooks you no longer need? List them now for juniors!
+            {statusFilter === 'all'
+              ? 'Have a cycle, scientific calculator, or textbooks you no longer need? List them now for juniors!'
+              : 'Try changing the status filter tab above to view other items.'}
           </p>
-          <Link
-            to="/sell"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal hover:bg-charcoal-hover text-warm-white rounded-xl text-sm font-bold shadow-md transition-all border border-charcoal"
-          >
-            <PlusCircle className="w-4 h-4 text-amber" />
-            <span>Create First Listing</span>
-          </Link>
+          {statusFilter === 'all' ? (
+            <Link
+              to="/sell"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-charcoal hover:bg-charcoal-hover text-warm-white rounded-xl text-sm font-bold shadow-md transition-all border border-charcoal"
+            >
+              <PlusCircle className="w-4 h-4 text-amber" />
+              <span>Create First Listing</span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => setStatusFilter('all')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sage hover:bg-sage-dark text-charcoal rounded-xl text-xs font-bold transition-all cursor-pointer"
+            >
+              Show All Listings
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.map((item) => (
+          {filteredListings.map((item) => (
             <div
               key={item._id}
-              className="bg-warm-white-paper rounded-2xl border-2 border-sage/60 overflow-hidden shadow-xs hover:border-charcoal hover:shadow-sm transition-all flex flex-col"
+              id={`listing-${item._id}`}
+              className={`bg-warm-white-paper rounded-2xl border-2 overflow-hidden shadow-xs hover:border-charcoal hover:shadow-sm transition-all flex flex-col ${
+                item._id === highlightId
+                  ? 'border-emerald-600 ring-4 ring-emerald-400/30 shadow-lg'
+                  : 'border-sage/60'
+              }`}
             >
               {/* Photo (1:1 Ratio) & Status Overlay */}
               <div className="relative w-full bg-warm-white-muted overflow-hidden">
@@ -201,7 +291,12 @@ export default function MyListingsPage() {
                   useThumbnail={true}
                   alt={item.title}
                 />
-                <div className="absolute top-3 left-3 z-10">
+                <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
+                  {item._id === highlightId && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white animate-pulse flex items-center gap-1 shadow-sm">
+                      <Sparkles className="w-3 h-3" /> Just Published
+                    </span>
+                  )}
                   {getStatusBadge(item.status)}
                 </div>
                 <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-charcoal/90 backdrop-blur-xs text-warm-white text-xs font-bold uppercase tracking-wider">

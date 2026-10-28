@@ -268,7 +268,9 @@ class ListingService {
   static async getMyListings(sellerId) {
     const mongoose = require('mongoose');
     const sId = mongoose.Types.ObjectId.isValid(sellerId) ? new mongoose.Types.ObjectId(sellerId) : sellerId;
-    const listings = await Listing.find({ seller: sId })
+    const listings = await Listing.find({
+      $or: [{ seller: sId }, { seller: String(sellerId) }],
+    })
       .populate('leadingBidder', 'name')
       .sort({ createdAt: -1 });
 
