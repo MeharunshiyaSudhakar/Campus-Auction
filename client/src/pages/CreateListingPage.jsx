@@ -16,6 +16,7 @@ import {
   BookOpen,
   Laptop
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
 
 const CONDITION_GRADES = [
   { value: 'New', desc: 'Brand new, unused, in original packaging' },
@@ -362,11 +363,11 @@ export default function CreateListingPage() {
             </button>
           </div>
 
-          {/* Photo Preview Grid */}
+          {/* Photo Preview Grid (1:1 Ratio) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {photos.map((url, idx) => (
-              <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video">
-                <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+              <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square">
+                <ItemImage src={url} alt={`Preview ${idx + 1}`} useThumbnail={true} containerClassName="w-full h-full" />
                 <button
                   type="button"
                   onClick={() => handleRemovePhoto(idx)}

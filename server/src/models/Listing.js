@@ -107,6 +107,10 @@ const listingSchema = new mongoose.Schema(
       },
       required: true,
     },
+    photoThumbnails: {
+      type: [String],
+      default: [],
+    },
     defectPhotoIncluded: {
       type: Boolean,
       default: false,

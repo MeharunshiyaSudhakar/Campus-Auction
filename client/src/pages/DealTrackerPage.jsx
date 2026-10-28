@@ -23,6 +23,7 @@ import {
   User,
   CreditCard,
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
 
 export default function DealTrackerPage() {
   const { id } = useParams();
@@ -334,21 +335,31 @@ export default function DealTrackerPage() {
       {/* Main Deal Header Card */}
       <div className="p-6 sm:p-7 rounded-3xl bg-warm-white-paper border-2 border-forest shadow-md space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-sage/40">
-          <div>
-            <span className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block">
-              Private Campus Deal Tracker
-            </span>
-            <h1 className="text-xl sm:text-2xl font-black text-charcoal">
-              {deal.listing?.title}
-            </h1>
-            <div className="flex items-center gap-3 pt-1 text-xs text-charcoal/80">
-              <span>
-                Seller: <strong className="font-bold text-charcoal">{deal.seller?.name}</strong>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-sage/60">
+              <ItemImage
+                src={deal.listing?.photos?.[0]}
+                thumbnailSrc={deal.listing?.photoThumbnails?.[0]}
+                useThumbnail={true}
+                alt={deal.listing?.title}
+              />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block">
+                Private Campus Deal Tracker
               </span>
-              <span>&bull;</span>
-              <span>
-                Winning Buyer: <strong className="font-bold text-charcoal">{deal.buyer?.name}</strong>
-              </span>
+              <h1 className="text-xl sm:text-2xl font-black text-charcoal">
+                {deal.listing?.title}
+              </h1>
+              <div className="flex items-center gap-3 pt-1 text-xs text-charcoal/80">
+                <span>
+                  Seller: <strong className="font-bold text-charcoal">{deal.seller?.name}</strong>
+                </span>
+                <span>&bull;</span>
+                <span>
+                  Winning Buyer: <strong className="font-bold text-charcoal">{deal.buyer?.name}</strong>
+                </span>
+              </div>
             </div>
           </div>
 

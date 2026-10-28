@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Filter,
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -184,9 +185,20 @@ export default function NotificationsPage() {
                   : 'bg-warm-white-paper border-sage/60'
               }`}
             >
-              <div className="p-2.5 rounded-xl bg-sage-100 text-charcoal border border-sage/50 shrink-0 mt-0.5">
-                {getTypeIcon(n.type)}
-              </div>
+              {n.listing?.photos?.[0] ? (
+                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-sage/50">
+                  <ItemImage
+                    src={n.listing.photos[0]}
+                    thumbnailSrc={n.listing.photoThumbnails?.[0]}
+                    useThumbnail={true}
+                    alt={n.listing.title}
+                  />
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-xl bg-sage-100 text-charcoal border border-sage/50 shrink-0 mt-0.5">
+                  {getTypeIcon(n.type)}
+                </div>
+              )}
 
               <div className="flex-1 space-y-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">

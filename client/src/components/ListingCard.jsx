@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, ShieldCheck, Tag, ArrowUpRight, Camera, Gavel, User } from 'lucide-react';
 import CountdownTimer from './CountdownTimer';
+import ItemImage from './ItemImage';
 
 export default function ListingCard({ listing }) {
   if (!listing) return null;
@@ -29,38 +30,19 @@ export default function ListingCard({ listing }) {
   };
   const conditionBadgeStyle = conditionColorMap[listing.condition?.grade] || 'bg-sage/20 text-forest border-sage';
 
-  // Fallback image placeholder
-  const placeholderImages = {
-    vehicles: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80',
-    stationery: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=600&q=80',
-    cycle: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=600&q=80',
-    calculator: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=600&q=80',
-    books: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-    electronics: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80',
-    furniture: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80',
-    clothing: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=600&q=80',
-    sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80',
-    other: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=600&q=80',
-  };
-
-  const displayPhoto =
-    Array.isArray(listing.photos) && listing.photos.length > 0 && listing.photos[0].startsWith('http')
-      ? listing.photos[0]
-      : placeholderImages[listing.category?.toLowerCase()] || placeholderImages.other;
+  const photo = Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos[0] : null;
+  const thumb = Array.isArray(listing.photoThumbnails) && listing.photoThumbnails.length > 0 ? listing.photoThumbnails[0] : null;
 
   return (
     <div className="group bg-warm-white-paper rounded-2xl border-2 border-sage/60 hover:border-forest shadow-xs hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden">
-      {/* Top Image Preview & Badges */}
-      <div className="relative aspect-4/3 w-full bg-warm-white-muted overflow-hidden">
-        <img
-          src={displayPhoto}
+      {/* Top Image Preview & Badges (1:1 Ratio) */}
+      <div className="relative w-full overflow-hidden">
+        <ItemImage
+          src={photo}
+          thumbnailSrc={thumb}
+          useThumbnail={true}
           alt={listing.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = placeholderImages[listing.category] || placeholderImages.electronics;
-          }}
+          className="group-hover:scale-105 transition-transform duration-300"
         />
 
         {/* Category Pill (Top Left) */}

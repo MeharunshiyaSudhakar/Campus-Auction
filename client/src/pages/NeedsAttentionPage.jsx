@@ -13,6 +13,7 @@ import {
   X,
   AlertCircle
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
 
 export default function NeedsAttentionPage() {
   const [items, setItems] = useState([]);
@@ -158,17 +159,25 @@ export default function NeedsAttentionPage() {
               key={item._id}
               className="p-5 sm:p-6 rounded-2xl bg-warm-white-paper border-2 border-sage/60 shadow-xs hover:border-charcoal transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
-                      item.reasonKey === 'no_bids_stale'
-                        ? 'bg-amber-50 text-amber-hover border-amber/30'
-                        : 'bg-warm-white-muted text-charcoal-muted border-sage/40'
-                    }`}
-                  >
-                    {item.reasonKey.replace(/_/g, ' ').toUpperCase()}
-                  </span>
+              <div className="flex items-start gap-4 flex-1">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-sage/60">
+                  <ItemImage
+                    src={item.photos?.[0]}
+                    useThumbnail={true}
+                    alt={item.title}
+                  />
+                </div>
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                        item.reasonKey === 'no_bids_stale'
+                          ? 'bg-amber-50 text-amber-hover border-amber/30'
+                          : 'bg-warm-white-muted text-charcoal-muted border-sage/40'
+                      }`}
+                    >
+                      {item.reasonKey.replace(/_/g, ' ').toUpperCase()}
+                    </span>
                   <span className="text-xs text-charcoal-muted">
                     Listed on {new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                   </span>
@@ -187,6 +196,7 @@ export default function NeedsAttentionPage() {
                   </span>
                 </div>
               </div>
+            </div>
 
               {/* Quick Actions (Responsive stack on mobile, horizontal on tablet/PC) */}
               <div className="flex items-center gap-2 flex-wrap pt-2 md:pt-0 border-t md:border-t-0 border-sage/30">

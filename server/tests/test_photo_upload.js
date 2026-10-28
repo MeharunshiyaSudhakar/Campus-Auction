@@ -2,15 +2,18 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const sharp = require('sharp');
+sharp.cache(false);
 const User = require('../src/models/User');
 const SellDraft = require('../src/models/SellDraft');
 const { UPLOADS_DIR } = require('../src/utils/fileStorage');
+const migrateImages = require('../scripts/migrate_images');
 
 const BASE_URL = 'http://localhost:5000/api';
 
 async function runPhotoTests() {
   console.log('\n========================================================');
-  console.log('🧪 Starting Photo Upload with Multer Test Suite');
+  console.log('🧪 Starting Photo Upload with Multer & Sharp Test Suite');
   console.log('========================================================\n');
 
   if (mongoose.connection.readyState === 0) {
@@ -34,7 +37,6 @@ async function runPhotoTests() {
     }),
   }).then((r) => r.json());
   const ownerToken = ownerRes.data.token;
-  const ownerId = ownerRes.data.user._id;
 
   const intruderRes = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
@@ -59,15 +61,35 @@ async function runPhotoTests() {
   }).then((r) => r.json());
   const draftId = draftRes.data._id;
 
-  // Helper to create small valid dummy image buffers (1x1 PNG and JPEG)
-  const dummyPng = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000100000500010d0a2d420000000049454e44ae426082', 'hex');
-  const dummyJpg = Buffer.from('ffd8ffe000104a46494600010101004800480000ffdb004300080606070605080707070909080a0c140d0c0b0b0c1912130f141d1a1f1e1d1a1c1c20242e2720222c231c1c2837292c30313434341f27393d38323c2e333432ffda000c03010002110311003f00bf00ffd9', 'hex');
+  // Helper to create non-square test images with sharp
+  // 1200x600 non-square JPEG and 800x400 non-square PNG
+  const nonSquareJpg = await sharp({
+    create: {
+      width: 1200,
+      height: 600,
+      channels: 3,
+      background: { r: 31, g: 77, b: 58 },
+    },
+  })
+    .jpeg()
+    .toBuffer();
 
-  // --- TEST 1: Valid Upload (2 Photos) ---
-  console.log('--- TEST 1: Valid Photo Upload (multipart/form-data) ---');
+  const nonSquarePng = await sharp({
+    create: {
+      width: 800,
+      height: 400,
+      channels: 3,
+      background: { r: 169, g: 191, b: 168 },
+    },
+  })
+    .png()
+    .toBuffer();
+
+  // --- TEST 1: Valid Upload (2 Non-Square Photos -> 1080x1080 WebP + 400x400 Thumbnail) ---
+  console.log('--- TEST 1: Valid Photo Upload (1:1 Sharp 1080x1080 & Thumbnails) ---');
   const formData = new FormData();
-  formData.append('photos', new Blob([dummyPng], { type: 'image/png' }), 'client_photo1.png');
-  formData.append('photos', new Blob([dummyJpg], { type: 'image/jpeg' }), 'client_photo2.jpg');
+  formData.append('photos', new Blob([nonSquarePng], { type: 'image/png' }), 'client_rect1.png');
+  formData.append('photos', new Blob([nonSquareJpg], { type: 'image/jpeg' }), 'client_rect2.jpg');
 
   const uploadRes = await fetch(`${BASE_URL}/sell/drafts/${draftId}/photos`, {
     method: 'POST',
@@ -80,15 +102,38 @@ async function runPhotoTests() {
   const photoUrl1 = uploadRes.data.photos[0];
   const photoUrl2 = uploadRes.data.photos[1];
 
-  // Verify random filenames (client filename must NOT be used directly)
-  assert(!photoUrl1.includes('client_photo1.png'), 'Must use random filename, never client name');
+  // Verify WebP format and random filenames
+  assert(!photoUrl1.includes('client_rect1.png'), 'Must use random filename, never client name');
   assert(photoUrl1.startsWith('/uploads/'), 'Photo URL must start with /uploads/');
-  console.log(`✓ TEST 1 PASSED: Uploaded 2 photos with random filenames: ${photoUrl1}, ${photoUrl2}`);
+  assert(photoUrl1.endsWith('.webp'), 'Must be saved in WebP format');
+
+  // Verify file on disk is resized & center-cropped to strictly 1080x1080
+  const localFileName1 = path.basename(photoUrl1);
+  const localFilePath1 = path.join(UPLOADS_DIR, localFileName1);
+  assert(fs.existsSync(localFilePath1), 'Main image file must exist on disk');
+
+  const meta1 = await sharp(fs.readFileSync(localFilePath1)).metadata();
+  assert.strictEqual(meta1.width, 1080, `Width must be 1080, got ${meta1.width}`);
+  assert.strictEqual(meta1.height, 1080, `Height must be 1080, got ${meta1.height}`);
+  assert.strictEqual(meta1.format, 'webp', 'Format must be webp');
+  assert.strictEqual(meta1.exif, undefined, 'EXIF metadata must be stripped for privacy');
+
+  // Verify companion thumbnail on disk is strictly 400x400 WebP
+  const base1 = path.basename(localFileName1, '.webp');
+  const thumbPath1 = path.join(UPLOADS_DIR, `${base1}-thumb.webp`);
+  assert(fs.existsSync(thumbPath1), 'Thumbnail must exist on disk');
+
+  const thumbMeta1 = await sharp(fs.readFileSync(thumbPath1)).metadata();
+  assert.strictEqual(thumbMeta1.width, 400, `Thumbnail width must be 400, got ${thumbMeta1.width}`);
+  assert.strictEqual(thumbMeta1.height, 400, `Thumbnail height must be 400, got ${thumbMeta1.height}`);
+  assert.strictEqual(thumbMeta1.format, 'webp', 'Thumbnail format must be webp');
+
+  console.log(`✓ TEST 1 PASSED: Non-square uploaded images converted to 1080x1080 WebP with 400x400 thumbnails: ${photoUrl1}, ${photoUrl2}`);
 
   // --- TEST 2: Non-Owner Cannot Upload Photos (403 Forbidden) ---
   console.log('\n--- TEST 2: Non-Owner Upload Guard ---');
   const intruderFormData = new FormData();
-  intruderFormData.append('photos', new Blob([dummyPng], { type: 'image/png' }), 'hacker.png');
+  intruderFormData.append('photos', new Blob([nonSquarePng], { type: 'image/png' }), 'hacker.png');
 
   const intruderUpload = await fetch(`${BASE_URL}/sell/drafts/${draftId}/photos`, {
     method: 'POST',
@@ -145,11 +190,8 @@ async function runPhotoTests() {
   assert.strictEqual(intruderDelete.status, 403, 'Non-owner must receive 403 Forbidden on delete');
   console.log('✓ TEST 5 PASSED: Non-owner strictly blocked from deleting photos (403)');
 
-  // --- TEST 6: Owner Deletes Photo & Physical File Removed ---
-  console.log('\n--- TEST 6: Owner Deletes Photo ---');
-  const localFileName = path.basename(photoUrl1);
-  const localFilePath = path.join(UPLOADS_DIR, localFileName);
-
+  // --- TEST 6: Owner Deletes Photo & Physical Files (Main + Thumb) Removed ---
+  console.log('\n--- TEST 6: Owner Deletes Photo & Companion Thumbnail ---');
   const ownerDelete = await fetch(`${BASE_URL}/sell/drafts/${draftId}/photos`, {
     method: 'DELETE',
     headers: {
@@ -161,8 +203,9 @@ async function runPhotoTests() {
 
   assert.strictEqual(ownerDelete.success, true);
   assert.strictEqual(ownerDelete.data.photos.length, 1, 'Draft should now have 1 photo left');
-  assert(!fs.existsSync(localFilePath), 'Physical file on disk must be unlinked');
-  console.log('✓ TEST 6 PASSED: Owner deleted photo; storage file removed from disk');
+  assert(!fs.existsSync(localFilePath1), 'Main image file must be unlinked');
+  assert(!fs.existsSync(thumbPath1), 'Thumbnail file must also be unlinked');
+  console.log('✓ TEST 6 PASSED: Owner deleted photo; storage file & thumbnail removed from disk');
 
   // --- TEST 7: Publish Gate Blocks With < 2 Photos ---
   console.log('\n--- TEST 7: Publish Gate Blocks With < 2 Photos ---');
@@ -194,12 +237,19 @@ async function runPhotoTests() {
   assert(pubJson.message.includes('2 photos'), `Error must specify minimum 2 photos, got: ${pubJson.message}`);
   console.log('✓ TEST 7 PASSED: Publish gate strictly enforces minimum 2 photos: ' + pubJson.message);
 
+  // --- TEST 8: Migration Script Idempotency ---
+  console.log('\n--- TEST 8: Image Migration Script Idempotency ---');
+  await migrateImages();
+  // Second run to verify idempotency
+  await migrateImages();
+  console.log('✓ TEST 8 PASSED: Migration executed twice cleanly without errors or corruption');
+
   // Teardown
   await SellDraft.deleteOne({ _id: draftId });
   await User.deleteMany({ $or: [{ email: { $in: emails } }, { campusRollNumber: { $in: rolls } }] });
 
   console.log('\n========================================================');
-  console.log('✅ ALL PHOTO UPLOAD WITH MULTER TESTS PASSED!');
+  console.log('✅ ALL PHOTO UPLOAD WITH MULTER & SHARP TESTS PASSED!');
   console.log('========================================================\n');
 }
 

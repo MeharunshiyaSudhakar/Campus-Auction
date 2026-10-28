@@ -26,6 +26,7 @@ import {
   Zap,
 } from 'lucide-react';
 import useAuctionSocket from '../hooks/useAuctionSocket';
+import ItemImage from '../components/ItemImage';
 
 export default function AuctionDetailPage() {
   const { id } = useParams();
@@ -343,35 +344,33 @@ export default function AuctionDetailPage() {
         <div className="lg:col-span-7 space-y-8">
           {/* Photo Showcase */}
           <div className="bg-warm-white-paper rounded-3xl border-2 border-sage/60 p-4 space-y-4 shadow-xs">
-            {/* Active Hero Image */}
-            <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-warm-white-muted">
-              <img
-                src={photosList[selectedPhotoIndex] || placeholderImages[listing.category]}
+            {/* Active Hero Image (1:1 Ratio, Full Resolution) */}
+            <div className="relative w-full rounded-2xl overflow-hidden bg-warm-white-muted">
+              <ItemImage
+                src={photosList[selectedPhotoIndex]}
                 alt={listing.title}
+                useThumbnail={false}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = placeholderImages[listing.category];
-                }}
+                containerClassName="rounded-2xl"
               />
 
               {listing.defectPhotoIncluded && (
-                <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber text-forest text-xs font-black shadow-md">
-                    <Camera className="w-4 h-4 text-forest" />
+                <div className="absolute top-3 left-3 z-10">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber text-charcoal text-xs font-black shadow-md">
+                    <Camera className="w-4 h-4 text-charcoal" />
                     Defect Close-up Photo Included
                   </span>
                 </div>
               )}
 
-              <div className="absolute bottom-3 right-3">
-                <span className="px-3 py-1 rounded-full bg-forest/80 text-warm-white text-xs font-bold backdrop-blur-xs">
+              <div className="absolute bottom-3 right-3 z-10">
+                <span className="px-3 py-1 rounded-full bg-charcoal/80 text-warm-white text-xs font-bold backdrop-blur-xs">
                   Photo {selectedPhotoIndex + 1} of {photosList.length}
                 </span>
               </div>
             </div>
 
-            {/* Thumbnail Strip */}
+            {/* Thumbnail Strip (1:1 Square Thumbnails) */}
             {photosList.length > 1 && (
               <div className="flex items-center gap-3 overflow-x-auto pb-1">
                 {photosList.map((photo, idx) => (
@@ -379,13 +378,19 @@ export default function AuctionDetailPage() {
                     key={idx}
                     type="button"
                     onClick={() => setSelectedPhotoIndex(idx)}
-                    className={`relative w-20 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                       selectedPhotoIndex === idx
-                        ? 'border-forest ring-2 ring-forest/30 scale-102'
-                        : 'border-sage/40 opacity-70 hover:opacity-100'
+                        ? 'border-charcoal ring-2 ring-charcoal/30 scale-105'
+                        : 'border-sage/50 opacity-75 hover:opacity-100'
                     }`}
                   >
-                    <img src={photo} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                    <ItemImage
+                      src={photo}
+                      thumbnailSrc={listing.photoThumbnails?.[idx]}
+                      alt={`thumb ${idx}`}
+                      useThumbnail={true}
+                      containerClassName="w-full h-full"
+                    />
                   </button>
                 ))}
               </div>

@@ -9,6 +9,7 @@
     "test:ai": "node tests/test_ai_service.js",
     "test:photos": "node tests/test_photo_upload.js",
     "test:route": "node tests/test_module_16_razorpay_route.js",
+    "migrate:images": "node scripts/migrate_images.js",
     "test": "node tests/test_modules_14_15.js && node tests/test_guided_sell.js && node tests/test_module_4_search_filters.js && node tests/test_module_5_bidding.js && node tests/test_module_16_deals.js && node tests/test_module_6_socket_live.js && node tests/test_modules_7_8_closing_approval.js && node tests/test_modules_9_10_notifications_qa.js && node tests/test_module_19_profile_reels_reposts.js && node tests/test_ai_service.js && node tests/test_photo_upload.js && node tests/test_module_16_razorpay_route.js"
   },
   "keywords": [

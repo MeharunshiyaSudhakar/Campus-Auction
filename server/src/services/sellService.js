@@ -201,33 +201,45 @@ class SellService {
   /**
    * Upload real photos to draft (up to 6 photos per draft, random filenames)
    */
+  /**
+   * Upload real photos to draft (up to 6 photos per draft, random filenames)
+   * Auto-rotates via EXIF, center-crops to 1080x1080, strips metadata, outputs webp and 400x400 thumbnail
+   */
   static async uploadPhotos(sellerId, draftId, files) {
     const draft = await this.getDraft(sellerId, draftId);
 
     if (!draft.answers) draft.answers = {};
     if (!Array.isArray(draft.answers.photos)) draft.answers.photos = [];
+    if (!Array.isArray(draft.answers.photoThumbnails)) draft.answers.photoThumbnails = [];
 
     // Max 6 photos per draft limit check
     if (draft.answers.photos.length + files.length > 6) {
-      files.forEach((f) => FileStorageHelper.deleteFile(`/uploads/${f.filename}`));
       const error = new Error('A draft can have at most 6 photos in total.');
       error.statusCode = 400;
       throw error;
     }
 
-    const newPhotoUrls = files.map((f) => FileStorageHelper.getPublicUrl(f.filename));
-    draft.answers.photos.push(...newPhotoUrls);
+    const processed = await FileStorageHelper.processUploadedFiles(files);
+    const newPhotos = processed.map((p) => p.url);
+    const newThumbs = processed.map((p) => p.thumbnailUrl);
+
+    draft.answers.photos.push(...newPhotos);
+    draft.answers.photoThumbnails.push(...newThumbs);
     draft.markModified('answers');
     await draft.save();
 
     return {
       photos: draft.answers.photos,
-      uploaded: newPhotoUrls,
+      thumbnails: draft.answers.photoThumbnails,
+      uploaded: processed.map((p) => ({
+        url: p.url,
+        thumbnailUrl: p.thumbnailUrl,
+      })),
     };
   }
 
   /**
-   * Delete a photo from draft (owner only, cleans up storage)
+   * Delete a photo from draft (owner only, cleans up storage and companion thumbnail)
    */
   static async deletePhoto(sellerId, draftId, photoUrl) {
     const draft = await this.getDraft(sellerId, draftId);
@@ -239,10 +251,13 @@ class SellService {
     const index = draft.answers.photos.indexOf(photoUrl);
     if (index !== -1) {
       draft.answers.photos.splice(index, 1);
+      if (Array.isArray(draft.answers.photoThumbnails) && draft.answers.photoThumbnails.length > index) {
+        draft.answers.photoThumbnails.splice(index, 1);
+      }
       draft.markModified('answers');
       await draft.save();
 
-      // Clean up local file
+      // Clean up local file and its thumbnail
       FileStorageHelper.deleteFile(photoUrl);
     }
 
@@ -362,6 +377,9 @@ class SellService {
       category: answers.category,
       description: finalDescription,
       photos: answers.photos,
+      photoThumbnails: Array.isArray(draft.answers?.photoThumbnails) && draft.answers.photoThumbnails.length === answers.photos.length
+        ? draft.answers.photoThumbnails
+        : answers.photos.map((p) => (p.includes('-thumb.') ? p : p.replace(/\.webp$/, '-thumb.webp'))),
       defectPhotoIncluded: !!answers.defectPhotoIncluded,
       condition: {
         grade: answers.conditionGrade,

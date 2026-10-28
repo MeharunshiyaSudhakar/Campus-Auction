@@ -15,6 +15,7 @@ import {
   Calendar,
   AlertTriangle
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
 
 export default function MyListingsPage() {
   const [listings, setListings] = useState([]);
@@ -192,20 +193,18 @@ export default function MyListingsPage() {
               key={item._id}
               className="bg-warm-white-paper rounded-2xl border-2 border-sage/60 overflow-hidden shadow-xs hover:border-charcoal hover:shadow-sm transition-all flex flex-col"
             >
-              {/* Photo & Status Overlay */}
-              <div className="relative aspect-video bg-warm-white-muted">
-                <img
-                  src={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://placehold.co/600x400/242628/FAF8F4?text=Campus+Auction'}
+              {/* Photo (1:1 Ratio) & Status Overlay */}
+              <div className="relative w-full bg-warm-white-muted overflow-hidden">
+                <ItemImage
+                  src={item.photos && item.photos.length > 0 ? item.photos[0] : null}
+                  thumbnailSrc={item.photoThumbnails && item.photoThumbnails.length > 0 ? item.photoThumbnails[0] : null}
+                  useThumbnail={true}
                   alt={item.title}
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://placehold.co/600x400/242628/FAF8F4?text=Campus+Auction';
-                  }}
-                  className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 z-10">
                   {getStatusBadge(item.status)}
                 </div>
-                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-charcoal/90 backdrop-blur-xs text-warm-white text-xs font-bold uppercase tracking-wider">
+                <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg bg-charcoal/90 backdrop-blur-xs text-warm-white text-xs font-bold uppercase tracking-wider">
                   {item.category}
                 </div>
               </div>

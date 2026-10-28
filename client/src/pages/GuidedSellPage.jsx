@@ -18,6 +18,8 @@ import {
   HelpCircle,
   FileImage,
 } from 'lucide-react';
+import ItemImage from '../components/ItemImage';
+import ImageCropModal from '../components/ImageCropModal';
 
 export default function GuidedSellPage() {
   const navigate = useNavigate();
@@ -31,10 +33,13 @@ export default function GuidedSellPage() {
   const [currentInput, setCurrentInput] = useState('');
   const [photosList, setPhotosList] = useState([]);
 
-  // File Upload states
+  // File Upload & 1:1 Cropping states
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [cropQueue, setCropQueue] = useState([]);
+  const [cropIndex, setCropIndex] = useState(0);
+  const [croppedFilesAccumulator, setCroppedFilesAccumulator] = useState([]);
 
   // Status
   const [loading, setLoading] = useState(true);
@@ -113,8 +118,8 @@ export default function GuidedSellPage() {
     }
   };
 
-  // Real Image Upload via Multer
-  const handleFileUpload = async (filesList) => {
+  // 1:1 Square Crop Workflow & Upload via Multer
+  const handleFileUpload = (filesList) => {
     if (!filesList || filesList.length === 0) return;
     setError('');
 
@@ -137,6 +142,41 @@ export default function GuidedSellPage() {
       return;
     }
 
+    // Queue files for 1:1 square cropping before uploading to server
+    const queue = filesArray.map((file) => ({
+      file,
+      objectUrl: URL.createObjectURL(file),
+      name: file.name,
+    }));
+    setCroppedFilesAccumulator([]);
+    setCropIndex(0);
+    setCropQueue(queue);
+  };
+
+  const handleConfirmCrop = async (croppedFile) => {
+    const updatedAccumulator = [...croppedFilesAccumulator, croppedFile];
+    setCroppedFilesAccumulator(updatedAccumulator);
+
+    if (cropIndex + 1 < cropQueue.length) {
+      setCropIndex((prev) => prev + 1);
+    } else {
+      // All files in queue have been 1:1 cropped
+      cropQueue.forEach((item) => URL.revokeObjectURL(item.objectUrl));
+      setCropQueue([]);
+      setCropIndex(0);
+      setCroppedFilesAccumulator([]);
+      await uploadCroppedFiles(updatedAccumulator);
+    }
+  };
+
+  const handleCancelCrop = () => {
+    cropQueue.forEach((item) => URL.revokeObjectURL(item.objectUrl));
+    setCropQueue([]);
+    setCropIndex(0);
+    setCroppedFilesAccumulator([]);
+  };
+
+  const uploadCroppedFiles = async (filesArray) => {
     const formData = new FormData();
     filesArray.forEach((f) => formData.append('photos', f));
 
@@ -542,27 +582,28 @@ export default function GuidedSellPage() {
                         {photosList.map((url, i) => (
                           <div
                             key={url + i}
-                            className={`group relative rounded-xl overflow-hidden border-2 aspect-4/3 bg-warm-white transition-all ${
-                              i === 0 ? 'border-amber shadow-sm ring-2 ring-amber/30' : 'border-sage/60 hover:border-forest'
+                            className={`group relative rounded-xl overflow-hidden border-2 aspect-square bg-warm-white transition-all ${
+                              i === 0 ? 'border-amber shadow-sm ring-2 ring-amber/30' : 'border-sage/60 hover:border-charcoal'
                             }`}
                           >
-                            <img
-                              src={url.startsWith('/') ? url : url}
+                            <ItemImage
+                              src={url}
                               alt={`Item photo ${i + 1}`}
-                              className="w-full h-full object-cover"
+                              useThumbnail={true}
+                              containerClassName="w-full h-full"
                             />
 
                             {/* Cover Photo Badge */}
                             {i === 0 ? (
-                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-amber text-forest text-xs font-black flex items-center gap-1 shadow-md">
-                                <Star className="w-3 h-3 fill-forest text-forest" />
+                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-amber text-charcoal text-xs font-black flex items-center gap-1 shadow-md z-10">
+                                <Star className="w-3 h-3 fill-charcoal text-charcoal" />
                                 <span>Cover Photo</span>
                               </div>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleSetCoverPhoto(i)}
-                                className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-charcoal/80 text-warm-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-forest"
+                                className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-charcoal/80 text-warm-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-charcoal z-10 cursor-pointer"
                                 title="Set as main cover photo"
                               >
                                 Set as Cover
@@ -573,7 +614,7 @@ export default function GuidedSellPage() {
                             <button
                               type="button"
                               onClick={() => handleDeletePhoto(url)}
-                              className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-md transition-all active:scale-90 cursor-pointer"
+                              className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-md transition-all active:scale-90 cursor-pointer z-10"
                               title="Delete photo"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -820,6 +861,18 @@ export default function GuidedSellPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 1:1 Square Crop Modal */}
+      {cropQueue.length > 0 && cropQueue[cropIndex] && (
+        <ImageCropModal
+          imageSrc={cropQueue[cropIndex].objectUrl}
+          fileName={cropQueue[cropIndex].name}
+          currentIndex={cropIndex + 1}
+          totalQueue={cropQueue.length}
+          onConfirmCrop={handleConfirmCrop}
+          onCancel={handleCancelCrop}
+        />
       )}
     </div>
   );
